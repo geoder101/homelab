@@ -1,7 +1,8 @@
 # Model artifacts are pinned independently from container images.
 models:
   coder:
-    repository: cyankiwi/Qwen3-Coder-30B-A3B-Instruct-AWQ-4bit
-    revision: 2831070b7b8c7aa6b7012333c6c4a2bd257f6cdf
-    quantization: compressed-tensors-awq-4bit
-    status: benchmark-candidate
+    repository: unsloth/Qwen3.6-27B-NVFP4
+    revision: ccdaab7e68af2409599b8949a8f2685703c9bae5
+    quantization: compressed-tensors-mixed-nvfp4-fp8
+    directory: qwen3.6-27b-nvfp4
+    status: selected

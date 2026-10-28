@@ -9,7 +9,7 @@ Declarative, rootless Podman deployment for the local AI workstation `brain`.
 - Open WebUI is the browser interface and talks only to LiteLLM.
 - Podman Quadlets run as `geoder101` user systemd services.
 
-The first coding model is selected by benchmark. The service loads `/models/coder`, so changing the selected model does not change client-facing model name: clients always request `coder`.
+The coding model is `unsloth/Qwen3.6-27B-NVFP4`, pinned in `config/models.lock.yaml`. The service loads `/models/qwen3.6-27b-nvfp4`; clients always request the stable alias `coder`.
 
 ## Architecture
 
@@ -38,4 +38,4 @@ Only LiteLLM and Open WebUI publish host ports. vLLM is reachable only through t
 
 ## Before deployment
 
-Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the vLLM unit until a model has been downloaded into `~/.local/share/ai-station/models/coder`.
+Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the vLLM unit until `scripts/download-coder-candidate` has finished downloading the pinned model.

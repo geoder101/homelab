@@ -3,8 +3,11 @@ Description=AI Station Open WebUI
 After=ai-station.network litellm.container
 Requires=ai-station.network
 
+[Quadlet]
+DefaultDependencies=false
+
 [Container]
-Image=ghcr.io/open-webui/open-webui@sha256:9fcea9c6e32ab60b0498f3986c6cdf651ddbe61db48d2213a3d28048ddd673d4
+Image=ghcr.io/open-webui/open-webui@sha256:c5354e4a8e83ae6e0c75521c494e7ca0e66ccd88421dcd625d618518cab181f1
 ContainerName=ai-station-open-webui
 Network=ai-station.network
 PublishPort=3000:8080

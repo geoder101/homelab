@@ -3,12 +3,16 @@ Description=AI Station LiteLLM gateway
 After=ai-station.network vllm-coder.container
 Requires=ai-station.network
 
+[Quadlet]
+# Serve locally even when the host network-online target is inactive.
+DefaultDependencies=false
+
 [Container]
-Image=docker.litellm.ai/berriai/litellm@sha256:9ef6f45bc0104940571765e610c52a1d761b5ec85efcd193795281086ee61277
+Image=docker.litellm.ai/berriai/litellm@sha256:471f48b56221afba5adde2502b39a2596d04fa4ba30f2a82f002dd170fff4913
 ContainerName=ai-station-litellm
 Network=ai-station.network
 NetworkAlias=litellm
-PublishPort=4000:4000
+PublishPort=0.0.0.0:4000:4000
 Volume=%h/dev/projects/geoder101/ai-station/config/litellm-config.yaml:/app/config.yaml:ro,Z
 EnvironmentFile=%h/.config/ai-station/litellm.env
 Exec=--config /app/config.yaml --host 0.0.0.0 --port 4000

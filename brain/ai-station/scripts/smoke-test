@@ -2,10 +2,11 @@
 set -euo pipefail
 
 secret_file="${HOME}/.config/ai-station/litellm.env"
-key="$(cut -d= -f2 "${secret_file}")"
+key="$(sed -n 's/^LITELLM_MASTER_KEY=//p' "${secret_file}")"
+base_url="${1:-http://127.0.0.1:4000}"
 
 curl --fail --silent --show-error --max-time 180 \
   -H "Authorization: Bearer ${key}" \
   -H 'Content-Type: application/json' \
-  --data '{"model":"coder","messages":[{"role":"user","content":"Reply with exactly: brain inference ready"}],"temperature":0,"max_tokens":16}' \
-  http://127.0.0.1:4000/v1/chat/completions
+  --data '{"model":"coder","messages":[{"role":"user","content":"Reply with exactly: brain inference ready"}],"temperature":0,"max_tokens":32,"chat_template_kwargs":{"enable_thinking":false}}' \
+  "${base_url%/}/v1/chat/completions"

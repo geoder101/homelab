@@ -3,8 +3,12 @@ Description=AI Station vLLM coding backend
 After=ai-station.network
 Requires=ai-station.network
 
+[Quadlet]
+# Images and model are local; do not wait for the host network-online target.
+DefaultDependencies=false
+
 [Container]
-Image=docker.io/vllm/vllm-openai@sha256:fc56161ee42a011aeee78b65d0a81b6683c7d04402fd40503d14d4d6c98f07cb
+Image=docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9
 ContainerName=ai-station-vllm-coder
 Network=ai-station.network
 NetworkAlias=vllm-coder
@@ -17,7 +21,10 @@ Volume=%h/.local/share/ai-station/models:/models:Z
 Volume=%h/.local/share/ai-station/huggingface:/root/.cache/huggingface:Z
 Environment=HF_HOME=/root/.cache/huggingface
 Environment=HF_HUB_DISABLE_TELEMETRY=1
-Exec=--model /models/coder --served-model-name coder --host 0.0.0.0 --port 8000 --gpu-memory-utilization 0.90 --max-model-len 32768 --enable-auto-tool-choice --tool-call-parser qwen3_xml
+# Bound concurrent sequences to keep hybrid-model CUDA graph profiling in 32 GiB.
+# This checkpoint also selects FP8 KV under auto; make it explicit.
+# 160K fits the measured GPU cache; native 256K requires more memory.
+Exec=/models/qwen3.6-27b-nvfp4 --served-model-name coder --host 0.0.0.0 --port 8000 --gpu-memory-utilization 0.94 --max-model-len 163840 --kv-cache-dtype fp8_e4m3 --max-num-seqs 8 --enable-auto-tool-choice --tool-call-parser qwen3_xml --reasoning-parser qwen3
 Pull=never
 StopTimeout=120
 
