@@ -1,0 +1,11 @@
+# Image digests resolved on 2026-07-12. Update deliberately and test before changing.
+images:
+  vllm:
+    source: docker.io/vllm/vllm-openai:v0.25.0
+    digest: sha256:fc56161ee42a011aeee78b65d0a81b6683c7d04402fd40503d14d4d6c98f07cb
+  litellm:
+    source: docker.litellm.ai/berriai/litellm:v1.92.0
+    digest: sha256:9ef6f45bc0104940571765e610c52a1d761b5ec85efcd193795281086ee61277
+  open_webui:
+    source: ghcr.io/open-webui/open-webui:v0.10.2
+    digest: sha256:9fcea9c6e32ab60b0498f3986c6cdf651ddbe61db48d2213a3d28048ddd673d4

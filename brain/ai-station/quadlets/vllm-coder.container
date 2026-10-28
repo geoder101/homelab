@@ -1,0 +1,30 @@
+[Unit]
+Description=AI Station vLLM coding backend
+After=ai-station.network
+Requires=ai-station.network
+
+[Container]
+Image=docker.io/vllm/vllm-openai@sha256:fc56161ee42a011aeee78b65d0a81b6683c7d04402fd40503d14d4d6c98f07cb
+ContainerName=ai-station-vllm-coder
+Network=ai-station.network
+NetworkAlias=vllm-coder
+AddDevice=nvidia.com/gpu=all
+# NVIDIA CDI mounts host driver libraries whose SELinux labels are not usable
+# inside a confined rootless container. The container remains non-privileged.
+SecurityLabelDisable=true
+ShmSize=8g
+Volume=%h/.local/share/ai-station/models:/models:Z
+Volume=%h/.local/share/ai-station/huggingface:/root/.cache/huggingface:Z
+Environment=HF_HOME=/root/.cache/huggingface
+Environment=HF_HUB_DISABLE_TELEMETRY=1
+Exec=--model /models/coder --served-model-name coder --host 0.0.0.0 --port 8000 --gpu-memory-utilization 0.90 --max-model-len 32768 --enable-auto-tool-choice --tool-call-parser qwen3_xml
+Pull=never
+StopTimeout=120
+
+[Service]
+Restart=on-failure
+RestartSec=10
+TimeoutStartSec=15min
+
+[Install]
+WantedBy=default.target

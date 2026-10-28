@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+secret_file="${HOME}/.config/ai-station/litellm.env"
+key="$(cut -d= -f2 "${secret_file}")"
+
+curl --fail --silent --show-error --max-time 180 \
+  -H "Authorization: Bearer ${key}" \
+  -H 'Content-Type: application/json' \
+  --data '{"model":"coder","messages":[{"role":"user","content":"Reply with exactly: brain inference ready"}],"temperature":0,"max_tokens":16}' \
+  http://127.0.0.1:4000/v1/chat/completions

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+target_dir="${XDG_CONFIG_HOME:-${HOME}/.config}/containers/systemd"
+
+install -d -m 700 "${target_dir}"
+install -m 600 "${project_dir}"/quadlets/* "${target_dir}/"
+printf 'Installed Quadlets in %s\n' "${target_dir}"
+printf 'Run: systemctl --user daemon-reload\n'

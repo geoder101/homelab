@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+podman run --rm \
+  --device nvidia.com/gpu=all \
+  --security-opt label=disable \
+  docker.io/nvidia/cuda:13.0.2-base-ubuntu24.04 \
+  nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader

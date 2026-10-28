@@ -1,0 +1,6 @@
+[Unit]
+Description=AI Station private Podman network
+
+[Network]
+NetworkName=ai-station
+Driver=bridge

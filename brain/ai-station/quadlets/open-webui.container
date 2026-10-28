@@ -1,0 +1,26 @@
+[Unit]
+Description=AI Station Open WebUI
+After=ai-station.network litellm.container
+Requires=ai-station.network
+
+[Container]
+Image=ghcr.io/open-webui/open-webui@sha256:9fcea9c6e32ab60b0498f3986c6cdf651ddbe61db48d2213a3d28048ddd673d4
+ContainerName=ai-station-open-webui
+Network=ai-station.network
+PublishPort=3000:8080
+Volume=%h/.local/share/ai-station/open-webui:/app/backend/data:Z
+EnvironmentFile=%h/.config/ai-station/open-webui.env
+Environment=WEBUI_NAME=Brain-AI-Station
+Environment=ENABLE_OLLAMA_API=False
+Environment=ENABLE_OPENAI_API=True
+Environment=OPENAI_API_BASE_URLS=http://litellm:4000/v1
+Pull=never
+StopTimeout=30
+
+[Service]
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=5min
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repository="cyankiwi/Qwen3-Coder-30B-A3B-Instruct-AWQ-4bit"
+revision="2831070b7b8c7aa6b7012333c6c4a2bd257f6cdf"
+image="docker.io/vllm/vllm-openai@sha256:fc56161ee42a011aeee78b65d0a81b6683c7d04402fd40503d14d4d6c98f07cb"
+model_dir="${HOME}/.local/share/ai-station/models/coder"
+
+if [[ -e "${model_dir}" ]] && [[ -n "$(ls -A "${model_dir}")" ]]; then
+  printf 'Refusing to replace non-empty model directory: %s\n' "${model_dir}" >&2
+  exit 1
+fi
+
+install -d -m 700 "${model_dir}"
+podman run --rm \
+  --entrypoint /usr/local/bin/hf \
+  --volume "${model_dir}:/models/coder:Z" \
+  "${image}" \
+  download "${repository}" --revision "${revision}" --local-dir /models/coder

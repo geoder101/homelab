@@ -1,0 +1,8 @@
+# LiteLLM is the only client-facing model router. The backend stays on the
+# ai-station Podman network and has no host-published port.
+model_list:
+  - model_name: coder
+    litellm_params:
+      model: openai/coder
+      api_base: http://vllm-coder:8000/v1
+      api_key: not-used-by-private-backend

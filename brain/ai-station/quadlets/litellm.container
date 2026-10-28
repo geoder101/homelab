@@ -1,0 +1,24 @@
+[Unit]
+Description=AI Station LiteLLM gateway
+After=ai-station.network vllm-coder.container
+Requires=ai-station.network
+
+[Container]
+Image=docker.litellm.ai/berriai/litellm@sha256:9ef6f45bc0104940571765e610c52a1d761b5ec85efcd193795281086ee61277
+ContainerName=ai-station-litellm
+Network=ai-station.network
+NetworkAlias=litellm
+PublishPort=4000:4000
+Volume=%h/dev/projects/geoder101/ai-station/config/litellm-config.yaml:/app/config.yaml:ro,Z
+EnvironmentFile=%h/.config/ai-station/litellm.env
+Exec=--config /app/config.yaml --host 0.0.0.0 --port 4000
+Pull=never
+StopTimeout=30
+
+[Service]
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=5min
+
+[Install]
+WantedBy=default.target
