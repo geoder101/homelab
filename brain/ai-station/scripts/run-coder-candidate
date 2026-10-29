@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+for unit in llama-coder vllm-coder; do
+  if systemctl --user is-active --quiet "${unit}.service"; then
+    printf 'Stop %s before running a GPU candidate: systemctl --user stop %s\n' "${unit}" "${unit}" >&2
+    exit 1
+  fi
+done
+
+common=(--rm --pull never --name ai-station-coder-candidate
+  --network ai-station --network-alias coder-candidate
+  --device nvidia.com/gpu=all --security-opt label=disable --shm-size 8g)
+
+case "${1:-}" in
+  nvfp4)
+    model_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-nvfp4"
+    exec podman run "${common[@]}" --volume "${model_dir}:/models/candidate:ro,Z" \
+      docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9 \
+      /models/candidate --served-model-name coder --host 0.0.0.0 --port 8000 \
+      --gpu-memory-utilization 0.94 --max-model-len "${CONTEXT_TOKENS:-163840}" --kv-cache-dtype fp8_e4m3 \
+      --max-num-seqs 1 --enable-auto-tool-choice --tool-call-parser qwen3_xml \
+      --reasoning-parser qwen3 \
+      --default-chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
+    ;;
+  gguf)
+    model_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-gguf"
+    exec podman run "${common[@]}" --volume "${model_dir}:/models/candidate:ro,Z" \
+      ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99 \
+      --model /models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf \
+      --mmproj /models/candidate/mmproj-BF16.gguf \
+      --alias coder --host 0.0.0.0 --port 8000 --n-gpu-layers 99 \
+      --ctx-size 262144 --parallel 1 --flash-attn on \
+      --cache-type-k q8_0 --cache-type-v q8_0 --jinja \
+      --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
+    ;;
+  *)
+    printf 'Usage: %s nvfp4|gguf\n' "$0" >&2
+    exit 2
+    ;;
+esac

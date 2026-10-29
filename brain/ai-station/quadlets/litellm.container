@@ -1,6 +1,6 @@
 [Unit]
 Description=AI Station LiteLLM gateway
-After=ai-station.network vllm-coder.container
+After=ai-station.network llama-coder.container
 Requires=ai-station.network
 
 [Quadlet]

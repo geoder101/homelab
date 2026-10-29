@@ -1,0 +1,18 @@
+# Evaluation artifacts; these do not change the active coder deployment.
+# Resolved 2026-10-29. Candidate results belong in docs/benchmark-results.md.
+candidates:
+  qwen38_nvfp4:
+    repository: unsloth/Qwen3.8-27B-NVFP4
+    revision: f0b7c9e722f5565102fff8481c99e4d86ae099c7
+    directory: qwen3.8-27b-nvfp4
+    image: docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9
+  qwen38_gguf:
+    repository: unsloth/Qwen3.8-27B-GGUF
+    revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
+    directory: qwen3.8-27b-gguf
+    file: Qwen3.8-27B-UD-Q4_K_XL.gguf
+    vision_file: mmproj-BF16.gguf
+    image_source: ghcr.io/ggml-org/llama.cpp:server-cuda
+    image_version: b11960
+    image_commit: 8642541b255bfb5dc39cd351a178be09013a55d6
+    image: ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99

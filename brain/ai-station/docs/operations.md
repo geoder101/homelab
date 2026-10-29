@@ -7,14 +7,14 @@ Run host-management commands from a host terminal. From toolbox, prefix them wit
 1. Generate secret files with `scripts/create-secrets`.
 2. Enable lingering once with `sudo loginctl enable-linger geoder101`.
 3. Pull locked images with `scripts/pull-images`.
-4. Run `scripts/download-coder-candidate` to download the pinned Qwen3.6 model into `~/.local/share/ai-station/models/qwen3.6-27b-nvfp4`.
+4. Run `scripts/download-coder-candidate` to download the pinned Qwen3.8 GGUF and vision projector into `~/.local/share/ai-station/models/qwen3.8-27b-gguf`.
 5. Run `scripts/validate-quadlets`.
 6. Copy Quadlets with `scripts/install-quadlets`.
-7. Reload and start `vllm-coder`, then `litellm`, then `open-webui`.
+7. Reload and start `llama-coder`, then `litellm`, then `open-webui`.
 
-All three Phase 1 services have `[Install]` sections and start with the user systemd session after `daemon-reload`. Finish the model download before installing/reloading the Quadlets. To prevent automatic startup, remove the unit's `WantedBy` entry and reload; generated Quadlet services cannot be disabled with `systemctl disable`.
+`llama-coder`, `litellm` and `open-webui` have `[Install]` sections and start with the user systemd session after `daemon-reload`. The alternative `vllm-coder` has no automatic-start section. Finish the model download before installing/reloading the Quadlets. To prevent automatic startup, remove the unit's `WantedBy` entry and reload; generated Quadlet services cannot be disabled with `systemctl disable`.
 
-## Upgrade to Qwen3.6-27B-NVFP4
+## Upgrade to Qwen3.8 Dynamic GGUF
 
 Run from the repository on the host:
 
@@ -24,26 +24,41 @@ scripts/download-coder-candidate
 scripts/validate-quadlets
 scripts/install-quadlets
 systemctl --user daemon-reload
-systemctl --user restart vllm-coder litellm
-journalctl --user -u vllm-coder -f
-# After vLLM reports that startup is complete:
+systemctl --user stop vllm-coder
+systemctl --user restart llama-coder
+systemctl --user restart litellm
+journalctl --user -u llama-coder -f
+# After llama.cpp reports that startup is complete:
 scripts/smoke-test
 scripts/smoke-test http://192.168.1.11:4000
 ```
 
-Downloads resume when rerun. The old `models/coder` directory is retained. To roll back, stop `vllm-coder`, restore the old Quadlet's model path (`/models/coder`) and arguments, reinstall/reload, and restart the service. The API model alias remains `coder`.
+Downloads resume when rerun. Previous checkpoints are retained. The API model alias remains `coder`.
 
-The model card recommends vLLM >=0.25.0, FlashInfer >=0.6.13 and CUTLASS DSL >=4.5.2. See [the checkpoint instructions](https://huggingface.co/unsloth/Qwen3.6-27B-NVFP4). The configured context is 128K (131,072 tokens), with GPU memory utilization 0.94 and BF16 KV cache. A 121,996-token prompt passed retrieval checks through LiteLLM without CPU offloading. Measure GPU memory before increasing it further.
+The selected profile uses llama.cpp b11960, 256K context (262,144 tokens), GPU Q8 K/V cache, one request slot and medium reasoning. MTP and historical-thinking preservation are disabled. A 252,996-token prompt passed retrieval through LiteLLM. See [the Unsloth guide](https://unsloth.ai/docs/models/qwen3.8), `docs/model-profile.md` and the recorded comparison in `docs/benchmarks/`.
 
-Keep `--max-num-seqs 8` on the 32 GiB RTX 5090. The vLLM 0.32.0 default of 512 sequences failed during CUDA graph profiling with a 12.25 GiB allocation request. With 8 sequences, startup and inference succeeded. This is a scheduling cap, not a guarantee that eight full contexts fit concurrently; at 128K the measured KV cache supports approximately 1.30 full-length requests.
+### Optional NVFP4 profile
+
+Download with `scripts/download-qwen38-candidates nvfp4`. To use the alternative profile, stop `llama-coder`, start `vllm-coder`, change LiteLLM's `api_base` to `http://vllm-coder:8000/v1` and restart LiteLLM. Set every OpenCode client's context to `163840`. For persistent selection across boot, move the `[Install] WantedBy=default.target` section from `llama-coder.container` to `vllm-coder.container`, update LiteLLM's `After` dependency, and reinstall/reload Quadlets. Never enable both GPU backends together.
+
+The vLLM profile uses one sequence, calibrated FP8 KV and utilization 0.94. This checkpoint already selected FP8 with `auto`; explicit FP8 is not another 2x reduction. Native 256K needed 8.33 GiB cache versus 5.64 GiB available. Its measured advantage is faster cold long-prompt processing, not a larger context.
 
 ### OpenCode context limit
 
-On every OpenCode client using `brain/coder`, set `provider.brain.models.coder.limit.context` to `131072` in its `opencode.jsonc`, then quit and restart OpenCode. The local global config at `~/.config/opencode/opencode.jsonc` was updated during the context increase. The output cap remains 8192 tokens; input, reasoning and output must fit within the total context budget.
+On every OpenCode client using `brain/coder`, set the following in its `opencode.jsonc`, then quit and restart OpenCode:
 
-Restart LiteLLM after changing the backend context limit so its cached `/v1/models` metadata is refreshed. During the 128K change, restarting only vLLM left LiteLLM advertising 32768 even though long requests succeeded; restarting LiteLLM corrected this to 131072.
+```jsonc
+"limit": {
+  "context": 262144,
+  "output": 16384
+}
+```
 
-The 2026-10-28 image upgrade selects stable vLLM 0.32.0, LiteLLM 1.106.5 and Open WebUI 0.12.4. The lock file and Quadlets pin the corresponding linux/amd64 manifest digests. Before starting the upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
+The local global config at `~/.config/opencode/opencode.jsonc` was updated. Input, reasoning and output must fit within the total context budget. These limits are client metadata used for request budgeting and compaction, not server settings. Keep them explicit for this custom provider: the standard `/v1/models` response is not a reliable source of context/output limits. A 16K output cap gives thinking and final output more room than the old 8K cap; it does not require generating 16K tokens on every turn.
+
+Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's `--ctx-size` and the explicit OpenCode limits are authoritative for this deployment.
+
+The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4 and llama.cpp b11960 (commit `8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin the corresponding linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
 
 ## API use
 
@@ -65,11 +80,11 @@ Use model `coder` and the `LITELLM_MASTER_KEY` as the bearer token. Open WebUI i
 
 ```bash
 systemctl --user daemon-reload
-systemctl --user start vllm-coder
+systemctl --user start llama-coder
 systemctl --user start litellm
 systemctl --user start open-webui
-systemctl --user status vllm-coder litellm open-webui
-journalctl --user -u vllm-coder -f
+systemctl --user status llama-coder litellm open-webui
+journalctl --user -u llama-coder -f
 ```
 
 ## Firewall
@@ -91,7 +106,7 @@ The active Wi-Fi interface `wlp9s0` was in zone `public` during the 2026-10-28 i
 Check each layer from a host terminal:
 
 ```bash
-systemctl --user status litellm vllm-coder
+systemctl --user status litellm llama-coder
 podman port ai-station-litellm
 ss -lnt 'sport = :4000'
 curl --noproxy '*' --max-time 5 http://127.0.0.1:4000/health/liveliness

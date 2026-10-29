@@ -1,5 +1,10 @@
-# Stable image releases resolved on 2026-10-28; linux/amd64 manifest digests.
+# Images resolved on 2026-10-28/29; linux/amd64 manifest digests.
 images:
+  llama_cpp:
+    source: ghcr.io/ggml-org/llama.cpp:server-cuda
+    version: b11960
+    commit: 8642541b255bfb5dc39cd351a178be09013a55d6
+    digest: sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99
   vllm:
     source: docker.io/vllm/vllm-openai:v0.32.0
     digest: sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9

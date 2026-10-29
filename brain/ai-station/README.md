@@ -4,12 +4,12 @@ Declarative, rootless Podman deployment for the local AI workstation `brain`.
 
 ## Phase 1
 
-- vLLM provides one active OpenAI-compatible inference backend.
+- llama.cpp provides the active OpenAI-compatible inference backend; vLLM is an optional NVFP4 profile.
 - LiteLLM is the single API gateway for OpenCode and other API clients.
 - Open WebUI is the browser interface and talks only to LiteLLM.
 - Podman Quadlets run as `geoder101` user systemd services.
 
-The coding model is `unsloth/Qwen3.6-27B-NVFP4`, pinned in `config/models.lock.yaml`. The service loads `/models/qwen3.6-27b-nvfp4`; clients always request the stable alias `coder`.
+The coding model is `unsloth/Qwen3.8-27B-GGUF`, Dynamic V3 `UD-Q4_K_XL`, pinned in `config/models.lock.yaml`. The default profile uses 256K context, Q8 K/V cache and medium reasoning on the RTX 5090. Clients always request the stable alias `coder`. See `docs/model-profile.md` for the measured NVFP4/GGUF tradeoff.
 
 ## Architecture
 
@@ -22,12 +22,12 @@ OpenCode / LAN client / Tailscale client
                  |
       ai-station Podman network
           |                 |
-      vLLM :8000      Open WebUI :8080
+   llama.cpp :8000    Open WebUI :8080
           |                 |
        RTX 5090       http://brain:3000
 ```
 
-Only LiteLLM and Open WebUI publish host ports. vLLM is reachable only through the private Podman network.
+Only LiteLLM and Open WebUI publish host ports. Inference backends are reachable only through the private Podman network.
 
 ## Repository layout
 
@@ -38,4 +38,4 @@ Only LiteLLM and Open WebUI publish host ports. vLLM is reachable only through t
 
 ## Before deployment
 
-Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the vLLM unit until `scripts/download-coder-candidate` has finished downloading the pinned model.
+Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the inference unit until `scripts/download-coder-candidate` has finished downloading the pinned model.

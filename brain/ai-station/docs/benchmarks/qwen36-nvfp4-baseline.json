@@ -1,0 +1,211 @@
+{
+  "label": "qwen36-nvfp4-baseline",
+  "backend": "vllm",
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.291,
+      "elapsed_seconds": 9.952,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 66.83,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers in Long-Running Integration Tests\n\n## Phase 1: Reproduction & Baseline Establishment\n\n### 1.1 Confirm the Leak Exists\n- [ ] **Run a controlled stress test** with increasing request volume over time\n- [ ] **Monitor RSS (Resident Set Size)** using `psutil` or system tools:\n  ```bash\n  # Linux/macOS\n  watch -n 1 'ps aux | grep python'\n  \n  # Using psutil programmatically\n  import psutil\n  process = psutil.Process(os.getpid())\n  print(process.memory_info().rss / 1024 / 1024, \"MB\")\n  ```\n- [ ] **Plot memory usage over time** to confirm monotonic increase vs. stable plateau\n- [ ] **Establish baseline**: Run same test suite on a clean server restart; compare initial vs. final memory\n\n### 1.2 Isolate the Scope\n- [ ] **Test individual endpoints** one-by-one to identify which routes leak\n- [ ] **Test with minimal payload** vs. large payloads to determine if data size correlates\n- [ ] **Test synchronous vs. async handlers** separately\n- [ ] **Disable middleware/plugins** incrementally to isolate leaking component\n\n---\n\n## Phase 2: Profiling & Allocation Tracking\n\n### 2.1 Use `tracemalloc` for Native Python Objects\n```python\nimport tracemalloc\nimport gc\n\n# Start tracing at application startup\ntracemalloc.start(25)  # Keep 25 frames of traceback\n\n# Snapshot before and after test batches\nsnapshot_before = tracemalloc.take_snapshot()\n\n# ... run integration tests ...\n\nsnapshot_after = tracemalloc.take_snapshot()\n\n# Compare snapshots\ntop_stats = snapshot_after.compare_to(snapshot_before, 'lineno')\nfor stat in top_stats[:20]:\n    print(stat)\n```\n- [ ] **Identify top growing objects** by line number\n- [ ] **Check for unbounded collections** (lists, dicts, sets) that grow indefinitely\n- [ ] **Verify object types**: Look for unexpected accumulation of strings, bytes, or custom objects\n\n### 2.2 Profile with `memory_profiler` for Line-by-Line Analysis\n```bash\npip install memory_profiler\n```\n```python\nfrom memory_profiler import profile\n\n@profile\ndef handle_request(request):"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.036,
+      "elapsed_seconds": 7.698,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 66.82,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers in Long-Running Integration Tests\n\n## Phase 1: Reproduction & Baseline Establishment\n\n### 1.1 Confirm the Leak Exists\n- [ ] **Run a controlled stress test** with increasing request volume over time\n- [ ] **Monitor RSS (Resident Set Size)** using `psutil` or system tools:\n  ```bash\n  # Linux/macOS\n  watch -n 1 'ps aux | grep python'\n  \n  # Using psutil programmatically\n  import psutil\n  process = psutil.Process(os.getpid())\n  print(process.memory_info().rss / 1024 / 1024, \"MB\")\n  ```\n- [ ] **Plot memory usage over time** to confirm monotonic increase vs. stable plateau\n- [ ] **Establish baseline**: Run same test suite on a clean server restart; compare initial vs. final memory\n\n### 1.2 Isolate the Scope\n- [ ] **Test individual endpoints** one-by-one to identify which routes leak\n- [ ] **Test with minimal payload** vs. large payloads to determine if data size correlates\n- [ ] **Test synchronous vs. async handlers** separately\n- [ ] **Disable middleware/plugins** incrementally to isolate leaking component\n\n---\n\n## Phase 2: Profiling & Allocation Tracking\n\n### 2.1 Use `tracemalloc` for Native Python Objects\n```python\nimport tracemalloc\nimport gc\n\n# Start tracing at application startup\ntracemalloc.start(25)  # Keep 25 frames of traceback\n\n# Snapshot before and after test batches\nsnapshot_before = tracemalloc.take_snapshot()\n\n# ... run integration tests ...\n\nsnapshot_after = tracemalloc.take_snapshot()\n\n# Compare snapshots\ntop_stats = snapshot_after.compare_to(snapshot_before, 'lineno')\nfor stat in top_stats[:20]:\n    print(stat)\n```\n- [ ] **Identify top growing objects** by line number\n- [ ] **Check for unbounded collections** (lists, dicts, sets) that grow indefinitely\n- [ ] **Verify object types**: Look for unexpected accumulation of strings, bytes, or custom objects\n\n### 2.2 Profile with `memory_profiler` for Line-by-Line Analysis\n```bash\npip install memory_profiler\n```\n```python\nfrom memory_profiler import profile\n\n@profile\ndef handle_request(request):"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.036,
+      "elapsed_seconds": 7.699,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 66.82,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers in Long-Running Integration Tests\n\n## Phase 1: Reproduction & Baseline Establishment\n\n### 1.1 Confirm the Leak Exists\n- [ ] **Run a controlled stress test** with increasing request volume over time\n- [ ] **Monitor RSS (Resident Set Size)** using `psutil` or system tools:\n  ```bash\n  # Linux/macOS\n  watch -n 1 'ps aux | grep python'\n  \n  # Using psutil programmatically\n  import psutil\n  process = psutil.Process(os.getpid())\n  print(process.memory_info().rss / 1024 / 1024, \"MB\")\n  ```\n- [ ] **Plot memory usage over time** to confirm monotonic increase vs. stable plateau\n- [ ] **Establish baseline**: Run same test suite on a clean server restart; compare initial vs. final memory\n\n### 1.2 Isolate the Scope\n- [ ] **Test individual endpoints** one-by-one to identify which routes leak\n- [ ] **Test with minimal payload** vs. large payloads to determine if data size correlates\n- [ ] **Test synchronous vs. async handlers** separately\n- [ ] **Disable middleware/plugins** incrementally to isolate leaking component\n\n---\n\n## Phase 2: Profiling & Allocation Tracking\n\n### 2.1 Use `tracemalloc` for Native Python Objects\n```python\nimport tracemalloc\nimport gc\n\n# Start tracing at application startup\ntracemalloc.start(25)  # Keep 25 frames of traceback\n\n# Snapshot before and after test batches\nsnapshot_before = tracemalloc.take_snapshot()\n\n# ... run integration tests ...\n\nsnapshot_after = tracemalloc.take_snapshot()\n\n# Compare snapshots\ntop_stats = snapshot_after.compare_to(snapshot_before, 'lineno')\nfor stat in top_stats[:20]:\n    print(stat)\n```\n- [ ] **Identify top growing objects** by line number\n- [ ] **Check for unbounded collections** (lists, dicts, sets) that grow indefinitely\n- [ ] **Verify object types**: Look for unexpected accumulation of strings, bytes, or custom objects\n\n### 2.2 Profile with `memory_profiler` for Line-by-Line Analysis\n```bash\npip install memory_profiler\n```\n```python\nfrom memory_profiler import profile\n\n@profile\ndef handle_request(request):"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 29.246,
+      "usage": {
+        "prompt_tokens": 98,
+        "total_tokens": 2045,
+        "completion_tokens": 1947,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1835
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [list(sorted_intervals[0])]\n    for start, end in sorted_intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": false,
+      "elapsed_seconds": 61.538,
+      "usage": {
+        "prompt_tokens": 131,
+        "total_tokens": 4227,
+        "completion_tokens": 4096,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 3894
+        }
+      },
+      "finish_reason": "length",
+      "code": "\n\n```python\nimport heapq\n\ndef toposort(nodes, edges):\n    adj = {n: set() for n in nodes}\n    in_degree = {n: 0 for n in nodes}\n    \n    for u, v in edges:\n        if u == v:\n            raise ValueError(\"Cycle detected\")\n        if v not in adj[u]:\n            adj[u].add(v)\n            in_degree[v] += 1\n            \n    heap = [n for n in nodes if in_degree[n] == 0]\n    heapq.heapify(heap)\n    \n    result = []\n    while heap:\n        u = heapq.heappop(heap)\n        result.append(u)\n        for v in adj[u]:\n            in_degree[v] -= 1\n            if in_degree[v] == 0:\n                heapq.heappush(heap, v)\n                \n    if len(result) != len(nodes):\n        raise ValueError",
+      "test_error": "  File \"<string>\", line 3\n    ```python\n    ^\nSyntaxError: invalid syntax\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 9.434,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\nThe `apply_changes` tool successfully executed the dry run. It reports that 2 files would be changed: creating `src/a.py` with the specified content and deleting `obsolete.txt`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 7.38,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\nThe `apply_changes` tool was executed successfully with a dry-run status. Two files were affected by the proposed changes: creating `src/a.py` and deleting `obsolete.txt`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 6.718,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\nThe `apply_changes` tool was executed successfully.\n\n**Result:**\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nThis confirms that the dry run was completed without errors and would affect 2 files: creating `src/a.py` and deleting `obsolete.txt`."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 4.939,
+      "usage": {
+        "prompt_tokens": 31880,
+        "total_tokens": 31929,
+        "completion_tokens": 49,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}"
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 31.343,
+      "usage": {
+        "prompt_tokens": 121881,
+        "total_tokens": 121935,
+        "completion_tokens": 54,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n    \"START_KEY\": \"amber-7429\",\n    \"MIDDLE_KEY\": \"birch-5831\",\n    \"END_KEY\": \"cedar-9167\"\n}\n```"
+    },
+    {
+      "name": "context_154000",
+      "passed": true,
+      "elapsed_seconds": 45.819,
+      "usage": {
+        "prompt_tokens": 153881,
+        "total_tokens": 153930,
+        "completion_tokens": 49,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}"
+    }
+  ]
+}

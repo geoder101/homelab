@@ -1,8 +1,14 @@
 # Model artifacts are pinned independently from container images.
 models:
   coder:
-    repository: unsloth/Qwen3.6-27B-NVFP4
-    revision: ccdaab7e68af2409599b8949a8f2685703c9bae5
-    quantization: compressed-tensors-mixed-nvfp4-fp8
-    directory: qwen3.6-27b-nvfp4
+    repository: unsloth/Qwen3.8-27B-GGUF
+    revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
+    quantization: unsloth-dynamic-v3-UD-Q4_K_XL
+    directory: qwen3.8-27b-gguf
+    file: Qwen3.8-27B-UD-Q4_K_XL.gguf
+    vision_file: mmproj-BF16.gguf
+    backend: llama.cpp
+    context: 262144
+    kv_cache: q8_0
+    reasoning_effort: medium
     status: selected

@@ -1,17 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-repository="unsloth/Qwen3.6-27B-NVFP4"
-revision="ccdaab7e68af2409599b8949a8f2685703c9bae5"
-image="docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9"
-model_dir="${HOME}/.local/share/ai-station/models/qwen3.6-27b-nvfp4"
-
-# Dedicated directory: the old coder checkpoint stays available for rollback.
-# hf download can resume an interrupted download of this pinned revision.
-install -d -m 700 "${model_dir}"
-podman run --rm \
-  --pull never \
-  --entrypoint /usr/local/bin/hf \
-  --volume "${model_dir}:/models/coder:Z" \
-  "${image}" \
-  download "${repository}" --revision "${revision}" --local-dir /models/coder
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "${script_dir}/download-qwen38-candidates" gguf

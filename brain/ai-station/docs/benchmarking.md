@@ -1,19 +1,19 @@
 # Coding Model Benchmark
 
-Choose the first coding model empirically rather than treating parameter count as quality.
+Choose coding profiles empirically rather than treating parameter count or maximum advertised context as quality. The current comparison and selected Qwen3.8 profile are recorded in `docs/benchmarks/README.md`, `docs/benchmark-results.md` and `docs/model-profile.md`.
 
 ## Constraints
 
 - GPU: RTX 5090, 32 GiB VRAM.
 - One base model is active at a time.
 - Target workload: OpenCode software-engineering tasks, tool calls, Greek and English prompts.
-- Baseline server settings: 32k context window and 90% GPU-memory utilization.
+- Original July baseline: 32K context and 90% GPU-memory utilization. The current target is one long-running agent with useful cache reuse and at least 128K context.
 
 ## Candidate selection
 
-Start with coding models that have an officially supported vLLM quantization for Blackwell. Record the exact Hugging Face repository, commit revision, quantization format, vLLM image digest, and server arguments. Do not use an unpinned `main` revision.
+Compare Blackwell-oriented NVFP4/vLLM and Dynamic GGUF/llama.cpp when they offer different memory/performance tradeoffs. Record the exact Hugging Face repository, commit revision, quantization format, backend image digest, and server arguments. Do not use an unpinned `main` revision.
 
-### Candidate 1
+### Original candidate 1 (historical)
 
 | Field | Value |
 | --- | --- |
@@ -29,11 +29,11 @@ This is a third-party quantization, not an official Qwen release. It is a benchm
 
 For each candidate:
 
-1. Start vLLM with the identical server arguments.
+1. Start one backend at a time with comparable sampling, reasoning effort and concurrency. Record backend-specific context/cache settings rather than assuming flags are interchangeable.
 2. Record startup success, VRAM usage, and usable context length.
 3. Run the same short and long OpenCode tasks three times.
 4. Record time to first token, generated tokens per second, completion quality, tool-call reliability, and any CUDA/vLLM failures.
-5. Preserve the winning model under `models/coder` and add its immutable revision to this document.
+5. Keep artifacts in revision-specific model directories, update `config/models.lock.yaml`, and preserve the stable API alias `coder`.
 
 ## Acceptance criteria
 

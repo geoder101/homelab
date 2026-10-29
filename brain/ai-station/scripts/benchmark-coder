@@ -1,0 +1,252 @@
+#!/usr/bin/env python3
+"""Small, reproducible coding-agent comparison; not a substitute for SWE-bench."""
+import argparse
+import json
+import re
+import resource
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--url", default="http://coder-candidate:8000")
+parser.add_argument("--backend", choices=["vllm", "llama"], required=True)
+parser.add_argument("--label", required=True)
+parser.add_argument("--contexts", default="32000,122000,154000")
+parser.add_argument("--output", required=True)
+args = parser.parse_args()
+results = {"label": args.label, "backend": args.backend,
+           "settings": {"reasoning_effort": "medium", "preserve_thinking": False,
+                        "thinking_max_tokens": 8192, "mtp": False}, "tests": []}
+
+
+def post(path, body, timeout=600):
+    request = urllib.request.Request(
+        args.url + path, data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        return urllib.request.urlopen(request, timeout=timeout)
+    except urllib.error.HTTPError as error:
+        raise RuntimeError(f"HTTP {error.code}: {error.read().decode()}") from error
+
+
+def request_chat(messages, *, thinking=True, max_tokens=8192, **extra):
+    body = {
+        "model": "coder", "messages": messages, "seed": 42,
+        "temperature": 1.0 if thinking else 0.7,
+        "top_p": 0.95 if thinking else 0.8,
+        "top_k": 20, "min_p": 0.0,
+        "presence_penalty": 0.0 if thinking else 1.5,
+        "repetition_penalty": 1.0,
+        "max_tokens": max_tokens,
+        "chat_template_kwargs": {
+            "enable_thinking": thinking, "reasoning_effort": "medium",
+            "preserve_thinking": False,
+        },
+        **extra,
+    }
+    start = time.monotonic()
+    with post("/v1/chat/completions", body) as response:
+        value = json.load(response)
+    return value, round(time.monotonic() - start, 3)
+
+
+def record(name, test):
+    try:
+        result = {"name": name, "passed": True, **test()}
+    except Exception as error:
+        result = {"name": name, "passed": False, "error": str(error)}
+    results["tests"].append(result)
+    print(json.dumps({key: value for key, value in result.items()
+                      if key not in {"answer", "code"}}), flush=True)
+    with open(args.output, "w") as output:
+        json.dump(results, output, indent=2)
+
+
+def streaming_speed():
+    body = {
+        "model": "coder", "stream": True, "stream_options": {"include_usage": True},
+        "seed": 42, "temperature": 0.7, "top_p": 0.8, "top_k": 20,
+        "presence_penalty": 1.5, "max_tokens": 512,
+        "chat_template_kwargs": {"enable_thinking": False},
+        "messages": [{"role": "user", "content": (
+            "Write a detailed checklist for diagnosing a Python HTTP server that leaks "
+            "memory during long-running integration tests. Give concrete checks and "
+            "commands, covering profiling, resource cleanup and verification."
+        )}],
+    }
+    start = time.monotonic()
+    first = None
+    usage = {}
+    pieces = []
+    with post("/v1/chat/completions", body) as response:
+        for raw in response:
+            if not raw.startswith(b"data: ") or raw.strip() == b"data: [DONE]":
+                continue
+            event = json.loads(raw[6:])
+            usage = event.get("usage") or usage
+            for choice in event.get("choices", []):
+                text = choice.get("delta", {}).get("content")
+                if text:
+                    if first is None:
+                        first = time.monotonic()
+                    pieces.append(text)
+    finish = time.monotonic()
+    assert first is not None, "No streamed text"
+    return {"ttft_seconds": round(first - start, 3),
+            "elapsed_seconds": round(finish - start, 3), "usage": usage,
+            "decode_tokens_per_second": round(usage["completion_tokens"] / (finish - first), 2),
+            "answer": "".join(pieces)}
+
+
+TASKS = [
+    ("merge_intervals", """Write Python function merge_intervals(intervals).
+Input: list of [start,end] closed intervals with integer endpoints and start <= end.
+Return sorted merged intervals as lists; touching intervals merge. Do not mutate input.
+Handle empty input, duplicates, nesting, negative endpoints and unsorted input.
+Return only Python code without explanations or test code.""", """
+import copy
+cases = [([], []), ([[1,2]], [[1,2]]), ([[2,4],[1,2],[8,9]], [[1,4],[8,9]]),
+([[1,9],[3,4],[1,9]], [[1,9]]), ([[-4,-2],[-2,0],[0,0]], [[-4,0]]),
+([[5,5],[1,1],[3,3]], [[1,1],[3,3],[5,5]])]
+for data, expected in cases:
+    old = copy.deepcopy(data)
+    assert merge_intervals(data) == expected
+    assert data == old, 'input mutated'
+"""),
+    ("toposort", """Write Python function toposort(nodes, edges).
+nodes is a list of distinct string node names. edges is a list of (source, destination)
+tuples; endpoints always occur in nodes. Return the lexicographically smallest valid
+topological ordering, choosing the smallest currently available node at each step.
+Duplicate edges must not change the result. Include isolated nodes. Raise ValueError
+on any cycle, including self loops. Do not mutate either argument.
+Return only Python code without explanations or test code.""", """
+import copy
+cases = [([], [], []), (['z','a','b'], [('a','z')], ['a','b','z']),
+(['a','b','c','d'], [('a','c'),('a','c'),('b','c')], ['a','b','c','d']),
+(['a','b','c'], [('c','a'),('c','b')], ['c','a','b'])]
+for nodes, edges, expected in cases:
+    old = copy.deepcopy((nodes, edges))
+    assert toposort(nodes, edges) == expected
+    assert (nodes, edges) == old, 'input mutated'
+for nodes, edges in [(['a'], [('a','a')]), (['a','b'], [('a','b'),('b','a')])]:
+    try:
+        toposort(nodes, edges)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('cycle not detected')
+"""),
+]
+
+
+def constrain_child():
+    resource.setrlimit(resource.RLIMIT_CPU, (3, 3))
+    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024**2, 512 * 1024**2))
+
+
+def coding(prompt, tests):
+    response, elapsed = request_chat([
+        {"role": "developer", "content": "You are a precise Python engineer. Follow the requested contract."},
+        {"role": "user", "content": prompt},
+    ])
+    choice = response["choices"][0]
+    code = choice["message"].get("content") or ""
+    match = re.search(r"```(?:python)?\s*\n(.*?)```", code, re.S)
+    if match:
+        code = match.group(1)
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", code + "\n" + tests],
+        capture_output=True, text=True, timeout=8, preexec_fn=constrain_child,
+    )
+    return {"passed": completed.returncode == 0, "elapsed_seconds": elapsed,
+            "usage": response.get("usage"), "finish_reason": choice["finish_reason"],
+            "code": code, "test_error": completed.stderr[-2000:]}
+
+
+def tool_round_trip(seed):
+    messages = [{"role": "user", "content": (
+        'Use apply_changes to create src/a.py with content "print(42)\\n" and '
+        'delete obsolete.txt. Set metadata.dry_run to true and metadata.labels to '
+        '["coding", "test"]. Then report the tool result.'
+    )}]
+    tools = [{"type": "function", "function": {
+        "name": "apply_changes", "description": "Apply the specified file operations.",
+        "parameters": {"type": "object", "properties": {
+            "changes": {"type": "array", "items": {"type": "object", "properties": {
+                "path": {"type": "string"}, "operation": {"type": "string", "enum": ["create", "delete"]},
+                "content": {"type": "string"}}, "required": ["path", "operation"]}},
+            "metadata": {"type": "object", "properties": {
+                "dry_run": {"type": "boolean"},
+                "labels": {"type": "array", "items": {"type": "string"}}},
+                "required": ["dry_run", "labels"]}}, "required": ["changes", "metadata"]},
+    }}]
+    response, elapsed = request_chat(messages, tools=tools, tool_choice="auto", seed=seed)
+    message = response["choices"][0]["message"]
+    call = message["tool_calls"][0]
+    assert call["function"]["name"] == "apply_changes", call
+    arguments = json.loads(call["function"]["arguments"])
+    assert arguments["metadata"] == {"dry_run": True, "labels": ["coding", "test"]}, arguments
+    changes = {item["path"]: item for item in arguments["changes"]}
+    assert changes["src/a.py"]["operation"] == "create", changes
+    assert changes["src/a.py"]["content"] == "print(42)\n", changes
+    assert changes["obsolete.txt"]["operation"] == "delete", changes
+    assistant = {"role": "assistant", "content": message.get("content"), "tool_calls": message["tool_calls"]}
+    reasoning = message.get("reasoning_content") or message.get("reasoning")
+    if reasoning:
+        assistant["reasoning_content"] = reasoning
+    messages += [assistant, {"role": "tool", "tool_call_id": call["id"],
+                             "content": '{"status":"dry-run-ok","changed_files":2}'}]
+    answer, second = request_chat(messages, tools=tools, tool_choice="auto", seed=seed)
+    text = answer["choices"][0]["message"].get("content") or ""
+    assert "2" in text or "two" in text.lower(), text
+    return {"elapsed_seconds": round(elapsed + second, 3), "arguments": arguments, "answer": text}
+
+
+def count_tokens(text):
+    payload = ({"model": "coder", "prompt": text, "add_special_tokens": False}
+               if args.backend == "vllm" else {"content": text, "add_special": False})
+    with post("/tokenize", payload) as response:
+        data = json.load(response)
+    return data["count"] if "count" in data else len(data["tokens"])
+
+
+def long_context(target):
+    line = "// unrelated source context\n"
+    per_line = count_tokens(line * 1000) / 1000
+    n = int((target - 200) / per_line)
+    text = (f"Source archive size {target}. Remember the exact values below.\n"
+            "START_KEY=amber-7429\n" + line * (n // 2)
+            + "MIDDLE_KEY=birch-5831\n" + line * (n - n // 2)
+            + "END_KEY=cedar-9167\n"
+            "Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.")
+    messages = [{"role": "user", "content": text}]
+    response, elapsed = request_chat(messages, thinking=False, max_tokens=256)
+    text = response["choices"][0]["message"].get("content") or ""
+    for expected in ["amber-7429", "birch-5831", "cedar-9167"]:
+        assert expected in text, text
+    assert response["usage"]["prompt_tokens"] >= target - 500, response["usage"]
+    messages += [{"role": "assistant", "content": text},
+                 {"role": "user", "content": "Now return only the value of MIDDLE_KEY."}]
+    followup, followup_elapsed = request_chat(messages, thinking=False, max_tokens=128)
+    followup_text = followup["choices"][0]["message"].get("content") or ""
+    assert "birch-5831" in followup_text, followup_text
+    return {"elapsed_seconds": elapsed, "usage": response["usage"], "answer": text,
+            "followup_seconds": followup_elapsed, "followup_usage": followup["usage"]}
+
+
+for i in range(3):
+    record(f"streaming_speed_{i + 1}", streaming_speed)
+for name, prompt, tests in TASKS:
+    record(name, lambda prompt=prompt, tests=tests: coding(prompt, tests))
+for i in range(3):
+    record(f"nested_tool_round_trip_{i + 1}", lambda i=i: tool_round_trip(42 + i))
+for size in map(int, args.contexts.split(",")):
+    record(f"context_{size}", lambda size=size: long_context(size))
+passed = sum(t["passed"] for t in results["tests"])
+print(f"{args.label}: {passed}/{len(results['tests'])} functional checks passed", flush=True)
+sys.exit(0 if passed == len(results["tests"]) else 1)

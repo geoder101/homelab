@@ -1,9 +1,58 @@
 # Benchmark Results
 
+## 2026-10-29: Qwen3.8 NVFP4 versus GGUF
+
+Selected **Qwen3.8-27B Dynamic V3 UD-Q4_K_XL / llama.cpp**, native 256K
+context, Q8 K/V, one request slot, medium reasoning, no MTP. See
+`docs/model-profile.md` for the full settings, tradeoff and limitations.
+
+| Measurement | NVFP4 / vLLM | GGUF / llama.cpp |
+| --- | ---: | ---: |
+| Median short-prompt decode | 68.21 tok/s | 72.84 tok/s |
+| Fresh ~154K prompt | 46.90 s | 88.42 s |
+| Follow-up over ~154K history | 0.459 s | 0.487 s |
+| Fresh ~253K prompt | Not supported in memory | 203.548 s |
+| Follow-up over ~253K history | — | 0.653 s |
+| Coding contracts / nested tools | 2/2 and 3/3 passed | 2/2 and 3/3 passed |
+
+Raw artifacts: `docs/benchmarks/qwen38-nvfp4.json` and
+`docs/benchmarks/qwen38-gguf-q4-k-xl.json`. The Qwen3.6 baseline is also
+recorded, but used an initial 4096-token output budget and predates the
+follow-up-turn probes. Its topological-sort generation was truncated; this
+is not an apples-to-apples quality failure versus the later 8192-token runs.
+
+Even with max sequences 1, Qwen3.8 NVFP4 256K startup required 8.33 GiB KV
+cache versus 5.64 GiB available. At 160K, its measured cache capacity was
+174,172 tokens and available cache memory 5.69 GiB.
+
+After activating the selected production profile:
+
+- A 252,996-input-token request through LiteLLM passed exact retrieval in
+  208.39 seconds, with 49 output tokens.
+- Chat completion, tool round trip and separate reasoning checks passed.
+- Open WebUI listed `coder` through LiteLLM.
+- Vision projector request through LiteLLM correctly identified a red image.
+- Actual OpenCode `brain/coder` session read source/tests, edited the
+  implementation, ran the existing unittest successfully and reported success.
+- `llama-coder`, LiteLLM and Open WebUI active with zero restarts;
+  optional `vllm-coder` inactive.
+
+The raw suite is a small local functional/performance comparison, not a
+SWE-bench result or proof of equivalent quantization quality.
+
+## 2026-10-28: Explicit FP8 KV and 160K context validation
+
+- Confirmed that the checkpoint already specifies FP8 KV quantization and contains K/V scales. Previous `auto` runs also used FP8 KV, not BF16.
+- Explicit `--kv-cache-dtype fp8_e4m3`; context 163,840 tokens; utilization 0.94; max sequences 8; no CPU offloading.
+- Native 262,144-token startup failed: 8.33 GiB cache required versus 5.56 GiB available; estimated feasible maximum was 172,480 tokens.
+- At 160K: 5.61 GiB available cache, capacity 172,696 tokens, estimated full-length concurrency 1.05x.
+- LiteLLM request with 153,996 prompt tokens and 49 output tokens passed exact start/middle/end retrieval in 46.30 seconds. Synthetic source context, non-thinking, temperature 0; not a coding-quality benchmark.
+- Local OpenCode limit updated to 163,840; output cap remains 8192.
+
 ## 2026-10-28: 128K context validation
 
 - vLLM context raised to 131,072 tokens; GPU memory utilization raised from 0.90 to 0.94.
-- KV cache remains BF16 (`auto`); no CPU offloading or RoPE overrides.
+- KV cache was configured as `auto`, which selected the checkpoint's FP8 KV scheme; no CPU offloading or RoPE overrides. The original BF16 description was incorrect.
 - Available KV cache: 5.61 GiB, 170,393 tokens; estimated full-length concurrency: 1.30x.
 - Whole-GPU memory after the long-context test: 30,088 MiB of 32,607 MiB.
 - A request through LiteLLM used 121,996 prompt tokens and 49 output tokens, completing in 40.57 seconds. Non-thinking, temperature 0.

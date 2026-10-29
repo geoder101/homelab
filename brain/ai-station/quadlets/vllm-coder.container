@@ -1,5 +1,5 @@
 [Unit]
-Description=AI Station vLLM coding backend
+Description=AI Station vLLM coding backend (optional NVFP4 profile)
 After=ai-station.network
 Requires=ai-station.network
 
@@ -17,14 +17,12 @@ AddDevice=nvidia.com/gpu=all
 # inside a confined rootless container. The container remains non-privileged.
 SecurityLabelDisable=true
 ShmSize=8g
-Volume=%h/.local/share/ai-station/models:/models:Z
+Volume=%h/.local/share/ai-station/models/qwen3.8-27b-nvfp4:/models/coder:ro,Z
 Volume=%h/.local/share/ai-station/huggingface:/root/.cache/huggingface:Z
 Environment=HF_HOME=/root/.cache/huggingface
 Environment=HF_HUB_DISABLE_TELEMETRY=1
-# Bound concurrent sequences to keep hybrid-model CUDA graph profiling in 32 GiB.
-# This checkpoint also selects FP8 KV under auto; make it explicit.
-# 160K fits the measured GPU cache; native 256K requires more memory.
-Exec=/models/qwen3.6-27b-nvfp4 --served-model-name coder --host 0.0.0.0 --port 8000 --gpu-memory-utilization 0.94 --max-model-len 163840 --kv-cache-dtype fp8_e4m3 --max-num-seqs 8 --enable-auto-tool-choice --tool-call-parser qwen3_xml --reasoning-parser qwen3
+# Optional single-agent profile: faster cold prefill, smaller context than GGUF.
+Exec=/models/coder --served-model-name coder --host 0.0.0.0 --port 8000 --gpu-memory-utilization 0.94 --max-model-len 163840 --kv-cache-dtype fp8_e4m3 --max-num-seqs 1 --enable-auto-tool-choice --tool-call-parser qwen3_xml --reasoning-parser qwen3 --default-chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
 Pull=never
 StopTimeout=120
 
@@ -33,5 +31,5 @@ Restart=on-failure
 RestartSec=10
 TimeoutStartSec=15min
 
-[Install]
-WantedBy=default.target
+# No [Install] section: only llama-coder starts automatically. Stop it before
+# starting this alternative profile and update LiteLLM's backend URL.
