@@ -9,7 +9,7 @@ Declarative, rootless Podman deployment for the local AI workstation `brain`.
 - Open WebUI is the browser interface and talks only to LiteLLM.
 - Podman Quadlets run as `geoder101` user systemd services.
 
-The coding model is `unsloth/Qwen3.8-27B-GGUF`, Dynamic V3 `UD-Q4_K_XL`, pinned in `config/models.lock.yaml`. The default profile uses 256K context, Q8 K/V cache and medium reasoning on the RTX 5090. Clients always request the stable alias `coder`. See `docs/model-profile.md` for the measured NVFP4/GGUF tradeoff.
+The coding model is `unsloth/Qwen3.8-27B-GGUF`, Dynamic V3 `UD-Q4_K_XL`, pinned in `config/models.lock.yaml`. The default profile uses 256K context, Q8 K/V cache and medium reasoning on the RTX 5090. LiteLLM exposes `coder-off`, `coder-low`, `coder-medium`, and `coder-xhigh` through one model instance; `coder` remains a medium-compatible alias. See `docs/model-profile.md` for the NVFP4/GGUF tradeoff and [reasoning profiles](docs/reasoning-profiles.md) for the pinned chat template, verification results, Home client handoff, and rollback.
 
 ## Architecture
 
@@ -38,4 +38,10 @@ Only LiteLLM and Open WebUI publish host ports. Inference backends are reachable
 
 ## Before deployment
 
-Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the inference unit until `scripts/download-coder-candidate` has finished downloading the pinned model.
+Start with `make help`. `make bootstrap` handles initial secrets and deployment;
+`make deploy` backs up WebUI, fetches/checks pinned artifacts, installs/reloads
+Quadlets and restarts the stack in readiness order. Host commands work from
+Fedora or toolbox automatically. See [automation and managed state](docs/automation.md)
+for all targets, backup policy, and Brain's simple native OpenCode configuration.
+
+Read `docs/operations.md`. In particular, do not copy secrets into this repository and do not start the inference unit until `scripts/download-coder-candidate` has finished downloading the pinned model and chat template.

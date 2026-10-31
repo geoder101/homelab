@@ -1,0 +1,83 @@
+#!/usr/bin/env python3
+"""Verify the default deployment's local inputs before installing Quadlets.
+
+Requires Python 3 + PyYAML on the Fedora host. Never downloads artifacts,
+loads a model, reads secret values, or changes installed units.
+"""
+import hashlib
+import pathlib
+import subprocess
+import sys
+
+import yaml
+
+
+def verify_file(path, expected):
+    if not path.is_file():
+        raise ValueError(f'Missing artifact: {path}; run make download')
+    with path.open('rb') as stream:
+        actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+    if actual != expected:
+        raise ValueError(f'Checksum mismatch: {path}; expected {expected}, got {actual}')
+    print(f'Verified SHA256: {path}', flush=True)
+
+
+def values(text, key):
+    return [line.split('=', 1)[1].strip() for line in text.splitlines()
+            if line.startswith(key + '=')]
+
+
+def main():
+    root = pathlib.Path(__file__).resolve().parent.parent
+    state = pathlib.Path.home() / '.local/share/ai-station'
+    config = root / 'config'
+    model = yaml.safe_load((config / 'models.lock.yaml').read_text())['models']['coder']
+    template = yaml.safe_load((config / 'chat-templates.lock.yaml').read_text())['qwen_fixed']
+    unit = (root / 'quadlets/llama-coder.container').read_text()
+    model_mount = f"%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"
+    template_mount = f"%h/.local/share/ai-station/{template['directory']}:/templates:ro,Z"
+    if model_mount not in values(unit, 'Volume'):
+        raise ValueError('llama Quadlet volume disagrees with model lockfile')
+    command = values(unit, 'Exec')[0]
+    for argument in (f"--model /models/coder/{model['file']}",
+                     f"--mmproj /models/coder/{model['vision_file']}"):
+        if argument not in command:
+            raise ValueError(f'llama Quadlet missing locked argument: {argument}')
+    if model['chat_template'] == 'embedded':
+        if '--chat-template-file' in command or '--chat-template ' in command:
+            raise ValueError('Embedded-template selection conflicts with explicit Quadlet template')
+    else:
+        if (model['chat_template'] != template['version']
+                or template['revision'] not in template['directory']
+                or template_mount not in values(unit, 'Volume')
+                or f"--chat-template-file /templates/{template['file']}" not in command):
+            raise ValueError('Model/template lock records and Quadlet disagree')
+        verify_file(state / template['directory'] / template['file'], template['sha256'])
+    verify_file(state / 'models' / model['directory'] / model['file'], model['sha256'])
+    verify_file(state / 'models' / model['directory'] / model['vision_file'], model['vision_sha256'])
+    for name in ('litellm', 'open-webui'):
+        secret = pathlib.Path.home() / '.config/ai-station' / f'{name}.env'
+        if not secret.is_file():
+            raise ValueError(f'Missing secret file: {secret}; run make secrets for initial setup')
+    images = set()
+    image_locks = yaml.safe_load((config / 'images.lock.yaml').read_text())['images']
+    locked_digests = {entry['digest'] for entry in image_locks.values()}
+    for path in (root / 'quadlets').glob('*.container'):
+        text = path.read_text()
+        if values(text, 'WantedBy'):
+            images.update(values(text, 'Image'))
+    for image in sorted(images):
+        if '@' not in image or image.rsplit('@', 1)[1] not in locked_digests:
+            raise ValueError(f'Quadlet image is not pinned in images.lock.yaml: {image}')
+        if subprocess.run(['podman', 'image', 'exists', image], check=False).returncode:
+            raise ValueError(f'Missing pinned image: {image}; run make pull')
+        print(f'Available image: {image}', flush=True)
+    print('Default deployment preflight: PASS')
+
+
+if __name__ == '__main__':
+    try:
+        main()
+    except (ValueError, OSError, KeyError) as error:
+        print(f'Preflight failed: {error}', file=sys.stderr)
+        sys.exit(1)

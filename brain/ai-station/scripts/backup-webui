@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+state="${HOME}/.local/share/ai-station"
+if [[ ! -d "${state}/open-webui" ]]; then
+  printf 'No Open WebUI data directory yet; no backup needed.\n'
+  exit 0
+fi
+
+resume=false
+if systemctl --user is-active --quiet open-webui; then
+  systemctl --user stop open-webui
+  resume=true
+fi
+trap 'if ${resume}; then systemctl --user start open-webui; fi' EXIT
+
+umask 077
+install -d -m 700 "${state}/backups"
+archive="$(mktemp "${state}/backups/open-webui-$(date -u +%Y%m%dT%H%M%SZ)-XXXXXX.tar.gz")"
+if ! tar -czf "${archive}" -C "${state}" open-webui; then
+  rm -f "${archive}"
+  exit 1
+fi
+gzip --test "${archive}"
+printf 'Private Open WebUI backup (including SQLite WAL files): %s\n' "${archive}"

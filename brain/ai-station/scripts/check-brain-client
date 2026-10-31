@@ -1,0 +1,51 @@
+#!/usr/bin/env python3
+"""Read Brain's resolved native OpenCode config/models; print no credentials.
+
+Run in the same environment and project as the actual client. No inference,
+package installation, config writes, or OmO commands are performed here.
+"""
+import json
+import subprocess
+
+
+def output(*args):
+    return subprocess.check_output(['opencode', *args], text=True)
+
+
+def main():
+    print('OpenCode version:', output('--version').strip())
+    config = json.loads(output('debug', 'config'))
+    assert config['model'] == 'brain/coder-medium'
+    assert config['small_model'] == 'brain/coder-off'
+    assert config['enabled_providers'] == ['brain']
+    assert not config.get('plugin'), 'Expected the simple native client with no external plugins'
+    assert config['provider']['brain']['options']['baseURL'] == 'http://127.0.0.1:4000/v1'
+    print('Defaults: medium / small off; only brain enabled; no external plugins')
+    verbose = output('models', 'brain', '--verbose')
+    models = {}
+    decoder = json.JSONDecoder()
+    while '{' in verbose:
+        start = verbose.index('{')
+        model, end = decoder.raw_decode(verbose[start:])
+        verbose = verbose[start + end:]
+        models[model['id']] = model
+    assert set(models) == {'coder', 'coder-off', 'coder-low', 'coder-medium', 'coder-xhigh'}
+    for name, model in sorted(models.items()):
+        assert model['limit']['context'] == 262144 and model['limit']['output'] == 16384
+        assert not model.get('variants'), (name, model.get('variants'))
+        assert model['capabilities']['toolcall'] is True
+        if name != 'coder-off':
+            assert model['capabilities']['interleaved'] == {'field': 'reasoning_content'}
+        print(f'{name}: 262144 context / 16384 output; no variants; tools enabled')
+    for name in ('build', 'plan', 'explore', 'title', 'summary', 'compaction'):
+        agent = json.loads(output('debug', 'agent', name))
+        model = agent.get('model') or {'providerID': 'brain', 'modelID': 'coder-medium'}
+        expected = {'explore': 'coder-off', 'title': 'coder-off',
+                    'summary': 'coder-low', 'compaction': 'coder-low'}.get(name, 'coder-medium')
+        assert model == {'providerID': 'brain', 'modelID': expected}, (name, model)
+        print(f"Agent {name}: brain/{expected}" + (' (inherits default)' if not agent.get('model') else ''))
+    print('Native Brain client: PASS')
+
+
+if __name__ == '__main__':
+    main()

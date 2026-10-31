@@ -1,5 +1,11 @@
 # Qwen3.8 coding-agent comparison
 
+The 2026-10-29 comparison below uses the original embedded template. The
+2026-10-31 production alias/template checks, measured reasoning lengths and
+budget tests are recorded in [reasoning profiles](../reasoning-profiles.md).
+Those checks run against the existing production backend, not a second GPU
+candidate instance.
+
 Pinned evaluation artifacts are recorded in `config/candidates.lock.yaml`.
 The comparison uses the same Qwen3.8-27B family, medium thinking, no MTP,
 and the sampling parameters recommended by the

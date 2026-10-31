@@ -1,0 +1,9 @@
+# Immutable upstream copy installed by scripts/download-chat-template.
+qwen_fixed:
+  repository: froggeric/Qwen-Fixed-Chat-Templates
+  revision: 855bffc49448e299789730ff92c9b8d834d6cc14
+  version: qwen3.8-froggeric-v22.5
+  file: chat_template.jinja
+  sha256: e57684bae4156211a55473c5a63be976a405a37ab5be5ae0e5abf1df5349c4b2
+  directory: chat-templates/855bffc49448e299789730ff92c9b8d834d6cc14
+  license: Apache-2.0

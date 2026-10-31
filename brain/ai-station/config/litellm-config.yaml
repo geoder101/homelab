@@ -1,8 +1,53 @@
 # LiteLLM is the only client-facing model router. The backend stays on the
 # ai-station Podman network and has no host-published port.
+# Effort is soft prompt steering. Budgets are per-alias hard thinking ceilings;
+# max_tokens still bounds reasoning + answer. Clients may override defaults.
 model_list:
   - model_name: coder
     litellm_params:
       model: openai/coder
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
+      reasoning_effort: medium
+      extra_body:
+        chat_template_kwargs: {enable_thinking: true, reasoning_effort: medium, preserve_thinking: true}
+        reasoning_budget_tokens: 6144
+  - model_name: coder-off
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-coder:8000/v1
+      api_key: not-used-by-private-backend
+      reasoning_effort: none
+      temperature: 0.7
+      top_p: 0.8
+      presence_penalty: 1.5
+      extra_body:
+        chat_template_kwargs: {enable_thinking: false, preserve_thinking: true}
+        reasoning_budget_tokens: 0
+  - model_name: coder-low
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-coder:8000/v1
+      api_key: not-used-by-private-backend
+      reasoning_effort: low
+      extra_body:
+        chat_template_kwargs: {enable_thinking: true, reasoning_effort: low, preserve_thinking: true}
+        reasoning_budget_tokens: 2048
+  - model_name: coder-medium
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-coder:8000/v1
+      api_key: not-used-by-private-backend
+      reasoning_effort: medium
+      extra_body:
+        chat_template_kwargs: {enable_thinking: true, reasoning_effort: medium, preserve_thinking: true}
+        reasoning_budget_tokens: 6144
+  - model_name: coder-xhigh
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-coder:8000/v1
+      api_key: not-used-by-private-backend
+      reasoning_effort: xhigh
+      extra_body:
+        chat_template_kwargs: {enable_thinking: true, reasoning_effort: xhigh, preserve_thinking: true}
+        reasoning_budget_tokens: 12288

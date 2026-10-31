@@ -6,9 +6,13 @@ models:
     quantization: unsloth-dynamic-v3-UD-Q4_K_XL
     directory: qwen3.8-27b-gguf
     file: Qwen3.8-27B-UD-Q4_K_XL.gguf
+    sha256: 3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e
     vision_file: mmproj-BF16.gguf
+    vision_sha256: 83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53
     backend: llama.cpp
     context: 262144
     kv_cache: q8_0
     reasoning_effort: medium
+    preserve_thinking: true
+    chat_template: qwen3.8-froggeric-v22.5 # see chat-templates.lock.yaml
     status: selected

@@ -2,12 +2,19 @@
 
 Run host-management commands from a host terminal. From toolbox, prefix them with `flatpak-spawn --host`.
 
+The [Makefile workflow](automation.md) wraps these commands automatically:
+`make help`, `make bootstrap` for first setup, or `make deploy` for updates.
+The lower-level commands below remain available. Quadlet installation now
+includes an artifact/image preflight and generator validation. Brain's active
+native OpenCode config and its restart instructions are documented separately
+in [automation](automation.md#brains-simple-native-opencode-configuration).
+
 ## Bootstrap
 
 1. Generate secret files with `scripts/create-secrets`.
 2. Enable lingering once with `sudo loginctl enable-linger geoder101`.
 3. Pull locked images with `scripts/pull-images`.
-4. Run `scripts/download-coder-candidate` to download the pinned Qwen3.8 GGUF and vision projector into `~/.local/share/ai-station/models/qwen3.8-27b-gguf`.
+4. Run `scripts/download-coder-candidate` to download the pinned Qwen3.8 GGUF and vision projector into `~/.local/share/ai-station/models/qwen3.8-27b-gguf`, plus the checksum-verified chat template into `~/.local/share/ai-station/chat-templates/`. For an existing model installation, `scripts/download-chat-template` downloads only the template.
 5. Run `scripts/validate-quadlets`.
 6. Copy Quadlets with `scripts/install-quadlets`.
 7. Reload and start `llama-coder`, then `litellm`, then `open-webui`.
@@ -35,7 +42,7 @@ scripts/smoke-test http://192.168.1.11:4000
 
 Downloads resume when rerun. Previous checkpoints are retained. The API model alias remains `coder`.
 
-The selected profile uses llama.cpp b11960, 256K context (262,144 tokens), GPU Q8 K/V cache, one request slot and medium reasoning. MTP and historical-thinking preservation are disabled. A 252,996-token prompt passed retrieval through LiteLLM. See [the Unsloth guide](https://unsloth.ai/docs/models/qwen3.8), `docs/model-profile.md` and the recorded comparison in `docs/benchmarks/`.
+The selected profile uses llama.cpp b11960, 256K context (262,144 tokens), GPU Q8 K/V cache, one request slot and medium reasoning. MTP is disabled. Since 2026-10-31 the pinned froggeric v22.5 template preserves supplied historical reasoning, and LiteLLM provides per-alias reasoning ceilings. See [reasoning profiles](reasoning-profiles.md) for current behavior and rollback. The earlier 252,996-token retrieval test and NVFP4 comparison predate this template change; see `docs/model-profile.md` and `docs/benchmarks/`.
 
 ### Optional NVFP4 profile
 
@@ -45,7 +52,7 @@ The vLLM profile uses one sequence, calibrated FP8 KV and utilization 0.94. This
 
 ### OpenCode context limit
 
-On every OpenCode client using `brain/coder`, set the following in its `opencode.jsonc`, then quit and restart OpenCode:
+On every OpenCode client using any `brain/coder-*` model (or legacy `brain/coder`), set the following in its `opencode.jsonc`, then quit and restart OpenCode:
 
 ```jsonc
 "limit": {
@@ -54,7 +61,7 @@ On every OpenCode client using `brain/coder`, set the following in its `opencode
 }
 ```
 
-The local global config at `~/.config/opencode/opencode.jsonc` was updated. Input, reasoning and output must fit within the total context budget. These limits are client metadata used for request budgeting and compaction, not server settings. Keep them explicit for this custom provider: the standard `/v1/models` response is not a reliable source of context/output limits. A 16K output cap gives thinking and final output more room than the old 8K cap; it does not require generating 16K tokens on every turn.
+Input, reasoning and output must fit within the total context budget. These limits are client metadata used for request budgeting and compaction, not server settings. Keep them explicit for this custom provider: the standard `/v1/models` response is not a reliable source of context/output limits. A 16K output cap gives thinking and final output more room than the old 8K cap; it does not require generating 16K tokens on every turn. The 2026-10-31 Home handoff edits only `~/Downloads/{opencode,omo}.jsonc` on Brain; it does not install or activate client configuration there.
 
 Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's `--ctx-size` and the explicit OpenCode limits are authoritative for this deployment.
 
@@ -74,7 +81,7 @@ Tailscale:
 http://brain.tail1fe190.ts.net:4000/v1
 ```
 
-Use model `coder` and the `LITELLM_MASTER_KEY` as the bearer token. Open WebUI is available on port 3000 at the same hostname.
+Use model `coder-medium` (or `coder-off`, `coder-low`, `coder-xhigh`, legacy `coder`) and the `LITELLM_MASTER_KEY` as the bearer token. Home clients use `http://brain.local:4000/v1`. Open WebUI is available on port 3000 at the same hostname. No remote model fallback is configured.
 
 ## Systemd commands
 

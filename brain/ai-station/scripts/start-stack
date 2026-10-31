@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+action="${1:-start}"
+base_url="${2:-http://brain.local:4000}"
+webui_url="${3:-http://127.0.0.1:3000}"
+case "${action}" in
+  start|restart) ;;
+  *) printf 'Usage: %s [start|restart] [gateway-url-without-v1] [webui-url]\n' "$0" >&2; exit 2 ;;
+esac
+
+if systemctl --user is-active --quiet vllm-coder; then
+  printf 'vllm-coder is active; stop it before starting the default GPU backend.\n' >&2
+  exit 1
+fi
+for container in ai-station-vllm-coder ai-station-coder-candidate; do
+  if [[ "$(podman inspect --format '{{.State.Running}}' "${container}" 2>/dev/null || true)" == true ]]; then
+    printf '%s is running; stop it before starting the default GPU backend.\n' "${container}" >&2
+    exit 1
+  fi
+done
+
+systemctl --user "${action}" llama-coder
+deadline=$((SECONDS + 900))
+until podman exec ai-station-llama-coder curl --fail --silent --max-time 5 \
+    http://127.0.0.1:8000/health >/dev/null 2>&1; do
+  if (( SECONDS >= deadline )); then
+    printf 'Backend readiness timed out; inspect make logs.\n' >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+systemctl --user "${action}" litellm
+deadline=$((SECONDS + 120))
+until curl --noproxy '*' --fail --silent --max-time 5 \
+    "${base_url%/}/health/liveliness" >/dev/null 2>&1; do
+  if (( SECONDS >= deadline )); then
+    printf 'Gateway readiness timed out; inspect litellm.service and URL %s.\n' "${base_url}" >&2
+    exit 1
+  fi
+  sleep 2
+done
+
+systemctl --user "${action}" open-webui
+deadline=$((SECONDS + 180))
+until curl --noproxy '*' --fail --silent --max-time 5 \
+    "${webui_url%/}/health" >/dev/null 2>&1; do
+  if (( SECONDS >= deadline )); then
+    printf 'Open WebUI readiness timed out; inspect open-webui.service and URL %s.\n' "${webui_url}" >&2
+    exit 1
+  fi
+  sleep 2
+done
+printf 'Backend, gateway and Open WebUI ready. Run make smoke for real inference.\n'

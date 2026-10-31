@@ -12,13 +12,14 @@ speed. This is not a multi-user throughput profile.
 
 | Setting | Default |
 | --- | --- |
-| API model | `coder` |
+| API model | `coder-medium`; `coder` remains compatible |
 | Backend | `llama-coder.service` |
 | Context | 262,144 tokens (native 256K, no YaRN) |
 | Active request slots | 1 |
 | Attention K/V cache | GPU `q8_0` / `q8_0`, Flash Attention |
 | Reasoning effort | `medium` |
-| Historical thinking preservation | Disabled |
+| Historical thinking preservation | Enabled for supplied history, pinned froggeric v22.5 template |
+| Reasoning ceilings | off: 0; low: 2,048; medium/legacy: 6,144; xhigh: 12,288 |
 | MTP | Disabled |
 | Thinking sampling | temperature 1.0, top-p 0.95, top-k 20, min-p 0, presence penalty 0, repetition penalty 1 |
 | OpenCode output cap | 16,384 tokens, including reasoning |
@@ -29,7 +30,7 @@ The sampling and reasoning controls follow the
 The much larger 2.4T variant is outside this workstation's memory capacity.
 The guide's B200 throughput is not used as an RTX 5090 prediction.
 
-## Measured tradeoff, 2026-10-29
+## Measured tradeoff, 2026-10-29 (original embedded template)
 
 Both candidates used medium reasoning, no MTP, one active request, the same
 prompts and sampling settings, and an 8192-token budget for thinking tests.
@@ -70,9 +71,11 @@ same seed; shorter reasoning is not treated as evidence of greater quality.
 - **Medium is the default reasoning balance.** The model's default `xhigh`
   can use substantial output and time; low/medium/xhigh can be selected via
   request `chat_template_kwargs.reasoning_effort` when appropriate.
-- **No automatic historical-thinking preservation.** Preserving all reasoning
-  may help some tasks, but grows the context. The baseline avoids this cost;
-  tool results and normal conversation history are still retained.
+- **Historical thinking preservation changed on 2026-10-31.** The new template
+  retains supplied reasoning and fixes duplicated in-content think blocks.
+  This grows context; Home's thinking aliases declare `interleaved.field` as
+  `reasoning_content` so the client can actually resend that history. Earlier
+  benchmarks above used preservation disabled. See [reasoning profiles](reasoning-profiles.md).
 - **No MTP in this profile.** It is a separate optimization requiring memory
   headroom and measurement. It was not part of this comparison.
 - **16K output is a ceiling, not a target.** It reserves room for reasoning and
@@ -94,10 +97,12 @@ Keep these limits explicit: OpenAI-compatible model-list endpoints do not
 standardize context metadata, and custom providers cannot be assumed to inherit
 the correct model-catalog limits. Quit and restart OpenCode after updating them.
 
-The local global config has been updated. End-to-end OpenCode validation read
-source and tests, edited only the implementation, ran `python3 -m unittest -v`,
-and completed successfully through LiteLLM. A separate 252,996-token request
-through LiteLLM passed retrieval in 208.39 seconds.
+Historical validation on 2026-10-29 read source and tests, edited only the
+implementation, ran `python3 -m unittest -v`, and completed through LiteLLM.
+A separate 252,996-token request passed retrieval in 208.39 seconds. These
+results predate the fixed template and do not validate Home's current runtime.
+The 2026-10-31 handoff prepares offline Home files in Brain's Downloads only;
+see [the report and Home verification commands](reasoning-profiles.md).
 
 For the alternative 160K NVFP4 profile and persistent startup changes, see
 `docs/operations.md`. Never start both GPU backends together.

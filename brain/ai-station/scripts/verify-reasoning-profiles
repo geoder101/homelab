@@ -1,0 +1,236 @@
+#!/usr/bin/env python3
+"""Real synthetic inference checks. Run on Brain host; never logs credentials.
+
+The private backend is reached with podman exec, without publishing a port.
+Reasoning counts retokenize extracted text: boundary tokens are excluded.
+"""
+import argparse
+import base64
+import json
+import pathlib
+import subprocess
+import struct
+import time
+import urllib.request
+import zlib
+
+
+def backend(path, body=None):
+    code = """import urllib.request,json,sys
+body=json.loads(sys.argv[2])
+request=urllib.request.Request('http://llama-coder:8000'+sys.argv[1],
+ data=None if body is None else json.dumps(body).encode(),headers={'Content-Type':'application/json'})
+print(urllib.request.urlopen(request,timeout=300).read().decode())
+"""
+    return json.loads(subprocess.check_output([
+        'podman', 'exec', 'ai-station-litellm', 'python', '-c', code,
+        path, json.dumps(body)], text=True))
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--base-url', default='http://brain.local:4000/v1')
+    parser.add_argument('--stress', action='store_true', help='Additional bounded coding-plan probe')
+    parser.add_argument('--budget-check', action='store_true', help='Exercise configured ceilings with a long synthetic thought task')
+    parser.add_argument('--history-check', action='store_true', help='Check tool-error history recovery and local image compatibility')
+    args = parser.parse_args()
+    secret = pathlib.Path.home() / '.config/ai-station/litellm.env'
+    key = next(line.split('=', 1)[1].strip().strip('\"\'')
+               for line in secret.read_text().splitlines() if line.startswith('LITELLM_MASTER_KEY='))
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+    def gateway(path, body=None):
+        request = urllib.request.Request(args.base_url.rstrip('/') + path,
+            data=None if body is None else json.dumps(body).encode(),
+            headers={'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json'})
+        return opener.open(request, timeout=600)
+
+    def emit(name, **data):
+        print(json.dumps({'test': name, **data}), flush=True)
+
+    def count(text):
+        return len(backend('/tokenize', {'content': text, 'add_special': False})['tokens']) if text else 0
+
+    aliases = ['coder-off', 'coder-low', 'coder-medium', 'coder-xhigh']
+    for attempt in range(60):
+        try:
+            models = json.load(gateway('/models'))
+            break
+        except OSError:
+            if attempt == 59:
+                raise
+            time.sleep(2)
+    assert set(aliases + ['coder']) <= {model['id'] for model in models['data']}
+    props = backend('/props')
+    assert props['total_slots'] == 1
+    assert 'qwen3.8-froggeric-v22.5' in props['chat_template']
+    emit('deployment', models=models, build=props['build_info'], slots=props['total_slots'],
+         model_path=props['model_path'], template_caps=props['chat_template_caps'])
+
+    if args.history_check:
+        tools = [{'type': 'function', 'function': {'name': 'lookup_weather',
+            'description': 'Get weather. Only Paris is supported.', 'parameters': {
+                'type': 'object', 'properties': {'city': {'type': 'string'}}, 'required': ['city']}}}]
+        history = [{'role': 'user', 'content': 'Use lookup_weather to get weather for Pariss.'}]
+        for index in range(2):
+            history += [{'role': 'assistant', 'content': None,
+                'reasoning_content': 'I will look up the city.', 'tool_calls': [{
+                    'id': str(index), 'type': 'function', 'function': {'name': 'lookup_weather',
+                        'arguments': '{"city":"Pariss"}'}}]},
+                {'role': 'tool', 'tool_call_id': str(index),
+                 'content': '{"error":"Unknown city Pariss. Correct the city argument to Paris."}'}]
+        rendered = backend('/apply-template', {'messages': history, 'tools': tools,
+            'chat_template_kwargs': {'preserve_thinking': True}})['prompt']
+        assert '2 consecutive tool errors detected' in rendered, rendered
+        assert '<parameter=city>\nPariss\n</parameter>' in rendered, rendered
+        emit('tool-error-render', normalized_xml=True, second_error_warning=True)
+        result = json.load(gateway('/chat/completions', {'model': 'coder-medium',
+            'messages': history, 'tools': tools, 'max_tokens': 2048, 'seed': 42}))
+        calls = result['choices'][0]['message']['tool_calls']
+        assert len(calls) == 1 and json.loads(calls[0]['function']['arguments']) == {'city': 'Paris'}, result
+        emit('tool-error-recovery', response=result)
+
+        def png_chunk(kind, data):
+            return struct.pack('>I', len(data)) + kind + data + struct.pack('>I', zlib.crc32(kind+data))
+        image = (b'\x89PNG\r\n\x1a\n' + png_chunk(b'IHDR', struct.pack('>IIBBBBB', 56, 56, 8, 2, 0, 0, 0))
+            + png_chunk(b'IDAT', zlib.compress((b'\0' + b'\xff\0\0' * 56) * 56)) + png_chunk(b'IEND', b''))
+        result = json.load(gateway('/chat/completions', {'model': 'coder-off', 'max_tokens': 32,
+            'messages': [{'role': 'user', 'content': [
+                {'type': 'text', 'text': 'What color is this square? Reply with one word.'},
+                {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,'
+                    + base64.b64encode(image).decode()}}]}]}))
+        assert 'red' in result['choices'][0]['message']['content'].lower(), result
+        emit('vision-local-image', response=result)
+        emit('complete', passed=True)
+        return
+
+    if args.budget_check:
+        # Override only soft effort to make the same long xhigh drafting workload
+        # exercise the low/medium aliases' configured hard ceilings.
+        for alias, ceiling in [('coder-low', 2048), ('coder-medium', 6144)]:
+            start = time.monotonic()
+            result = json.load(gateway('/chat/completions', {'model': alias,
+                'reasoning_effort': 'xhigh',
+                'messages': [{'role': 'user', 'content':
+                    'Plan a Python durable SQLite job queue with concurrent workers, leases, '
+                    'crash recovery, retries, idempotency, and schema migrations. Resolve '
+                    'transaction races and give SQL plus Python pseudocode. Keep the final '
+                    'answer under 600 words. Work toward a concrete implementation, not an '
+                    'exhaustive survey.'}],
+                'seed': 42, 'max_tokens': 16384}))
+            message = result['choices'][0]['message']
+            tokens = count(message.get('reasoning_content') or '')
+            assert tokens <= ceiling + 4, (alias, tokens, ceiling)
+            assert message.get('content'), result
+            emit('configured-budget', alias=alias, ceiling=ceiling, effort_override='xhigh',
+                 reasoning_text_tokens=tokens, seconds=round(time.monotonic()-start, 2),
+                 finish_reason=result['choices'][0]['finish_reason'],
+                 content=message.get('content'), usage=result['usage'])
+        emit('complete', passed=True)
+        return
+
+    question = ('A queue retries failed jobs at most 3 times after the first attempt. '
+                'Each attempt succeeds independently with probability 1/2. '
+                'What is the probability a job eventually succeeds and the expected number '
+                'of attempts? Give exact fractions with a brief explanation.')
+    tools = [{'type': 'function', 'function': {'name': 'lookup_weather',
+        'description': 'Look up current weather for a city.', 'parameters': {
+            'type': 'object', 'properties': {'city': {'type': 'string'}}, 'required': ['city']}}}]
+    for alias in aliases + ['coder']:
+        start = time.monotonic()
+        result = json.load(gateway('/chat/completions', {'model': alias,
+            'messages': [{'role': 'user', 'content': question}], 'seed': 42, 'max_tokens': 4096}))
+        message = result['choices'][0]['message']
+        reasoning = message.get('reasoning_content') or ''
+        assert message.get('content'), result
+        assert result['choices'][0]['finish_reason'] == 'stop', result
+        if alias == 'coder-off':
+            assert not reasoning and '<think>' not in message['content'], result
+        else:
+            assert reasoning, result
+        emit('reasoning', alias=alias, seconds=round(time.monotonic()-start, 2),
+             reasoning_text_tokens=count(reasoning), response=result)
+
+    for alias in aliases:
+        body = {'model': alias, 'messages': [{'role': 'user', 'content':
+            'Use lookup_weather to get the current weather in Paris.'}],
+            'tools': tools, 'tool_choice': 'auto', 'stream': True,
+            'stream_options': {'include_usage': True}, 'max_tokens': 2048, 'seed': 42}
+        calls, reasoning, content, finish, usage = {}, '', '', None, None
+        done = False
+        with gateway('/chat/completions', body) as response:
+            for line in response:
+                if not line.startswith(b'data: '):
+                    continue
+                payload = line[6:].strip()
+                if payload == b'[DONE]':
+                    done = True
+                    break
+                chunk = json.loads(payload)
+                usage = chunk.get('usage') or usage
+                for choice in chunk.get('choices', []):
+                    finish = choice.get('finish_reason') or finish
+                    delta = choice.get('delta', {})
+                    reasoning += delta.get('reasoning_content') or ''
+                    content += delta.get('content') or ''
+                    for part in delta.get('tool_calls', []):
+                        call = calls.setdefault(part['index'], {'id': '', 'type': 'function',
+                            'function': {'name': '', 'arguments': ''}})
+                        call['id'] = part.get('id') or call['id']
+                        for field in ('name', 'arguments'):
+                            call['function'][field] += part.get('function', {}).get(field) or ''
+        assert done and finish == 'tool_calls' and len(calls) == 1, (done, finish, calls)
+        call = calls[0]
+        assert call['function']['name'] == 'lookup_weather', calls
+        assert json.loads(call['function']['arguments'])['city'].lower() == 'paris', calls
+        if alias == 'coder-off':
+            assert not reasoning, reasoning
+        history = body['messages'] + [{'role': 'assistant', 'content': content,
+            'reasoning_content': reasoning, 'tool_calls': [call]},
+            {'role': 'tool', 'tool_call_id': call['id'], 'content': '{"city":"Paris","temperature_c":19}'}]
+        followup = json.load(gateway('/chat/completions', {'model': alias,
+            'messages': history, 'tools': tools, 'max_tokens': 2048, 'seed': 42}))
+        assert '19' in (followup['choices'][0]['message'].get('content') or ''), followup
+        emit('stream-tool-roundtrip', alias=alias, tool_call=call,
+             reasoning_text_tokens=count(reasoning), usage=usage, followup=followup)
+
+    # Installed minja renderer, not Python Jinja: exercise real history extraction.
+    history = [{'role': 'user', 'content': 'Hi'}, {'role': 'assistant',
+        'content': '<think>HISTORY_SENTINEL</think>Hello', 'reasoning_content': 'HISTORY_SENTINEL'},
+        {'role': 'user', 'content': 'Continue'}]
+    for effort in ('low', 'medium', 'xhigh'):
+        rendered = backend('/apply-template', {'messages': history,
+            'chat_template_kwargs': {'reasoning_effort': effort, 'preserve_thinking': True}})['prompt']
+        assert rendered.count('HISTORY_SENTINEL') == 1, rendered
+        assert '<think>\n\n</think>\n\n<think>' not in rendered, rendered
+        assert ('Reasoning effort is set to ' + effort in rendered) == (effort != 'medium')
+        emit('render-history', effort=effort, prompt=rendered)
+    rendered = backend('/apply-template', {'messages': [{'role': 'user', 'content': question}],
+        'chat_template_kwargs': {'enable_thinking': False}})['prompt']
+    assert rendered.endswith('<think>\n\n</think>\n\n'), rendered
+    emit('off-prefill', prompt=rendered)
+
+    # A deliberately tiny request-local budget must close thinking and leave room for an answer.
+    budget = json.load(gateway('/chat/completions', {'model': 'coder-xhigh',
+        'messages': [{'role': 'user', 'content': question}], 'reasoning_budget_tokens': 32,
+        'max_tokens': 1024, 'seed': 42}))
+    assert budget['choices'][0]['message'].get('content'), budget
+    emit('request-local-budget-32', response=budget,
+         reasoning_text_tokens=count(budget['choices'][0]['message'].get('reasoning_content') or ''))
+    if args.stress:
+        for alias in aliases[1:]:
+            result = json.load(gateway('/chat/completions', {'model': alias, 'seed': 42,
+                'max_tokens': 16384, 'messages': [{'role': 'user', 'content':
+                'Plan a Python durable SQLite job queue with concurrent workers, leases, '
+                'crash recovery, retries, idempotency, and schema migrations. Resolve '
+                'transaction races and give SQL plus Python pseudocode. Keep the final '
+                'answer under 600 words. Work toward a concrete implementation, not an '
+                'exhaustive survey.'}]}))
+            emit('coding-plan', alias=alias, reasoning_text_tokens=count(
+                result['choices'][0]['message'].get('reasoning_content') or ''), response=result)
+            assert result['choices'][0]['message'].get('content'), result
+    emit('complete', passed=True)
+
+
+if __name__ == '__main__':
+    main()

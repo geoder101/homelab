@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+"""Run inside the pinned LiteLLM container (stdin); no network or real API keys.
+
+Build the actual installed Router from /app/config.yaml and intercept the
+OpenAI SDK's HTTP transport. Complements live inference verification; this is
+an installed-library serialization test, not a live proxy packet capture.
+"""
+import asyncio
+import json
+
+import httpx
+import openai
+import yaml
+from litellm import Router
+
+
+async def main():
+    with open('/app/config.yaml') as config_file:
+        config = yaml.safe_load(config_file)
+    captured = []
+
+    async def respond(request):
+        assert str(request.url) == 'http://llama-coder:8000/v1/chat/completions'
+        captured.append(json.loads(request.content))
+        return httpx.Response(200, json={
+            'id': 'audit', 'object': 'chat.completion', 'created': 0, 'model': 'coder',
+            'choices': [{'index': 0, 'message': {'role': 'assistant', 'content': 'OK'},
+                         'finish_reason': 'stop'}],
+            'usage': {'prompt_tokens': 1, 'completion_tokens': 1, 'total_tokens': 2}})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
+        sdk = openai.AsyncOpenAI(api_key='audit-not-a-secret',
+                                base_url='http://llama-coder:8000/v1', http_client=client)
+        router = Router(model_list=config['model_list'], num_retries=0)
+        expected = {'coder': ('medium', 6144), 'coder-off': ('none', 0),
+                    'coder-low': ('low', 2048), 'coder-medium': ('medium', 6144),
+                    'coder-xhigh': ('xhigh', 12288)}
+        assert {entry['model_name'] for entry in config['model_list']} == set(expected)
+        assert not config.get('litellm_settings', {}).get('fallbacks')
+        assert not config.get('router_settings', {}).get('fallbacks')
+        for entry in config['model_list']:
+            assert entry['litellm_params']['model'] == 'openai/coder'
+            assert entry['litellm_params']['api_base'] == 'http://llama-coder:8000/v1'
+            alias = entry['model_name']
+            await router.acompletion(model=alias, messages=[{'role': 'user', 'content': 'audit'}],
+                                     client=sdk, max_tokens=10)
+            body = captured[-1]
+            effort, budget = expected[alias]
+            assert body['model'] == 'coder'
+            assert body['reasoning_effort'] == effort
+            assert body['reasoning_budget_tokens'] == budget
+            assert body['chat_template_kwargs']['enable_thinking'] == (alias != 'coder-off')
+            assert body['chat_template_kwargs']['preserve_thinking'] is True
+            print(json.dumps({'alias': alias, 'body': body}), flush=True)
+
+
+if __name__ == '__main__':
+    asyncio.run(main())

@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""Validate the two OFFLINE Downloads files, without loading OpenCode or OmO.
+
+Requires Python jsonschema (available in the development toolbox). Retrieves
+public schemas, never accesses active client directories or substitutes keys.
+Current output is strict JSON, a valid JSONC subset.
+"""
+import argparse
+import hashlib
+import json
+import pathlib
+import urllib.request
+
+import jsonschema
+from referencing import Registry, Resource
+
+
+def fetch(url):
+    request = urllib.request.Request(url, headers={'User-Agent': 'ai-station-schema-validator/1.0'})
+    data = urllib.request.urlopen(request, timeout=60).read()
+    print(f'Schema SHA256 {hashlib.sha256(data).hexdigest()} {url}')
+    return json.loads(data)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--directory', type=pathlib.Path, default=pathlib.Path.home() / 'Downloads')
+    args = parser.parse_args()
+    aliases = {f'brain/coder-{level}' for level in ('off', 'low', 'medium', 'xhigh')}
+    configs = {name: json.loads((args.directory / f'{name}.jsonc').read_text())
+               for name in ('opencode', 'omo')}
+    catalog_url = 'https://models.dev/model-schema.json'
+    catalog = fetch(catalog_url)
+    # Editor catalog enum excludes custom providers. OpenCode 1.19.5 ConfigV1
+    # accepts strings, as checked against upstream commit 810c0eba1a7348036f8bdf61e6632d0c36c6876c.
+    # Extend this enum only; every other schema constraint is unchanged.
+    catalog['$defs']['Model']['enum'].extend(sorted(aliases))
+    registry = Registry().with_resource(catalog_url, Resource.from_contents(catalog))
+    expected_omo_schema = ('https://raw.githubusercontent.com/code-yeongyu/oh-my-openagent/'
+                          'c8955517dd95d2d8dd1ed6c871705a2eb9921840/assets/omo.schema.json')
+    assert configs['omo']['$schema'] == expected_omo_schema
+    for name, config in configs.items():
+        schema = fetch(config['$schema'])
+        validator = jsonschema.validators.validator_for(schema)(schema, registry=registry)
+        errors = list(validator.iter_errors(config))
+        for error in errors:
+            print(name, list(error.path), error.validator)
+        assert not errors, f'{name}: schema validation failed'
+        print(f'{name}: strict JSON / JSONC syntax and schema structure PASS')
+    print('OpenCode editor model catalog extended only with the four declared custom IDs.')
+
+    client = configs['opencode']
+    assert client['enabled_providers'] == ['brain']
+    assert set(client['provider']) == {'brain'}
+    assert client['model'] == 'brain/coder-medium' and client['small_model'] == 'brain/coder-off'
+    assert client['plugin'] == ['oh-my-openagent@5.1.51']
+    provider = client['provider']['brain']
+    assert provider['npm'] == '@ai-sdk/openai-compatible'
+    assert provider['options'] == {'baseURL': 'http://brain.local:4000/v1',
+        'apiKey': '{file:~/.config/ai-station/litellm-api-key}'}
+    assert {f'brain/{name}' for name in provider['models']} == aliases
+    for name, model in provider['models'].items():
+        assert model['limit'] == {'context': 262144, 'output': 16384}
+        assert 'variants' not in model
+        if name != 'coder-off':
+            assert model['interleaved'] == {'field': 'reasoning_content'}
+    for section in ('agents', 'categories'):
+        for name, value in configs['omo'][section].items():
+            for entry in value.get('models', [value]):
+                assert set(entry) == {'model'}, (section, name, entry)
+                assert entry['model'] in aliases, (section, name, entry)
+    assert configs['omo']['[opencode]'] == {
+        'disabled_hooks': ['no-sisyphus-gpt'],
+        'agents': {'explore': {'permission': {'codegraph_*': 'allow'}}}}
+    assert configs['omo']['_migrations'] == ['2026-07-opencode-config-unification',
+        '2026-08-reasoning-unification', '2026-09-category-deep-split']
+    print('Local-only model references, limits, plugin pin, key reference, retained OmO settings: PASS')
+
+
+if __name__ == '__main__':
+    main()
