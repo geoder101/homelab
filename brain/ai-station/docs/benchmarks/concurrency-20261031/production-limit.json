@@ -1,0 +1,72 @@
+{
+  "profile": {
+    "repository": "unsloth/Qwen3.8-27B-GGUF",
+    "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+    "quantization": "unsloth-dynamic-v3-UD-Q3_K_XL",
+    "directory": "qwen3.8-27b-gguf-q3",
+    "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "sha256": "8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e",
+    "vision_directory": "qwen3.8-27b-gguf",
+    "vision_file": "mmproj-BF16.gguf",
+    "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+    "backend": "llama.cpp",
+    "context": 262144,
+    "total_context": 786432,
+    "parallel": 3,
+    "kv_cache": "q4_0",
+    "kv_unified": false,
+    "cache_ram_mib": 16384,
+    "vision_offload": false,
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "chat_template": "qwen3.8-froggeric-v22.5",
+    "status": "selected"
+  },
+  "tests": [
+    {
+      "name": "runtime",
+      "passed": true,
+      "slots": 3,
+      "build": "b11960-8642541b2",
+      "n_ctx_slot": 262144
+    },
+    {
+      "name": "reject_oversized_context",
+      "passed": true,
+      "rejected": true,
+      "error": "HTTP 400: {\"error\":{\"message\":\"litellm.ContextWindowExceededError: litellm.BadRequestError: ContextWindowExceededError: OpenAIException - request (264915 tokens) exceeds the available context size (262144 tokens), try increasing it\\nmodel=coder-off. context_window_fallbacks=None. fallbacks=None.\\n\\nSet 'context_window_fallback' - https://docs.litellm.ai/docs/routing#fallbacks\\n\\nLiteLLM: model group 'coder-off' failed with the error above. No fallback was attempted.\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":\"400\"}}",
+      "wall_seconds": 0.371
+    },
+    {
+      "name": "recovery",
+      "passed": true,
+      "ttft_seconds": 0.0692,
+      "elapsed_seconds": 0.0842,
+      "decode_tps": 1000.0,
+      "usage": {
+        "completion_tokens": 2,
+        "prompt_tokens": 16,
+        "total_tokens": 18,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 2
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {},
+      "answer": "READY",
+      "started_monotonic": 15275.947104325,
+      "first_monotonic": 15276.01633351,
+      "finished_monotonic": 15276.031319724,
+      "wall_seconds": 0.084
+    },
+    {
+      "name": "complete",
+      "passed": true
+    }
+  ],
+  "returncode": 0,
+  "stderr": ""
+}

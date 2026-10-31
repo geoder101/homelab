@@ -23,7 +23,34 @@ case "${1:-}" in
       --reasoning-parser qwen3 \
       --default-chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
     ;;
-  gguf)
+  gguf|gguf-quality)
+    vision_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-gguf"
+    template_dir="${HOME}/.local/share/ai-station/chat-templates/855bffc49448e299789730ff92c9b8d834d6cc14"
+    if [[ "$1" == gguf ]]; then
+      model_dir="${vision_dir}-q3"
+      file=Qwen3.8-27B-UD-Q3_K_XL.gguf
+      context=786432
+      slots=3
+      vision=(--no-mmproj-offload)
+    else
+      model_dir="${vision_dir}"
+      file=Qwen3.8-27B-UD-Q4_K_XL.gguf
+      context=524288
+      slots=2
+      vision=()
+    fi
+    exec podman run "${common[@]}" --volume "${model_dir}:/models/candidate:ro,Z" \
+      --volume "${vision_dir}:/models/vision:ro,Z" --volume "${template_dir}:/templates:ro,Z" \
+      ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99 \
+      --model "/models/candidate/${file}" --mmproj /models/vision/mmproj-BF16.gguf "${vision[@]}" \
+      --alias coder --host 0.0.0.0 --port 8000 --n-gpu-layers 99 \
+      --ctx-size "${context}" --parallel "${slots}" --no-kv-unified --cache-ram 16384 \
+      --flash-attn on --cache-type-k q4_0 --cache-type-v q4_0 --jinja \
+      --chat-template-file /templates/chat_template.jinja --reasoning-format deepseek \
+      --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":true}' \
+      --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --presence-penalty 0.0 --repeat-penalty 1.0
+    ;;
+  gguf-baseline)
     model_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-gguf"
     exec podman run "${common[@]}" --volume "${model_dir}:/models/candidate:ro,Z" \
       ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99 \
@@ -35,7 +62,7 @@ case "${1:-}" in
       --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
     ;;
   *)
-    printf 'Usage: %s nvfp4|gguf\n' "$0" >&2
+    printf 'Usage: %s nvfp4|gguf|gguf-quality|gguf-baseline\n' "$0" >&2
     exit 2
     ;;
 esac

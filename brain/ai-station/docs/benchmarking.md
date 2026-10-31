@@ -1,5 +1,9 @@
 # Coding Model Benchmark
 
+For the current fully local concurrency experiments, use
+[capacity tuning](concurrency.md) and `scripts/tune-concurrency`. The original
+comparison procedure below remains useful for historical single-agent results.
+
 Choose coding profiles empirically rather than treating parameter count or maximum advertised context as quality. The current comparison and selected Qwen3.8 profile are recorded in `docs/benchmarks/README.md`, `docs/benchmark-results.md` and `docs/model-profile.md`.
 
 ## Constraints

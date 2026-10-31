@@ -1,0 +1,354 @@
+{
+  "profile": "baseline",
+  "mode": "screen",
+  "timestamp": "2026-10-31T17:28:59.459220+00:00",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+  "arguments": [
+    "--model",
+    "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "--mmproj",
+    "/models/coder/mmproj-BF16.gguf",
+    "--alias",
+    "coder",
+    "--host",
+    "0.0.0.0",
+    "--port",
+    "8000",
+    "--n-gpu-layers",
+    "99",
+    "--ctx-size",
+    "262144",
+    "--parallel",
+    "1",
+    "--flash-attn",
+    "on",
+    "--cache-type-k",
+    "q8_0",
+    "--cache-type-v",
+    "q8_0",
+    "--jinja",
+    "--chat-template-file",
+    "/templates/chat_template.jinja",
+    "--reasoning-format",
+    "deepseek",
+    "--chat-template-kwargs",
+    "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}",
+    "--temp",
+    "1.0",
+    "--top-p",
+    "0.95",
+    "--top-k",
+    "20",
+    "--min-p",
+    "0.0",
+    "--presence-penalty",
+    "0.0",
+    "--repeat-penalty",
+    "1.0",
+    "--no-webui",
+    "--log-colors",
+    "off",
+    "--log-verbosity",
+    "3"
+  ],
+  "samples": [
+    {
+      "monotonic": 8133.421093857,
+      "gpu": "205, 31995, 1",
+      "MemAvailable": 59830936,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8134.440432114,
+      "gpu": "16432, 15769, 72",
+      "MemAvailable": 59461488,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8135.453789143,
+      "gpu": "26674, 5527, 0",
+      "MemAvailable": 59085940,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8136.468236648,
+      "gpu": "27874, 4327, 0",
+      "MemAvailable": 58937896,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8137.483203531,
+      "gpu": "27874, 4327, 0",
+      "MemAvailable": 58923952,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8138.497049278,
+      "gpu": "27876, 4325, 0",
+      "MemAvailable": 58862468,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8139.510526676,
+      "gpu": "27886, 4315, 1",
+      "MemAvailable": 58816016,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8140.527284812,
+      "gpu": "27886, 4315, 95",
+      "MemAvailable": 58621752,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8141.544468377,
+      "gpu": "27886, 4315, 94",
+      "MemAvailable": 58614480,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8142.561059615,
+      "gpu": "27886, 4315, 95",
+      "MemAvailable": 58621372,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8143.577220753,
+      "gpu": "27886, 4315, 95",
+      "MemAvailable": 58621396,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8144.594263529,
+      "gpu": "27886, 4315, 93",
+      "MemAvailable": 58627152,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8145.610855186,
+      "gpu": "27894, 4307, 93",
+      "MemAvailable": 58313808,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8146.627249424,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 58323980,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8147.643410572,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 58332816,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8148.660091289,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 58321576,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8149.676515717,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 58310440,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8150.692900525,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 58314100,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8151.709218103,
+      "gpu": "27894, 4307, 95",
+      "MemAvailable": 57896724,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8152.725559801,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 57896792,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8153.742500457,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 57913300,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8154.760940017,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 57914852,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8155.777962113,
+      "gpu": "27894, 4307, 94",
+      "MemAvailable": 57940132,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8156.793907523,
+      "gpu": "27906, 4295, 78",
+      "MemAvailable": 57460680,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 8157.810209431,
+      "gpu": "27906, 4295, 93",
+      "MemAvailable": 57055516,
+      "SwapFree": 8388604
+    }
+  ],
+  "tests": [
+    {
+      "name": "runtime",
+      "passed": true,
+      "slots": 1,
+      "build": "b11960-8642541b2",
+      "n_ctx_slot": 262144
+    },
+    {
+      "name": "single_0",
+      "passed": true,
+      "ttft_seconds": 2.2387,
+      "elapsed_seconds": 7.5353,
+      "decode_tps": 72.31,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 43,
+        "prompt_ms": 2236.64,
+        "prompt_per_token_ms": 52.01488372093023,
+        "prompt_per_second": 19.225266471135274,
+        "predicted_n": 384,
+        "predicted_ms": 5296.804,
+        "predicted_per_token_ms": 13.82977545691906,
+        "predicted_per_second": 72.30775388328509
+      },
+      "answer": "RUN_ID=single0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to diagnosing and resolving memory leaks in Python-based HTTP servers (e.g., Flask, Django, FastAPI, Tornado). It covers environment setup, baseline profiling, live monitoring, deep inspection, and remediation verification.\n\n---\n\n## Phase 1: Environment Setup & Baseline\n\n| # | Item | Command / Action | Verification Step |\n|---|------|------------------|-------------------|\n| 1 | **Install Memory Profiling Tools** | `pip install memory-profiler objgraph guppy3 tracemalloc` | Run `python -c \"import memory_profiler, objgraph, guppy3\"` and confirm no import errors. |\n| 2 | **Enable Python Tracemalloc** | Add to app startup: <br>`import tracemalloc`<br>`tracemalloc.start(10)` | Verify via logs that tracemalloc is initialized. Check `tracemalloc.is_tracing()` returns `True`. |\n| 3 | **Establish Baseline Memory Usage** | Start server, let it idle for 5 mins.<br>Run: `ps -o pid,rss,vsz,comm -p $(pgrep -f \"your_app.py\")` | Record baseline RSS (Resident Set Size) in MB. Ensure it\u2019s stable over 3 consecutive measurements at 1-min intervals. |\n| 4 | **Capture Baseline Object Counts** | In a debug endpoint or script: <br>`import objgraph; objgraph.show_most_common_types(limit=10)` | Save baseline counts for top object types (e.g., `dict`, `list`, `function`). Ensure no unexpected growth in idle state. |\n| 5 | **Verify GC Behavior** |",
+      "started_monotonic": 8137.873279489,
+      "first_monotonic": 8140.111932445,
+      "finished_monotonic": 8145.408578323,
+      "wall_seconds": 7.535
+    },
+    {
+      "name": "pair_0",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.1303,
+          "elapsed_seconds": 5.3907,
+          "decode_tps": 72.81,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {
+            "cache_n": 0,
+            "prompt_n": 43,
+            "prompt_ms": 70.242,
+            "prompt_per_token_ms": 1.6335348837209303,
+            "prompt_per_second": 612.1693573645397,
+            "predicted_n": 384,
+            "predicted_ms": 5260.516,
+            "predicted_per_token_ms": 13.73502872062663,
+            "predicted_per_second": 72.80654597381702
+          },
+          "answer": "RUN_ID=alpha0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to diagnosing and resolving memory leaks in Python-based HTTP servers (e.g., Flask, Django, FastAPI, Tornado). It covers environment setup, baseline profiling, runtime monitoring, deep inspection, and verification.\n\n---\n\n## Phase 1: Environment & Baseline Setup\n\n1. **Verify Python Version & Build**\n   - Confirm Python version (`python --version`) and ensure it\u2019s a debug build if possible for better tracing.\n   - *Verification:* `python -c \"import sys; print(sys.version)\"`\n\n2. **Install Profiling Tools**\n   - Install necessary packages: `pip install memory-profiler psutil objgraph tracemalloc guppy3`\n   - *Verification:* `pip list | grep -E \"memory|psutil|objgraph|tracemalloc|guppy\"`\n\n3. **Enable `tracemalloc` Globally**\n   - Add to startup script:\n     ```python\n     import tracemalloc\n     tracemalloc.start(25)  # Keep 25 frames for deep stacks\n     ```\n   - *Verification:* Ensure no errors on server start.\n\n4. **Configure Logging with Memory Metrics**\n   - Add a middleware or signal handler that logs RSS (Resident Set Size) and Python heap size per request or every N seconds.\n   - *Verification:* Check logs for consistent memory metric entries.\n\n5. **Establish Baseline Memory Footprint**\n   - Start the server, make 10 standard requests, and record:\n     - System RSS (`psutil.Process().memory_info().rss`)\n     - Python heap size (`tracemalloc.get_traced_memory()`)\n   - *Verification:* Document baseline values in",
+          "started_monotonic": 8145.409952408,
+          "first_monotonic": 8145.54021215,
+          "finished_monotonic": 8150.800644408
+        },
+        {
+          "ttft_seconds": 5.5068,
+          "elapsed_seconds": 10.7719,
+          "decode_tps": 72.75,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {
+            "cache_n": 0,
+            "prompt_n": 43,
+            "prompt_ms": 58.405,
+            "prompt_per_token_ms": 1.3582558139534884,
+            "prompt_per_second": 736.2383357589248,
+            "predicted_n": 384,
+            "predicted_ms": 5265.08,
+            "predicted_per_token_ms": 13.746945169712793,
+            "predicted_per_second": 72.74343409786746
+          },
+          "answer": "RUN_ID=beta0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to diagnosing and resolving memory leaks in Python-based HTTP servers (e.g., Flask, Django, FastAPI, Tornado). It covers environment setup, baseline profiling, runtime monitoring, deep inspection, and verification.\n\n---\n\n## Phase 1: Environment & Baseline Setup\n\n1. **Verify Python Version & Build**\n   - Confirm you are using a stable CPython release (3.9+ recommended for improved memory tracking).\n   - Ensure no debug builds (`-g`) are in production unless necessary; they increase overhead.\n   - *Command:* `python --version && python -c \"import sysconfig; print(sysconfig.get_config_var('Py_DEBUG'))\"`\n\n2. **Install Memory Profiling Tools**\n   - Install required tools: `memory-profiler`, `tracemalloc` (stdlib), `objgraph`, `psutil`.\n   - *Command:* `pip install memory-profiler tracemalloc objgraph psutil`\n\n3. **Establish Baseline Memory Footprint**\n   - Start the server under no load.\n   - Record initial RSS (Resident Set Size) and Python heap usage.\n   - *Command:* `python -c \"import psutil, os; p=psutil.Process(os.getpid()); print(f'Baseline RSS: {p.memory_info().rss/1024/1024:.2f} MB')\"`\n\n4. **Configure Logging for Memory Events**\n   - Enable verbose logging in your HTTP framework to correlate memory spikes with specific requests or errors.\n   - *Action:* Set log level to `DEBUG` temporarily for a controlled test environment.\n\n5. **Disable Caching Layers Temporarily**\n   - Disable application-level caches (Redis,",
+          "started_monotonic": 8145.409763158,
+          "first_monotonic": 8150.916596951,
+          "finished_monotonic": 8156.181676542
+        }
+      ],
+      "max_active_slots": 1,
+      "stream_overlap_seconds": 0,
+      "aggregate_tps": 71.3,
+      "wall_seconds": 10.773
+    },
+    {
+      "name": "reasoning_tool_history",
+      "passed": true,
+      "reasoning_preserved": true,
+      "followup": {
+        "ttft_seconds": 0.1646,
+        "elapsed_seconds": 0.9045,
+        "decode_tps": 74.33,
+        "usage": {
+          "completion_tokens": 55,
+          "prompt_tokens": 104,
+          "total_tokens": 159,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 104,
+          "prompt_ms": 81.112,
+          "prompt_per_token_ms": 0.7799230769230768,
+          "prompt_per_second": 1282.1777295591282,
+          "predicted_n": 55,
+          "predicted_ms": 739.891,
+          "predicted_per_token_ms": 13.701685185185184,
+          "predicted_per_second": 72.98372327815855
+        },
+        "answer": "The result of inspecting `src/main.py` is:\n\n**File content:** `LOCAL_TOOL_OK_5819`\n\nThat's the entire content returned by the lookup \u2014 a single line containing the string `LOCAL_TOOL_OK_5819`.",
+        "started_monotonic": 8157.093973064,
+        "first_monotonic": 8157.258525903,
+        "finished_monotonic": 8157.998442164
+      },
+      "wall_seconds": 1.816
+    },
+    {
+      "name": "complete",
+      "passed": true
+    }
+  ],
+  "ready": true,
+  "startup_seconds": 4.413,
+  "client_stderr": "",
+  "elapsed_seconds": 24.638
+}

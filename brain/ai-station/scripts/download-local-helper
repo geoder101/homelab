@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Optional pinned benchmark artifact, not an automatically deployed model.
+set -euo pipefail
+image="docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9"
+directory="${HOME}/.local/share/ai-station/models/qwen35-4b-helper"
+install -d -m 700 "${directory}"
+podman run --rm --pull never --entrypoint /usr/local/bin/hf \
+  --volume "${directory}:/models/candidate:Z" "${image}" \
+  download unsloth/Qwen3.5-4B-GGUF Qwen3.5-4B-Q4_K_M.gguf \
+  --revision e87f176479d0855a907a41277aca2f8ee7a09523 --local-dir /models/candidate
+python3 - "${directory}/Qwen3.5-4B-Q4_K_M.gguf" <<'PY'
+import hashlib, pathlib, sys
+with pathlib.Path(sys.argv[1]).open('rb') as stream:
+    actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+assert actual == '00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4', actual
+print('Pinned local helper checksum: PASS')
+PY

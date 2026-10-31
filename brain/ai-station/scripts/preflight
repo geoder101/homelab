@@ -6,6 +6,7 @@ loads a model, reads secret values, or changes installed units.
 """
 import hashlib
 import pathlib
+import shlex
 import subprocess
 import sys
 
@@ -32,6 +33,11 @@ def main():
     state = pathlib.Path.home() / '.local/share/ai-station'
     config = root / 'config'
     model = yaml.safe_load((config / 'models.lock.yaml').read_text())['models']['coder']
+    if 'profile' in model:
+        profiles = yaml.safe_load((config / 'coder-profiles.yaml').read_text())['profiles']
+        for key, expected in profiles[model['profile']]['model'].items():
+            if model.get(key) != expected:
+                raise ValueError(f"Selected profile {model['profile']} disagrees with model lock: {key}")
     template = yaml.safe_load((config / 'chat-templates.lock.yaml').read_text())['qwen_fixed']
     unit = (root / 'quadlets/llama-coder.container').read_text()
     model_mount = f"%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"
@@ -39,10 +45,31 @@ def main():
     if model_mount not in values(unit, 'Volume'):
         raise ValueError('llama Quadlet volume disagrees with model lockfile')
     command = values(unit, 'Exec')[0]
-    for argument in (f"--model /models/coder/{model['file']}",
-                     f"--mmproj /models/coder/{model['vision_file']}"):
-        if argument not in command:
-            raise ValueError(f'llama Quadlet missing locked argument: {argument}')
+    tokens = shlex.split(command)
+    vision_directory = model.get('vision_directory', model['directory'])
+    vision_target = '/models/coder' if vision_directory == model['directory'] else '/models/vision'
+    if vision_directory != model['directory']:
+        vision_mount = f'%h/.local/share/ai-station/models/{vision_directory}:{vision_target}:ro,Z'
+        if vision_mount not in values(unit, 'Volume'):
+            raise ValueError('Vision projector volume disagrees with model lockfile')
+    for expected_argument in (f"--model /models/coder/{model['file']}",
+                     f"--mmproj {vision_target}/{model['vision_file']}"):
+        if expected_argument not in command:
+            raise ValueError(f'llama Quadlet missing locked argument: {expected_argument}')
+    def argument(flag):
+        return tokens[tokens.index(flag)+1] if flag in tokens else None
+    slots = model.get('parallel', 1)
+    total = model.get('total_context', model['context'])
+    for flag, expected in {'--ctx-size': total, '--parallel': slots,
+                           '--cache-type-k': model['kv_cache'], '--cache-type-v': model['kv_cache']}.items():
+        if argument(flag) != str(expected):
+            raise ValueError(f'{flag} disagrees with locked profile ({expected})')
+    if not model.get('kv_unified', False) and (total != model['context'] * slots or '--kv-unified' in tokens):
+        raise ValueError('Fixed slots must each retain the locked per-agent context')
+    if 'cache_ram_mib' in model and argument('--cache-ram') != str(model['cache_ram_mib']):
+        raise ValueError('RAM cache size disagrees with model lockfile')
+    if ('--no-mmproj-offload' in tokens) == model.get('vision_offload', True):
+        raise ValueError('Vision offload setting disagrees with model lockfile')
     if model['chat_template'] == 'embedded':
         if '--chat-template-file' in command or '--chat-template ' in command:
             raise ValueError('Embedded-template selection conflicts with explicit Quadlet template')
@@ -54,7 +81,7 @@ def main():
             raise ValueError('Model/template lock records and Quadlet disagree')
         verify_file(state / template['directory'] / template['file'], template['sha256'])
     verify_file(state / 'models' / model['directory'] / model['file'], model['sha256'])
-    verify_file(state / 'models' / model['directory'] / model['vision_file'], model['vision_sha256'])
+    verify_file(state / 'models' / vision_directory / model['vision_file'], model['vision_sha256'])
     for name in ('litellm', 'open-webui'):
         secret = pathlib.Path.home() / '.config/ai-station' / f'{name}.env'
         if not secret.is_file():

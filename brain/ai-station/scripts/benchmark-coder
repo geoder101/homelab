@@ -17,10 +17,13 @@ parser.add_argument("--backend", choices=["vllm", "llama"], required=True)
 parser.add_argument("--label", required=True)
 parser.add_argument("--contexts", default="32000,122000,154000")
 parser.add_argument("--output", required=True)
+parser.add_argument("--preserve-thinking", action="store_true")
+parser.add_argument("--thinking-budget", type=int, default=8192)
+parser.add_argument("--extended", action="store_true", help="Additional deployment/streaming contract tasks")
 args = parser.parse_args()
 results = {"label": args.label, "backend": args.backend,
-           "settings": {"reasoning_effort": "medium", "preserve_thinking": False,
-                        "thinking_max_tokens": 8192, "mtp": False}, "tests": []}
+           "settings": {"reasoning_effort": "medium", "preserve_thinking": args.preserve_thinking,
+                        "thinking_max_tokens": args.thinking_budget, "mtp": False}, "tests": []}
 
 
 def post(path, body, timeout=600):
@@ -45,10 +48,12 @@ def request_chat(messages, *, thinking=True, max_tokens=8192, **extra):
         "max_tokens": max_tokens,
         "chat_template_kwargs": {
             "enable_thinking": thinking, "reasoning_effort": "medium",
-            "preserve_thinking": False,
+            "preserve_thinking": args.preserve_thinking,
         },
         **extra,
     }
+    if args.backend == 'llama':
+        body['reasoning_budget_tokens'] = args.thinking_budget if thinking else 0
     start = time.monotonic()
     with post("/v1/chat/completions", body) as response:
         value = json.load(response)
@@ -142,6 +147,67 @@ for nodes, edges in [(['a'], [('a','a')]), (['a','b'], [('a','b'),('b','a')])]:
         raise AssertionError('cycle not detected')
 """),
 ]
+
+if args.extended:
+    TASKS += [
+        ('parse_env', '''Write Python function parse_env(text) returning a dict of environment assignments.
+Strip whitespace around lines, keys and values. Skip blank lines and lines starting with #.
+Split on only the first =. Strip matching single/double quotes enclosing a whole value.
+Preserve literal inline # and additional = characters; do not expand variables or escapes.
+Keys must match [A-Za-z_][A-Za-z0-9_]*. Invalid non-comment lines raise ValueError.
+Empty values are allowed. Last duplicate wins. Return only Python code.''', '''
+assert parse_env(" # comment\\n A = x=y \\nB='# literal'\\nEMPTY=\\nA=last") == {'A':'last','B':'# literal','EMPTY':''}
+assert parse_env('A=" x "\\n_B=plain # kept') == {'A':' x ','_B':'plain # kept'}
+for value in ['BROKEN', '=x', '9KEY=x', 'A-B=x']:
+    try: parse_env(value)
+    except ValueError: pass
+    else: raise AssertionError(value)
+'''),
+        ('parse_sse', '''Write Python function parse_sse(chunks). chunks is a list of bytes chunks forming
+a UTF-8 SSE stream. Chunks may split UTF-8 characters or line endings. Handle LF and CRLF.
+Return a list of event data strings. Only data: lines contribute; remove at most one space
+after the colon, join multiple data lines with newline. A blank line dispatches an event.
+Ignore comments/other fields and events without data. Stop on the dispatched exact data
+[DONE], exclude it and later events. Ignore an unterminated final event. Return only code.''', '''
+assert parse_sse([b'data: a\\ndata:b\\n\\n: ping\\n\\ndata: [DONE]\\n\\ndata: ignored\\n\\n']) == ['a\\nb']
+raw='data: Καλημέρα\\r\\n\\r\\ndata:  x \\n\\n'.encode()
+assert parse_sse([raw[i:i+1] for i in range(len(raw))]) == ['Καλημέρα',' x ']
+assert parse_sse([b'event: test\\n\\ndata: unfinished']) == []
+assert parse_sse([b'data:\\n\\n']) == ['']
+'''),
+        ('retry_delay', '''Write Python function retry_delay(attempt, base, cap). Return float
+min(cap, base * 2**attempt). attempt is a nonnegative integer; base and cap are finite
+nonnegative numbers. Raise ValueError for negative arguments. Handle attempt=10**9
+without constructing a huge integer or overflowing, including base=0 or cap=0.
+Return only Python code.''', '''
+assert retry_delay(0, .5, 10) == .5
+assert retry_delay(3, .5, 10) == 4
+assert retry_delay(10**9, .5, 10) == 10
+assert retry_delay(10**9, 0, 10) == 0
+assert retry_delay(10**9, 1, 0) == 0
+for args in [(-1,1,2),(1,-1,2),(1,1,-2)]:
+    try: retry_delay(*args)
+    except ValueError: pass
+    else: raise AssertionError(args)
+'''),
+        ('fifo_admit', '''Write Python function fifo_admit(active, queued, budget, slots).
+active and queued are lists of positive integer token reservations. active is valid:
+its sum <= budget and length <= slots. Return (admitted, remaining) lists from queued,
+admitting in FIFO order while both slot and token budgets allow. Never skip a blocked
+head request. Reject with ValueError if ANY queued reservation exceeds the whole budget,
+even if that request would not be reached. Do not mutate either input. Return only code.''', '''
+import copy
+for active, queued, budget, slots, expected in [
+ ([6],[5,2],10,3,([],[5,2])), ([3],[4,3,1],10,3,([4,3],[1])),
+ ([],[10,1],10,2,([10],[1])), ([5],[1],10,1,([],[1])), ([],[],10,2,([],[]))]:
+    old=copy.deepcopy((active,queued))
+    assert fifo_admit(active,queued,budget,slots)==expected
+    assert (active,queued)==old
+try: fifo_admit([9],[2,11],10,2)
+except ValueError: pass
+else: raise AssertionError('oversized request not rejected')
+'''),
+    ]
 
 
 def constrain_child():
@@ -245,7 +311,7 @@ for name, prompt, tests in TASKS:
     record(name, lambda prompt=prompt, tests=tests: coding(prompt, tests))
 for i in range(3):
     record(f"nested_tool_round_trip_{i + 1}", lambda i=i: tool_round_trip(42 + i))
-for size in map(int, args.contexts.split(",")):
+for size in map(int, filter(None, args.contexts.split(","))):
     record(f"context_{size}", lambda size=size: long_context(size))
 passed = sum(t["passed"] for t in results["tests"])
 print(f"{args.label}: {passed}/{len(results['tests'])} functional checks passed", flush=True)

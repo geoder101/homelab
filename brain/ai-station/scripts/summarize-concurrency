@@ -1,0 +1,38 @@
+#!/usr/bin/env python3
+"""Summarize saved concurrency results without rerunning inference."""
+import argparse
+import json
+import pathlib
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('directory', type=pathlib.Path)
+parser.add_argument('--profiles', default='')
+args = parser.parse_args()
+for path in sorted(args.directory.glob('*.json')):
+    data = json.loads(path.read_text())
+    if args.profiles and data.get('profile') not in args.profiles.split(','):
+        continue
+    if 'samples' not in data:
+        continue
+    used, free = [], []
+    for sample in data['samples']:
+        try:
+            u, f, _ = map(float, sample['gpu'].split(','))
+            used.append(u)
+            free.append(f)
+        except ValueError:
+            pass
+    tests = []
+    for t in data['tests']:
+        result = {k:t[k] for k in ['name', 'passed', 'n_ctx_slot', 'ttft_seconds', 'decode_tps',
+            'aggregate_tps', 'max_active_slots', 'wall_seconds', 'error'] if k in t}
+        if 'requests' in t:
+            result['requests'] = [{k:r[k] for k in ['ttft_seconds', 'decode_tps', 'usage']} for r in t['requests']]
+        if 'resumed' in t:
+            result['resume_seconds'] = t['resumed']['elapsed_seconds']
+            result['resume_usage'] = t['resumed']['usage']
+        tests.append(result)
+    print(json.dumps({'profile': data['profile'], 'mode': data['mode'], 'ready': data.get('ready'),
+        'peak_gpu_mib': max(used, default=0), 'min_free_gpu_mib': min(free, default=0),
+        'min_available_ram_mib': min((s['MemAvailable']/1024 for s in data['samples']), default=0),
+        'tests': tests, 'error': data.get('error')}))

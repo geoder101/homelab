@@ -1,5 +1,9 @@
 # Automation, managed state, and Brain's native OpenCode client
 
+The current three-agent profile and local-only tuning measurements are in
+[capacity tuning](concurrency.md). The client section below records the earlier
+native-client setup; capacity tuning preserves its 256K per-agent limits.
+
 ## Makefile entry points
 
 Run `make help` from the repository. The default target only prints help.
@@ -65,6 +69,12 @@ services. Individual steps remain available:
 | `verify-history` | Tool-error recovery and embedded local image request |
 | `client-check` | Resolve and check Brain's native OpenCode settings and models |
 | `client-smoke` | A real OpenCode off-profile request, with JSON streaming events |
+| `verify-concurrency` | Concurrent streaming through the actual LiteLLM gateway |
+| `client-concurrency` | Three independent native OpenCode read-only tool sessions |
+| `profile-capacity` | Persistent global switch to three 256K slots with Q3 weights |
+| `profile-precision` | Persistent global switch to two 256K slots with Q4 weights |
+| `profile-status` | Show selected and actual running profile |
+| `download-precision` | Prepare Q4 weights/projector before offline precision switching |
 | `validate-home` | Validate the two separate offline Downloads copies |
 
 Gateway tests default to `http://brain.local:4000`. Override it without `/v1`:
@@ -76,6 +86,12 @@ make verify BASE_URL=http://brain.local:4000
 
 `BASE_URL` changes the probe address, not LiteLLM routing or client settings.
 `WEBUI_URL` controls the UI health probe and defaults to `http://127.0.0.1:3000`.
+
+Profile switching checks artifacts/units before applying changes, snapshots the
+previous state, restarts only the backend and gateway, and rolls back on failure.
+It persists the selection in the checkout and installed unit; `make download`
+and `make deploy` follow it. Run between tasks. See
+[global profile switching](concurrency.md#global-profile-switching) for details.
 `HOST=` can explicitly disable the toolbox wrapper; normally leave it automatic.
 
 The workflow targets the default **llama.cpp** deployment. Startup refuses
@@ -153,7 +169,9 @@ OmO configuration.
 
 The client keeps provider `brain`, `@ai-sdk/openai-compatible`, its local
 `http://127.0.0.1:4000/v1` gateway and the existing API-key file reference.
-Only the `brain` provider is enabled; there is no remote model fallback.
+Built-in authenticated providers remain available alongside `brain`; the
+accidental provider allowlist was removed. Defaults use Brain, and the local
+gateway has no remote model fallback.
 
 | Use | Model |
 | --- | --- |

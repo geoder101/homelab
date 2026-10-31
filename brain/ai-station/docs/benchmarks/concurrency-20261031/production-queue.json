@@ -1,0 +1,245 @@
+{
+  "profile": {
+    "repository": "unsloth/Qwen3.8-27B-GGUF",
+    "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+    "quantization": "unsloth-dynamic-v3-UD-Q3_K_XL",
+    "directory": "qwen3.8-27b-gguf-q3",
+    "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+    "sha256": "8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e",
+    "vision_directory": "qwen3.8-27b-gguf",
+    "vision_file": "mmproj-BF16.gguf",
+    "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+    "backend": "llama.cpp",
+    "context": 262144,
+    "total_context": 786432,
+    "parallel": 3,
+    "kv_cache": "q4_0",
+    "kv_unified": false,
+    "cache_ram_mib": 16384,
+    "vision_offload": false,
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "chat_template": "qwen3.8-froggeric-v22.5",
+    "status": "selected"
+  },
+  "tests": [
+    {
+      "name": "runtime",
+      "passed": true,
+      "slots": 3,
+      "build": "b11960-8642541b2",
+      "n_ctx_slot": 262144
+    },
+    {
+      "name": "single_0",
+      "passed": true,
+      "ttft_seconds": 0.665,
+      "elapsed_seconds": 5.3085,
+      "decode_tps": 82.73,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 384
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {},
+      "answer": "RUN_ID=single0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to diagnosing and resolving memory leaks in Python-based HTTP services (e.g., Flask, Django, FastAPI). It progresses from initial observation to deep-level debugging.\n\n### Phase 1: Initial Observation & Confirmation\n\n1. **Verify the Symptom**\n   - **Command:** Monitor RSS (Resident Set Size) over time using `ps` or `top`.\n     ```bash\n     watch -n 5 'ps -o pid,rss,vsz,%mem -p <PID>'\n     ```\n   - **Verification:** Confirm that RSS grows monotonically with each request or over time without returning to baseline after garbage collection.\n\n2. **Check for External Memory Growth**\n   - **Command:** Use `smem` or `/proc/<PID>/smaps_rollup`.\n     ```bash\n     cat /proc/<PID>/smaps_rollup | grep \"Rss\"\n     ```\n   - **Verification:** Distinguish between Python heap growth and C-extension/native library growth (e.g., OpenSSL, NumPy). If `Virt` grows but `RSS` stays flat, it may be virtual address space fragmentation, not a leak.\n\n3. **Isolate the Service**\n   - **Command:** Restart the service in a clean environment with no other workloads.\n     ```bash\n     python manage.py runserver  # or uvicorn app:app\n     ```\n   - **Verification:** Ensure the memory growth is reproducible under controlled conditions (e.g., 100 requests per minute).\n\n4. **Enable Garbage Collection Statistics**\n   - **Command:** Add to your application startup:\n     ```python\n     import gc\n     gc.set_debug(gc.DEBUG_STATS)\n     ```",
+      "started_monotonic": 15252.105702709,
+      "first_monotonic": 15252.770673164,
+      "finished_monotonic": 15257.414232146,
+      "wall_seconds": 5.309
+    },
+    {
+      "name": "pair_0",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.199,
+          "elapsed_seconds": 5.5817,
+          "decode_tps": 71.55,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=alpha0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis 30-item checklist provides a systematic approach to identifying, isolating, and resolving memory leaks in a Python-based HTTP service. It covers environment setup, baseline establishment, runtime monitoring, profiling, code inspection, and verification.\n\n---\n\n## Phase 1: Environment & Baseline Setup (Items 1\u20136)\n\n1. **Verify Python Version & Build Flags**\n   - Command: `python3 -V && python3 -c \"import sysconfig; print(sysconfig.get_config_var('CONFIG_ARGS'))\"`\n   - Verification: Confirm you are using a debug build (`--with-pydebug`) for accurate tracing, or at least know if optimizations (e.g., `-O2`) might hide issues. Note that debug builds increase memory overhead.\n\n2. **Establish Baseline Memory Footprint**\n   - Command: `psutil.Process().memory_info().rss` (via script) or `cat /proc/<PID>/status | grep VmRSS`\n   - Verification: Record initial RSS (Resident Set Size) after warm-up (e.g., 50 requests). This is your baseline. Expected: Stable within \u00b15% over time under no load.\n\n3. **Confirm GC Behavior**\n   - Command: `python3 -c \"import gc; print(gc.get_stats())\"` before and after a test cycle.\n   - Verification: Ensure cyclic garbage collection is not disabled (`gc.disable()`). Check that `gc.collect()` reduces memory as expected in isolated tests.\n\n4. **Disable Caching Artifacts That Mask Leaks**\n   - Command: Set environment variables like `PYTHONDONTWRITEBYTECODE=1`, disable HTTP cache headers in dev, and clear temp files.\n   - Verification: Ensure no `.pyc`",
+          "started_monotonic": 15257.415584813,
+          "first_monotonic": 15257.614590919,
+          "finished_monotonic": 15262.99724034
+        },
+        {
+          "ttft_seconds": 0.1999,
+          "elapsed_seconds": 5.5728,
+          "decode_tps": 71.55,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=beta0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to diagnosing and resolving memory leaks in Python-based HTTP services (e.g., Flask, Django, FastAPI, Tornado). It progresses from baseline establishment to deep-level debugging.\n\n---\n\n## Phase 1: Baseline & Environment Setup\n\n1. **Establish Memory Baseline**\n   - **Command:** `psutil.Process().memory_info().rss` (via a debug endpoint) or `top -p <PID>`\n   - **Verification:** Record initial RSS (Resident Set Size). Ensure the service is idle for 5 minutes before recording. This value is your \"leak-free\" reference.\n\n2. **Confirm Python Version & Allocator**\n   - **Command:** `python --version` and check if `pymalloc`, `jemalloc`, or `tcmalloc` is active.\n   - **Verification:** Verify allocator via environment variables (e.g., `LD_PRELOAD`). Note that `jemalloc` often reduces fragmentation vs. default `glibc`.\n\n3. **Enable Garbage Collector Verbose Mode**\n   - **Command:** Set env var `PYTHONDEBUG=1` or use `gc.set_debug(gc.DEBUG_STATS)` in a test environment.\n   - **Verification:** Confirm GC stats are being logged. Do not run this in production due to overhead; use for staging reproduction.\n\n4. **Set Up Continuous Memory Monitoring**\n   - **Command:** Use `memray` (modern) or `tracemalloc` (built-in). Example: `memray run -o memory.bin python app.py`\n   - **Verification:** Ensure the `.bin` file is being generated and growing with requests.\n\n---\n\n## Phase 2: Reproduction & Pattern Identification\n\n5. **Reproduce Leak",
+          "started_monotonic": 15257.415402113,
+          "first_monotonic": 15257.615261137,
+          "finished_monotonic": 15262.988172061
+        }
+      ],
+      "max_active_slots": 2,
+      "stream_overlap_seconds": 5.373,
+      "aggregate_tps": 137.59,
+      "wall_seconds": 5.583
+    },
+    {
+      "name": "group_0",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 6.5983,
+          "elapsed_seconds": 11.2406,
+          "decode_tps": 82.74,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 45,
+            "total_tokens": 429,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=worker0-0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to identifying, isolating, and verifying the fix for a memory leak in a Python-based HTTP service. It covers environment setup, baseline profiling, deep inspection, isolation, and validation.\n\n### Phase 1: Environment & Baseline Setup\n\n1. **Verify Python Version & Memory Allocator**\n   - **Command:** `python3 --version && python3 -c \"import sys; print(sys.getsizeof(0))\"`\n   - **Verification:** Confirm the version matches production. Note that CPython uses `pymalloc` for small objects (<512 bytes) and `malloc`/`glibc` for larger ones. This affects how you interpret memory stats.\n\n2. **Establish a Stable Baseline**\n   - **Command:** Run the service under a fixed, low-traffic load (e.g., 10 req/s) for 10 minutes. Record RSS (Resident Set Size) using `ps aux | grep python` or `/proc/<PID>/status`.\n   - **Verification:** The memory usage should plateau within \u00b15% over the last 2 minutes. If it\u2019s still growing linearly, you have a leak. Record the baseline RSS value.\n\n3. **Enable Debug Symbols & Disable Optimizations**\n   - **Command:** Ensure the service is run with `python3 -O0` (default) and debug symbols if using C extensions. For production-like testing, avoid `-O` flags as they strip assertions that might catch bugs early.\n   - **Verification:** Confirm no optimization flags are set in the startup script or Dockerfile.\n\n4. **Isolate the Process**\n   - **Command:** Run the HTTP service in a dedicated container or cgroup with memory limits (`docker run",
+          "started_monotonic": 15262.998017268,
+          "first_monotonic": 15269.596330261,
+          "finished_monotonic": 15274.238588157
+        },
+        {
+          "ttft_seconds": 0.2984,
+          "elapsed_seconds": 6.3835,
+          "decode_tps": 63.27,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 45,
+            "total_tokens": 429,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=worker1-0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to identifying, isolating, and verifying the fix for a memory leak in a Python-based HTTP service (e.g., Flask, Django, FastAPI, aiohttp).\n\n## Phase 1: Preliminary Verification & Environment Setup\n\n1. **Confirm Baseline Memory Behavior**\n   - *Action:* Start the service under normal load. Monitor RSS (Resident Set Size) for 30\u201360 minutes using `ps` or `top`.\n   - *Command:*\n     ```bash\n     ps -o pid,rss,vsz,comm -p $(pgrep -f \"your_app.py\")\n     ```\n   - *Verification:* Confirm that memory grows linearly or exponentially over time without plateauing. Record baseline growth rate (MB/min).\n\n2. **Isolate the Service from External Dependencies**\n   - *Action:* Disable external calls (DB, API, message queues) if possible, using mocks or stubs.\n   - *Verification:* Restart service. If memory leak persists with mocked dependencies, the issue is in application logic, not external resource handling.\n\n3. **Enable Python Memory Tracking (if not already active)**\n   - *Action:* Ensure `PYTHONMALLOC=malloc` is set for baseline, then switch to `PYTHONMALLOC=debug` or use `tracemalloc`.\n   - *Command:*\n     ```bash\n     export PYTHONMALLOC=debug\n     python your_app.py\n     ```\n   - *Verification:* Confirm no immediate crash due to memory over-allocation. Note: This increases overhead; use in staging, not production.\n\n4. **Install Profiling Tools**\n   - *Action:* Install `tracemalloc`, `memory_profiler`,",
+          "started_monotonic": 15262.998266457,
+          "first_monotonic": 15263.296671346,
+          "finished_monotonic": 15269.381731813
+        },
+        {
+          "ttft_seconds": 0.2989,
+          "elapsed_seconds": 6.401,
+          "decode_tps": 63.27,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 45,
+            "total_tokens": 429,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=worker2-0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to identifying, isolating, and verifying the fix for a memory leak in a Python-based HTTP service. It covers environment setup, baseline establishment, leak identification, root cause analysis, and verification.\n\n### Phase 1: Environment & Baseline Setup\n\n1. **Confirm Process ID and Initial Memory State**\n   - Command: `ps -o pid,rss,vsz,%mem -p <PID>`\n   - Verification: Record initial RSS (Resident Set Size) in MB. Ensure the process is stable for at least 5 minutes before starting tests.\n\n2. **Enable Continuous Memory Monitoring**\n   - Command: `watch -n 1 'ps -o rss= -p <PID>'` or use `pidstat -r -p <PID> 1`\n   - Verification: Confirm you can observe real-time RSS changes. Save logs to a file for later correlation (e.g., `pidstat ... > mem_log.txt`).\n\n3. **Establish Traffic Baseline**\n   - Command: Use `ab`, `wrk`, or `locust` to send a consistent, low-load request stream (e.g., 10 req/s) for 10 minutes.\n   - Verification: RSS should stabilize or show only minor fluctuations. If it grows linearly even at low load, the leak is likely in core request handling or global state.\n\n4. **Capture Initial Heap Snapshot (if using Py-Spy or Memray)**\n   - Command: `memray run python app.py` or attach `py-spy dump --pid <PID>` for stack traces.\n   - Verification: Ensure profiling tools are active and not introducing significant overhead (>5% CPU). Save initial snapshot as `baseline_snapshot`.",
+          "started_monotonic": 15262.998132108,
+          "first_monotonic": 15263.297055955,
+          "finished_monotonic": 15269.399085742
+        },
+        {
+          "ttft_seconds": 0.298,
+          "elapsed_seconds": 6.3839,
+          "decode_tps": 63.28,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 45,
+            "total_tokens": 429,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "RUN_ID=worker3-0\n\n# Investigation Checklist: Python HTTP Memory Leak\n\nThis checklist provides a systematic approach to identifying, isolating, and verifying the fix for a memory leak in a Python-based HTTP service (e.g., Flask, Django, FastAPI, or raw `http.server`).\n\n---\n\n### Phase 1: Pre-Investigation & Baseline Setup\n\n1. **Verify Process Identification**\n   - Command: `ps aux | grep python` or `pgrep -f \"your_app.py\"`\n   - Verification: Confirm the PID of the target HTTP server process. Note down the PID for all subsequent commands.\n\n2. **Establish Memory Baseline**\n   - Command: `pmap -x <PID> | tail -1` or `ps -o pid,rss,vsz,comm -p <PID>`\n   - Verification: Record the initial RSS (Resident Set Size) in KB/MB. This is your starting point for comparison.\n\n3. **Check System-Level Memory Limits**\n   - Command: `ulimit -a` and `cat /proc/<PID>/limits`\n   - Verification: Ensure no hard limits are causing early OOM kills that might mask the leak pattern. Note any cgroup memory limits if running in Docker/K8s.\n\n4. **Enable Python Debugging Flags**\n   - Command: Restart the service with `PYTHONMALLOC=debug` (if possible) or ensure `-X dev` is enabled for better warnings.\n   - Verification: Confirm the process starts without errors. Note that `PYTHONMALLOC=debug` increases overhead and should only be used in staging/dev.\n\n5. **Set Up Continuous Memory Monitoring**\n   - Command: Start a background monitor: `while true; do ps -o rss= -p <PID>; sleep 10",
+          "started_monotonic": 15262.997879358,
+          "first_monotonic": 15263.295897148,
+          "finished_monotonic": 15269.381785813
+        }
+      ],
+      "max_active_slots": 3,
+      "stream_overlap_seconds": 0,
+      "aggregate_tps": 136.65,
+      "wall_seconds": 11.241
+    },
+    {
+      "name": "reasoning_tool_history",
+      "passed": true,
+      "reasoning_preserved": true,
+      "followup": {
+        "ttft_seconds": 0.1566,
+        "elapsed_seconds": 0.5472,
+        "decode_tps": 85.34,
+        "usage": {
+          "completion_tokens": 33,
+          "prompt_tokens": 100,
+          "total_tokens": 133,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "text_tokens": 33
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 96
+          }
+        },
+        "timings": {},
+        "answer": "Here's the result of inspecting `src/main.py`:\n\n**Result:** The file contains the unique value `LOCAL_TOOL_OK_5819`.",
+        "started_monotonic": 15274.910875885,
+        "first_monotonic": 15275.067437542,
+        "finished_monotonic": 15275.45808674
+      },
+      "wall_seconds": 1.219
+    },
+    {
+      "name": "complete",
+      "passed": true
+    }
+  ],
+  "returncode": 0,
+  "stderr": ""
+}

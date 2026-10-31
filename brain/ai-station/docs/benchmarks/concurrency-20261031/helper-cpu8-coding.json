@@ -1,0 +1,170 @@
+{
+  "label": "helper-cpu8",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 2048,
+    "mtp": false
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.227,
+      "elapsed_seconds": 25.458,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 20.29,
+      "answer": "Here is a comprehensive checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. This guide moves from immediate runtime investigation to static code analysis and architectural review.\n\n### Phase 1: Immediate Runtime Profiling & Verification\n*Goal: Confirm the leak exists, identify *where* it is growing, and determine if it's a true leak or expected growth.*\n\n#### 1. Verify Memory Growth Trends\nBefore profiling, ensure you are measuring correctly.\n- [ ] **Check Baseline**: Run the test suite for 10 minutes with a fresh process (no warm-up) to establish a baseline memory footprint.\n- [ ] **Monitor Over Time**: Run the same test suite but log heap size every 5\u201310 minutes. Plot the data; look for linear growth vs. saturation.\n- [ ] **Process Restart Test**: Stop the server, restart it, and run tests again. Does the memory profile reset? If yes, the \"leak\" might be transient allocation rather than a leak.\n\n#### 2. Use `tracemalloc` for Granular Allocation Tracking\nPython's standard `gc` module is often insufficient because it cannot pinpoint exactly *which* function allocated the object causing the growth.\n- [ ] **Enable Tracemalloc**: Import `sys` and enable tracing before starting the server:\n    ```python\n    import sys, tracemalloc\n    tracemalloc.start()\n    # ... start your HTTP server ...\n    ```\n- [ ] **Snapshot Comparison**: At regular intervals (e.g., every 5 minutes), take snapshots of the top memory allocations.\n    ```python\n    snapshot1 = tracemalloc.take_snapshot()\n    stats1 = snapshot1.statistics('lineno')\n\n    # ... time passes ...\n\n    snapshot2 = tracemalloc.take_snapshot()\n    stats2 = snapshot2.statistics('lineno')\n\n    diff = snapshot1.compare_to(snapshot2, 'lineno')\n    for stat in diff[:10]:  # Check top 10 increasing allocations\n        print(stat)\n    ```\n- [ ] **Identify Hotspots**: Look for lines where memory usage increases significantly between snapshots. These are your primary suspects.\n\n#### 3. Inspect Reference Cycles with `gc`\nSometimes objects leak because they form a cycle (e.g., A holds B, B holds A) and the garbage collector fails to collect them immediately.\n- [ ] **Check"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.091,
+      "elapsed_seconds": 25.409,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 20.22,
+      "answer": "Here is a comprehensive checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. This guide moves from immediate runtime investigation to static code analysis and architectural review.\n\n### Phase 1: Immediate Runtime Profiling & Verification\n*Goal: Confirm the leak exists, identify *where* it is growing, and determine if it's a true leak or expected growth.*\n\n#### 1. Verify Memory Growth Trends\nBefore profiling, ensure you are measuring correctly.\n- [ ] **Check Baseline**: Run the test suite for 10 minutes with a fresh process (no warm-up) to establish a baseline memory footprint.\n- [ ] **Monitor Over Time**: Run the same test suite but log heap size every 5\u201310 minutes. Plot the data; look for linear growth vs. saturation.\n- [ ] **Process Restart Test**: Stop the server, restart it, and run tests again. Does the memory profile reset? If yes, the \"leak\" might be transient allocation rather than a leak.\n\n#### 2. Use `tracemalloc` for Granular Allocation Tracking\nPython's standard `gc` module is often insufficient because it cannot pinpoint exactly *which* function allocated the object causing the growth.\n- [ ] **Enable Tracemalloc**: Import `sys` and enable tracing before starting the server:\n    ```python\n    import sys, tracemalloc\n    tracemalloc.start()\n    # ... start your HTTP server ...\n    ```\n- [ ] **Snapshot Comparison**: At regular intervals (e.g., every 5 minutes), take snapshots of the top memory allocations.\n    ```python\n    snapshot1 = tracemalloc.take_snapshot()\n    stats1 = snapshot1.statistics('lineno')\n\n    # ... time passes ...\n\n    snapshot2 = tracemalloc.take_snapshot()\n    stats2 = snapshot2.statistics('lineno')\n\n    diff = snapshot1.compare_to(snapshot2, 'lineno')\n    for stat in diff[:10]:  # Check top 10 increasing allocations\n        print(stat)\n    ```\n- [ ] **Identify Hotspots**: Look for lines where memory usage increases significantly between snapshots. These are your primary suspects.\n\n#### 3. Inspect Reference Cycles with `gc`\nSometimes objects leak because they form a cycle (e.g., A holds B, B holds A) and the garbage collector fails to collect them immediately.\n- [ ] **Check"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.07,
+      "elapsed_seconds": 25.353,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 20.25,
+      "answer": "Here is a comprehensive checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. This guide moves from immediate runtime investigation to static code analysis and architectural review.\n\n### Phase 1: Immediate Runtime Profiling & Verification\n*Goal: Confirm the leak exists, identify *where* it is growing, and determine if it's a true leak or expected growth.*\n\n#### 1. Verify Memory Growth Trends\nBefore profiling, ensure you are measuring correctly.\n- [ ] **Check Baseline**: Run the test suite for 10 minutes with a fresh process (no warm-up) to establish a baseline memory footprint.\n- [ ] **Monitor Over Time**: Run the same test suite but log heap size every 5\u201310 minutes. Plot the data; look for linear growth vs. saturation.\n- [ ] **Process Restart Test**: Stop the server, restart it, and run tests again. Does the memory profile reset? If yes, the \"leak\" might be transient allocation rather than a leak.\n\n#### 2. Use `tracemalloc` for Granular Allocation Tracking\nPython's standard `gc` module is often insufficient because it cannot pinpoint exactly *which* function allocated the object causing the growth.\n- [ ] **Enable Tracemalloc**: Import `sys` and enable tracing before starting the server:\n    ```python\n    import sys, tracemalloc\n    tracemalloc.start()\n    # ... start your HTTP server ...\n    ```\n- [ ] **Snapshot Comparison**: At regular intervals (e.g., every 5 minutes), take snapshots of the top memory allocations.\n    ```python\n    snapshot1 = tracemalloc.take_snapshot()\n    stats1 = snapshot1.statistics('lineno')\n\n    # ... time passes ...\n\n    snapshot2 = tracemalloc.take_snapshot()\n    stats2 = snapshot2.statistics('lineno')\n\n    diff = snapshot1.compare_to(snapshot2, 'lineno')\n    for stat in diff[:10]:  # Check top 10 increasing allocations\n        print(stat)\n    ```\n- [ ] **Identify Hotspots**: Look for lines where memory usage increases significantly between snapshots. These are your primary suspects.\n\n#### 3. Inspect Reference Cycles with `gc`\nSometimes objects leak because they form a cycle (e.g., A holds B, B holds A) and the garbage collector fails to collect them immediately.\n- [ ] **Check"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 112.947,
+      "usage": {
+        "completion_tokens": 2221,
+        "prompt_tokens": 98,
+        "total_tokens": 2319,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    # Sort by start time, do not mutate input\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n\n    merged = []\n    current_start, current_end = sorted_intervals[0]\n\n    for start, end in sorted_intervals[1:]:\n        if start <= current_end:\n            # Touching or overlapping, extend the current interval\n            current_end = max(current_end, end)\n        else:\n            # Disjoint, push current to merged\n            merged.append([current_start, current_end])\n            current_start, current_end = start, end\n\n    # Append the last interval\n    merged.append([current_start, current_end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": false,
+      "elapsed_seconds": 118.735,
+      "usage": {
+        "completion_tokens": 2328,
+        "prompt_tokens": 131,
+        "total_tokens": 2459,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\nfrom collections import defaultdict\n\ndef toposort(nodes, edges):\n    if not nodes:\n        return []\n\n    # Initialize in-degree and adjacency list without mutating inputs\n    in_degree = {node: 0 for node in nodes}\n    adj = defaultdict(set)\n\n    # Process edges to build adjacency and count in-degrees (handling duplicates by set)\n    for source, dest in edges:\n        adj[source].add(dest)\n        if dest in in_degree:\n            in_degree[dest] += 1\n\n    # Initialize heap with nodes having zero in-degree\n    pq = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(pq)\n\n    result = []\n\n    while pq:\n        node = heapq.heappop(pq)\n        result.append(node)\n\n        # Decrement in-degree for neighbors\n        for neighbor in adj[node]:\n            if neighbor in in_degree:\n                in_degree[neighbor] -= 1\n                if in_degree[neighbor] == 0:\n                    heapq.heappush(pq, neighbor)\n\n    # Check for cycle (if we processed fewer nodes than total)\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected in graph\")\n\n    return result",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 47, in <module>\n  File \"<string>\", line 37, in toposort\nValueError: Cycle detected in graph\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 21.406,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here are the results:\n\n**Status:** dry-run-ok\n**Changed Files:** 2\n\nThis indicates that:\n- The file `src/a.py` was created with content \"print(42)\\n\"\n- The file `obsolete.txt` was scheduled for deletion\n- Since `dry_run` is set to `true`, these changes were validated but not actually applied\n- The labels `[\"coding\", \"test\"]` were associated with these changes"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 18.628,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here is the result:\n\n- **Status**: dry-run-ok (changes validated but not actually applied, as expected with dry_run: true)\n- **Changed Files**: 2 operations planned\n  - Create `src/a.py` with content `print(42)\\n`\n  - Delete `obsolete.txt`\n\n**Metadata applied**: `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\nAll changes were validated and ready for execution, but since `dry_run` is set to true, they were not actually applied to the filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 20.21,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully as a dry run. Here are the results:\n\n- **Status**: `dry-run-ok`\n- **Changed Files**: 2 (1 created, 1 deleted)\n  - Created: `src/a.py` with content `print(42)\\n`\n  - Deleted: `obsolete.txt`\n\nThis dry run confirmed that the file operations would be applied if executed. No actual changes have been made to the filesystem yet since `dry_run` was set to `true`."
+    }
+  ]
+}

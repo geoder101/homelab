@@ -2,5 +2,13 @@
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-"${script_dir}/download-qwen38-candidates" gguf
+profile="$(python3 -c 'import pathlib,sys,yaml; print(yaml.safe_load(pathlib.Path(sys.argv[1]).read_text())["models"]["coder"].get("profile", "capacity"))' "${script_dir}/../config/models.lock.yaml")"
+case "${profile}" in
+  capacity)
+    "${script_dir}/download-capacity-model"
+    "${script_dir}/download-qwen38-candidates" vision
+    ;;
+  precision) "${script_dir}/download-qwen38-candidates" gguf ;;
+  *) printf 'Unknown selected coder profile: %s\n' "${profile}" >&2; exit 1 ;;
+esac
 exec "${script_dir}/download-chat-template"

@@ -1,0 +1,633 @@
+{
+  "profile": "baseline",
+  "mode": "quality",
+  "timestamp": "2026-10-31T17:54:33.087711+00:00",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+  "arguments": [
+    "--model",
+    "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+    "--mmproj",
+    "/models/coder/mmproj-BF16.gguf",
+    "--alias",
+    "coder",
+    "--host",
+    "0.0.0.0",
+    "--port",
+    "8000",
+    "--n-gpu-layers",
+    "99",
+    "--ctx-size",
+    "262144",
+    "--parallel",
+    "1",
+    "--flash-attn",
+    "on",
+    "--cache-type-k",
+    "q8_0",
+    "--cache-type-v",
+    "q8_0",
+    "--jinja",
+    "--chat-template-file",
+    "/templates/chat_template.jinja",
+    "--reasoning-format",
+    "deepseek",
+    "--chat-template-kwargs",
+    "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}",
+    "--temp",
+    "1.0",
+    "--top-p",
+    "0.95",
+    "--top-k",
+    "20",
+    "--min-p",
+    "0.0",
+    "--presence-penalty",
+    "0.0",
+    "--repeat-penalty",
+    "1.0",
+    "--no-webui",
+    "--log-colors",
+    "off",
+    "--log-verbosity",
+    "4"
+  ],
+  "samples": [
+    {
+      "monotonic": 9667.050061199,
+      "gpu": "144, 32056, 79",
+      "MemAvailable": 59761756,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9668.068851277,
+      "gpu": "16370, 15830, 66",
+      "MemAvailable": 59374756,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9669.082490213,
+      "gpu": "26612, 5588, 0",
+      "MemAvailable": 58976612,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9670.09596738,
+      "gpu": "27812, 4388, 0",
+      "MemAvailable": 58807920,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9671.109403346,
+      "gpu": "27812, 4388, 0",
+      "MemAvailable": 58787428,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9672.123831799,
+      "gpu": "27816, 4384, 0",
+      "MemAvailable": 58804988,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9673.137085056,
+      "gpu": "27818, 4382, 0",
+      "MemAvailable": 58775952,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9674.152925114,
+      "gpu": "27826, 4374, 63",
+      "MemAvailable": 58604724,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9675.169125912,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58625892,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9676.18502779,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58625920,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9677.200618549,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58635444,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9678.218267091,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58619244,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9679.234331999,
+      "gpu": "27826, 4374, 95",
+      "MemAvailable": 58631360,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9680.251405823,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58627424,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9681.268133538,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58296420,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9682.283361989,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58300548,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9683.299767475,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58302148,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9684.317468237,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58306560,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9685.333550845,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58306460,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9686.350816228,
+      "gpu": "27826, 4374, 95",
+      "MemAvailable": 58316404,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9687.366189068,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58307892,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9688.382734814,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58289400,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9689.399089551,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58287936,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9690.416040555,
+      "gpu": "27826, 4374, 95",
+      "MemAvailable": 58292664,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9691.433249479,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58306968,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9692.450387103,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58288428,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9693.467230388,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58264560,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9694.484736841,
+      "gpu": "27826, 4374, 94",
+      "MemAvailable": 58273780,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9695.501567366,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58114444,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9696.517593584,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58137224,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9697.534559838,
+      "gpu": "27836, 4364, 96",
+      "MemAvailable": 58139424,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9698.551107084,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58130604,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9699.56781828,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58138444,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9700.584943884,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58155364,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9701.601826318,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58132184,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9702.618775333,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58137388,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9703.635772358,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58116160,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9704.653099711,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 58114476,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9705.669536967,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57644240,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9706.686275552,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57648084,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9707.702910068,
+      "gpu": "27836, 4364, 99",
+      "MemAvailable": 57644028,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9708.719055855,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57630212,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9709.735559502,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57638796,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9710.752355287,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57641640,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9711.770464667,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57626752,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9712.786771804,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57627236,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9713.80328873,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57636508,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9714.819689987,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57639860,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9715.836507232,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57616152,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9716.852765769,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57601724,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9717.869165885,
+      "gpu": "27836, 4364, 99",
+      "MemAvailable": 57599544,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9718.88596571,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57626348,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9719.903042794,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57629780,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9720.91986031,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57633804,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9721.936490465,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57662392,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9722.953162061,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57669828,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9723.969967816,
+      "gpu": "27836, 4364, 98",
+      "MemAvailable": 57647572,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9724.98706239,
+      "gpu": "27840, 4360, 97",
+      "MemAvailable": 56999600,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9726.004805582,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56993444,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9727.021474118,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56999576,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9728.037975364,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56670544,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9729.054187841,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56698228,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9730.071377925,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56969772,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9731.088245269,
+      "gpu": "27840, 4360, 98",
+      "MemAvailable": 56967072,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9732.105357934,
+      "gpu": "27848, 4352, 73",
+      "MemAvailable": 56652684,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9733.122417418,
+      "gpu": "27848, 4352, 98",
+      "MemAvailable": 56650028,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9734.139015454,
+      "gpu": "27848, 4352, 98",
+      "MemAvailable": 56654476,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9735.155608389,
+      "gpu": "27848, 4352, 98",
+      "MemAvailable": 56962248,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9736.172461914,
+      "gpu": "27848, 4352, 98",
+      "MemAvailable": 56962740,
+      "SwapFree": 8388604
+    },
+    {
+      "monotonic": 9737.18908555,
+      "gpu": "27848, 4352, 98",
+      "MemAvailable": 56670720,
+      "SwapFree": 8388604
+    }
+  ],
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.264,
+      "elapsed_seconds": 9.325,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 72.51
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.124,
+      "elapsed_seconds": 7.145,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 72.92
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.066,
+      "elapsed_seconds": 7.089,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 72.91
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 9.747,
+      "usage": {
+        "completion_tokens": 730,
+        "prompt_tokens": 98,
+        "total_tokens": 828,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 19.732,
+      "usage": {
+        "completion_tokens": 1483,
+        "prompt_tokens": 131,
+        "total_tokens": 1614,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 4.918,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      }
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.705,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      }
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.425,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      }
+    }
+  ],
+  "ready": true,
+  "startup_seconds": 4.381,
+  "quality_returncode": 0,
+  "client_stderr": "",
+  "elapsed_seconds": 70.681
+}

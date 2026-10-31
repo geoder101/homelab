@@ -1,0 +1,238 @@
+{
+  "profile": "helper-gpu",
+  "mode": "screen",
+  "timestamp": "2026-10-31T19:17:44.019582+00:00",
+  "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+  "arguments": [
+    "--model",
+    "/models/helper/Qwen3.5-4B-Q4_K_M.gguf",
+    "--alias",
+    "coder",
+    "--host",
+    "0.0.0.0",
+    "--port",
+    "8000",
+    "--ctx-size",
+    "65536",
+    "--parallel",
+    "1",
+    "--flash-attn",
+    "on",
+    "--cache-type-k",
+    "q8_0",
+    "--cache-type-v",
+    "q8_0",
+    "--jinja",
+    "--reasoning-format",
+    "deepseek",
+    "--log-verbosity",
+    "4",
+    "--n-gpu-layers",
+    "99"
+  ],
+  "samples": [
+    {
+      "monotonic": 14657.98271608,
+      "gpu": "144, 32056, 0",
+      "MemAvailable": 60456784,
+      "SwapFree": 6824252
+    },
+    {
+      "monotonic": 14658.997148748,
+      "gpu": "3254, 28946, 0",
+      "MemAvailable": 60256076,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14660.010425944,
+      "gpu": "4842, 27358, 11",
+      "MemAvailable": 60045888,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14661.024407041,
+      "gpu": "4844, 27356, 0",
+      "MemAvailable": 59917316,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14662.039909259,
+      "gpu": "4850, 27350, 27",
+      "MemAvailable": 59823864,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14663.054906017,
+      "gpu": "4850, 27350, 79",
+      "MemAvailable": 59794104,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14664.069778375,
+      "gpu": "4852, 27348, 79",
+      "MemAvailable": 59668292,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14665.084956543,
+      "gpu": "4852, 27348, 73",
+      "MemAvailable": 59577404,
+      "SwapFree": 6804728
+    },
+    {
+      "monotonic": 14666.10017765,
+      "gpu": "4852, 27348, 82",
+      "MemAvailable": 59567740,
+      "SwapFree": 6804728
+    }
+  ],
+  "tests": [
+    {
+      "name": "runtime",
+      "passed": true,
+      "slots": 1,
+      "build": "b11960-8642541b2",
+      "n_ctx_slot": 65536
+    },
+    {
+      "name": "single_0",
+      "passed": true,
+      "ttft_seconds": 1.5174,
+      "elapsed_seconds": 3.0264,
+      "decode_tps": 253.84,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {
+        "cache_n": 0,
+        "prompt_n": 43,
+        "prompt_ms": 1515.919,
+        "prompt_per_token_ms": 35.25393023255814,
+        "prompt_per_second": 28.36563167293239,
+        "predicted_n": 384,
+        "predicted_ms": 1508.979,
+        "predicted_per_token_ms": 3.939892950391645,
+        "predicted_per_second": 253.81400271309278
+      },
+      "answer": "Here is a comprehensive 30-item checklist for investigating a Python HTTP server memory leak, starting from the specified variable `RUN_ID=single0`. This guide covers setup, monitoring, profiling, and resolution verification.\n\n### **Phase 1: Environment Setup & Initial Baseline**\n\n1.  **Initialize Execution Context**: Set the environment variable `RUN_ID=single0` in your current shell session to ensure all logs and processes are tagged with this unique identifier.\n    ```bash\n    export RUN_ID=single0\n    ```\n2.  **Verify Environment Variables**: Confirm that `RUN_ID` is exported correctly by running `echo $RUN_ID`. It should output `single0`.\n3.  **Check Python Version**: Ensure you are using a supported Python version (3.6+) with memory profiling support enabled (`gc` module). Run `python --version`.\n4.  **Identify the HTTP Server Process**: Locate the PID of your running server (e.g., Flask, FastAPI, aiohttp) tagged with `RUN_ID=single0`. Use `ps aux | grep python | grep single0`.\n5.  **Establish Memory Baseline**: Record the initial memory usage (`RSS` and `VSZ`) of the process using `top -pid <PID> -b -n 1 | head -20` or `free -m | grep $(pgrep -f \"single0\")`.\n6.  **Configure Logging Level**: Set logging to `DEBUG` or `INFO` in your Python application code to capture potential exception traces that might trigger leaks (e.g., unhandled exceptions leaking request objects).\n\n### **Phase 2: Runtime Monitoring & Pattern Detection**\n\n7.  **Monitor Memory Growth Over Time**: Run `watch -n 5 'top -pid <PID> -b'` to observe",
+      "started_monotonic": 14660.383663343,
+      "first_monotonic": 14661.901103321,
+      "finished_monotonic": 14663.410021534,
+      "wall_seconds": 3.026
+    },
+    {
+      "name": "pair_0",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.0434,
+          "elapsed_seconds": 1.5081,
+          "decode_tps": 261.5,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {
+            "cache_n": 0,
+            "prompt_n": 43,
+            "prompt_ms": 21.791,
+            "prompt_per_token_ms": 0.5067674418604651,
+            "prompt_per_second": 1973.2917259419025,
+            "predicted_n": 384,
+            "predicted_ms": 1464.731,
+            "predicted_per_token_ms": 3.824362924281984,
+            "predicted_per_second": 261.48145973561014
+          },
+          "answer": "RUN_ID=alpha0\n\n### **Investigation Checklist: Python HTTP Memory Leak**\n\nThis checklist is designed to systematically identify, isolate, and resolve memory leaks in Python applications handling HTTP requests (e.g., using `requests`, `httpx`, `aiohttp`, or frameworks like FastAPI/Django). Each item includes specific commands or verification steps.\n\n1.  **Establish Baseline Memory Usage**\n    *   Run the application with low load and record baseline RSS (Resident Set Size) using `psutil` or `top`.\n    *   Command: `python -c \"import psutil; print(f'PID {os.getpid()} RSS: {psutil.Process(os.getpid()).rss_bytes / 1024**2:.2f} MB')\"`\n\n2.  **Identify the Leak Trigger**\n    *   Reproduce the issue by triggering the specific HTTP endpoint or workflow repeatedly until memory usage spikes.\n    *   Monitor simultaneously: `watch -n 1 'ps aux | grep python'` while running the test script.\n\n3.  **Profile Memory Over Time (Continuous)**\n    *   Set up a loop to measure memory every second for 5 minutes during the leak trigger.\n    *   Command: `python -c \"import psutil, time; p=psutil.Process(); print(f'Start: {p.rss_bytes/1024**2:.2f}MB'); [print(f'{i}: {p.rss_bytes/1024**2:.2f}MB') for i in range(300)]\"`\n\n4.  **Check Garbage Collector (GC) Statistics**\n    *   Manually trigger the GC and observe if it collects significant memory or if objects remain unreferenced.\n    *   Command: `gc.collect",
+          "started_monotonic": 14663.412440265,
+          "first_monotonic": 14663.455826593,
+          "finished_monotonic": 14664.920556188
+        },
+        {
+          "ttft_seconds": 1.5475,
+          "elapsed_seconds": 2.9841,
+          "decode_tps": 266.6,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {
+            "cache_n": 0,
+            "prompt_n": 43,
+            "prompt_ms": 18.602,
+            "prompt_per_token_ms": 0.43260465116279073,
+            "prompt_per_second": 2311.579400064509,
+            "predicted_n": 384,
+            "predicted_ms": 1436.697,
+            "predicted_per_token_ms": 3.7511671018276758,
+            "predicted_per_second": 266.58369858084205
+          },
+          "answer": "# Investigation Checklist: Python HTTP Memory Leak (RUN_ID: beta0)\n\n**Context**: This checklist is designed to systematically isolate, identify, and verify the root cause of a memory leak in a Python web application (e.g., Flask, FastAPI, Django). It assumes `RUN_ID=beta0` has been identified as the suspect environment or deployment instance.\n\n### Phase 1: Baseline & Reproduction\n1. **Verify `RUN_ID=beta0` Status**: Confirm that the process running under `RUN_ID=beta0` is currently active and accessible via network (e.g., `curl -I http://localhost:8000/health`).\n2. **Establish Memory Baseline**: Run a fresh instance of `beta0`, wait for steady-state traffic, and record initial memory usage (`python -m pstats` or `/proc/[pid]/stat`).\n3. **Simulate Load Profile**: Reproduce the specific traffic pattern (concurrent connections, request duration) that previously triggered the leak.\n4. **Monitor Memory Over Time**: Use `watch -n 1 'ps aux | grep python'` or `htop` to observe memory growth continuously during the load test.\n5. **Check for Unbounded Caches**: Inspect code for cache decorators (e.g., `@lru_cache`, `functools.cache`) without expiration timers or explicit `clear()` calls.\n6. **Review Session/State Storage**: Verify if `SESSION_COOKIE` size is growing indefinitely or if in-memory user sessions are never evicted.\n7. **Analyze Connection Pools**: Check if a connection pool (e.g., SQLAlchemy, `requests.Session`) holds connections that are never released or timed out.\n8. **Inspect Large Response Handling**: Identify endpoints returning large JSON blobs or file streams that might be accumulating in buffers without",
+          "started_monotonic": 14663.412288515,
+          "first_monotonic": 14664.959740903,
+          "finished_monotonic": 14666.396395
+        }
+      ],
+      "max_active_slots": 1,
+      "stream_overlap_seconds": 0,
+      "aggregate_tps": 257.36,
+      "wall_seconds": 2.987
+    },
+    {
+      "name": "reasoning_tool_history",
+      "passed": true,
+      "reasoning_preserved": true,
+      "followup": {
+        "ttft_seconds": 0.0528,
+        "elapsed_seconds": 0.1602,
+        "decode_tps": 270.35,
+        "usage": {
+          "completion_tokens": 29,
+          "prompt_tokens": 123,
+          "total_tokens": 152,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "timings": {
+          "cache_n": 0,
+          "prompt_n": 123,
+          "prompt_ms": 22.721,
+          "prompt_per_token_ms": 0.18472357723577235,
+          "prompt_per_second": 5413.494124378329,
+          "predicted_n": 29,
+          "predicted_ms": 107.459,
+          "predicted_per_token_ms": 3.8378214285714285,
+          "predicted_per_second": 260.56449436529283
+        },
+        "answer": "The lookup result for `src/main.py` shows that the file contains the unique value: **LOCAL_TOOL_OK_5819**.",
+        "started_monotonic": 14666.735366266,
+        "first_monotonic": 14666.788196539,
+        "finished_monotonic": 14666.895608358
+      },
+      "wall_seconds": 0.499
+    },
+    {
+      "name": "complete",
+      "passed": true
+    }
+  ],
+  "ready": true,
+  "startup_seconds": 2.362,
+  "client_returncode": 0,
+  "client_stderr": "",
+  "elapsed_seconds": 8.973
+}

@@ -1,36 +1,38 @@
 # Default coding-agent profile
 
-## Selection: Qwen3.8-27B Dynamic V3 GGUF
+## Selection: Qwen3.8-27B Dynamic V3 GGUF capacity profile
 
-The default is `unsloth/Qwen3.8-27B-GGUF`, `UD-Q4_K_XL`, served by
-llama.cpp b11960 on the RTX 5090. Artifact revisions and image digests are
+The default is `unsloth/Qwen3.8-27B-GGUF`, `UD-Q3_K_XL`, served by
+llama.cpp b11960 on the RTX 5090. The selected weight quantization is now
+`UD-Q3_K_XL`; the original Q4 baseline remains available. Artifact revisions and image digests are
 in `config/models.lock.yaml` and `config/images.lock.yaml`.
 
-The priority is strong model quality with a practical context for long-running
-coding agents, quick continuation of existing conversations, and useful decode
-speed. This is not a multi-user throughput profile.
+The priority is useful fully local agent concurrency while preserving native
+256K context for every active agent. See [capacity tuning](concurrency.md) for
+the measured alternatives, quality limits and higher-precision fallback.
 
 | Setting | Default |
 | --- | --- |
 | API model | `coder-medium`; `coder` remains compatible |
 | Backend | `llama-coder.service` |
-| Context | 262,144 tokens (native 256K, no YaRN) |
-| Active request slots | 1 |
-| Attention K/V cache | GPU `q8_0` / `q8_0`, Flash Attention |
+| Context | 262,144 tokens per slot; 786,432 aggregate, no YaRN |
+| Active request slots | 3 fixed slots; additional requests queue |
+| Attention K/V cache | GPU `q4_0` / `q4_0`, Flash Attention; no unified pool |
+| RAM prompt cache | Up to 16,384 MiB, plus other host/runtime state |
 | Reasoning effort | `medium` |
 | Historical thinking preservation | Enabled for supplied history, pinned froggeric v22.5 template |
 | Reasoning ceilings | off: 0; low: 2,048; medium/legacy: 6,144; xhigh: 12,288 |
 | MTP | Disabled |
 | Thinking sampling | temperature 1.0, top-p 0.95, top-k 20, min-p 0, presence penalty 0, repetition penalty 1 |
 | OpenCode output cap | 16,384 tokens, including reasoning |
-| Vision projector | Loaded on GPU; verified with an image request through LiteLLM |
+| Vision projector | CPU-only; verified with an image request through LiteLLM |
 
 The sampling and reasoning controls follow the
 [Unsloth Qwen3.8 guide](https://unsloth.ai/docs/models/qwen3.8).
 The much larger 2.4T variant is outside this workstation's memory capacity.
 The guide's B200 throughput is not used as an RTX 5090 prediction.
 
-## Measured tradeoff, 2026-10-29 (original embedded template)
+## Historical tradeoff, 2026-10-29 (Q4 weights, original embedded template)
 
 Both candidates used medium reasoning, no MTP, one active request, the same
 prompts and sampling settings, and an 8192-token budget for thinking tests.
@@ -52,7 +54,7 @@ at three seeds. Raw results are in `docs/benchmarks/`.
 | Nested tool round trips | 3/3 passed | 3/3 passed |
 | Whole-GPU memory sampled during suite | 29,587 MiB | 27,921 MiB |
 
-GGUF wins this single-agent deployment because it combines full native 256K
+GGUF won the historical single-agent comparison because it combined full native 256K
 context, good cache reuse, somewhat faster short-context decoding in these
 measurements, and more GPU memory headroom. NVFP4 remains valuable when cold
 long-prompt ingestion dominates: its prefill was approximately twice as fast.
@@ -87,7 +89,7 @@ same seed; shorter reasoning is not treated as evidence of greater quality.
 For each OpenCode custom `brain/coder` model:
 
 ```jsonc
-"name": "Qwen3.8 27B Dynamic Q4_K_XL (brain)",
+"name": "Qwen3.8 27B Dynamic Q3_K_XL (brain)",
 "reasoning": true,
 "tool_call": true,
 "limit": { "context": 262144, "output": 16384 }

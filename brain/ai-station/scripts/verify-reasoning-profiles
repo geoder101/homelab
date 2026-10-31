@@ -14,6 +14,8 @@ import time
 import urllib.request
 import zlib
 
+import yaml
+
 
 def backend(path, body=None):
     code = """import urllib.request,json,sys
@@ -62,7 +64,10 @@ def main():
             time.sleep(2)
     assert set(aliases + ['coder']) <= {model['id'] for model in models['data']}
     props = backend('/props')
-    assert props['total_slots'] == 1
+    profile = yaml.safe_load((pathlib.Path(__file__).resolve().parent.parent / 'config/models.lock.yaml').read_text())['models']['coder']
+    assert props['total_slots'] == profile.get('parallel', 1)
+    assert props['default_generation_settings']['n_ctx'] == profile['context']
+    assert props['model_path'].endswith('/' + profile['file'])
     assert 'qwen3.8-froggeric-v22.5' in props['chat_template']
     emit('deployment', models=models, build=props['build_info'], slots=props['total_slots'],
          model_path=props['model_path'], template_caps=props['chat_template_caps'])

@@ -5,6 +5,8 @@
 - This deploys rootless Podman Quadlets on Fedora host `brain` as user `geoder101`. Run host commands there; from toolbox, prefix them with `flatpak-spawn --host`. Use `systemctl --user`.
 - Clients request `coder-off`, `coder-low`, `coder-medium`, or `coder-xhigh` through LiteLLM (`:4000/v1`); `coder` remains medium-compatible. Open WebUI (`:3000`) also uses LiteLLM. Backends have no published host ports.
 - `llama-coder` is the default backend; `vllm-coder` is an optional alternative. Run only one GPU backend at a time. Switching requires changing LiteLLM routing and its Quadlet `After` dependency; see `docs/operations.md` for persistent selection.
+- Current capacity profile: Qwen3.8-27B UD-Q3_K_XL, three fixed 262144-token slots (`--ctx-size 786432 --parallel 3 --no-kv-unified`), GPU Q4 K/V, CPU projector, 16 GiB RAM prompt cache. 786432 is aggregate, never a client context limit. See `docs/concurrency.md` for measured alternatives and rollback.
+- `make profile-capacity` / `make profile-precision` perform persistent global selection from `config/coder-profiles.yaml`; precision uses Q4 weights, two fixed 256K slots and GPU vision. Both retain Q4 KV/16 GiB RAM cache and all client aliases/limits. `make profile-status` checks selection versus runtime. Run between tasks; switches validate staged artifacts/units and roll back on failure. The downloader follows `models.coder.profile`, so subsequent deploys preserve selection.
 - LiteLLM's Quadlet mounts config from `%h/dev/projects/geoder101/ai-station/config/litellm-config.yaml`; deployment assumes this checkout location.
 
 ## Changes and verification
@@ -20,6 +22,7 @@
 - `scripts/download-coder-candidate` also downloads the immutable chat template. Keep `config/chat-templates.lock.yaml`, `scripts/download-chat-template`, and the llama Quadlet's template volume revision synchronized. Download it before install/reload. See `docs/reasoning-profiles.md` for per-alias reasoning checks and rollback.
 - After startup, run `scripts/smoke-test` or `scripts/smoke-test http://192.168.1.11:4000`. Its URL argument excludes `/v1`; it reads the host key and performs real inference. LiteLLM `/health/liveliness` alone does not test the backend.
 - Benchmarking is a separate GPU workflow: `scripts/run-coder-candidate gguf|nvfp4` refuses to run while either deployed backend is active. Consult `docs/benchmarks/README.md` and `docs/benchmarking.md` for results and procedure.
+- `scripts/tune-concurrency` runs measured profiles, stops/restores the deployed backend, and saves synthetic results/logs. Finish model downloads before experiments; private SELinux labels make concurrent download/mount operations unsafe. CPU helper profiles retain the GPU main model; GPU helper testing stops it. Do not run controllers concurrently. `make verify-concurrency` and `make client-concurrency` exercise the deployed three-slot stack without restarting it.
 
 ## Operational constraints
 

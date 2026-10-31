@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+directory="${HOME}/.local/share/ai-station/models/qwen3.8-27b-gguf-q3"
+install -d -m 700 "${directory}"
+podman run --rm --pull never --entrypoint /usr/local/bin/hf \
+  --volume "${directory}:/models/candidate:Z" \
+  docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9 \
+  download unsloth/Qwen3.8-27B-GGUF Qwen3.8-27B-UD-Q3_K_XL.gguf \
+  --revision 4ca720788d1e01f1bff70c033e0d0028fd02e502 --local-dir /models/candidate
+python3 - "${directory}/Qwen3.8-27B-UD-Q3_K_XL.gguf" <<'PY'
+import hashlib, pathlib, sys
+with pathlib.Path(sys.argv[1]).open('rb') as stream:
+    actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+assert actual == '8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e', actual
+print('Pinned alternative weight checksum: PASS')
+PY

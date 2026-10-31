@@ -14,7 +14,7 @@ in [automation](automation.md#brains-simple-native-opencode-configuration).
 1. Generate secret files with `scripts/create-secrets`.
 2. Enable lingering once with `sudo loginctl enable-linger geoder101`.
 3. Pull locked images with `scripts/pull-images`.
-4. Run `scripts/download-coder-candidate` to download the pinned Qwen3.8 GGUF and vision projector into `~/.local/share/ai-station/models/qwen3.8-27b-gguf`, plus the checksum-verified chat template into `~/.local/share/ai-station/chat-templates/`. For an existing model installation, `scripts/download-chat-template` downloads only the template.
+4. Run `scripts/download-coder-candidate` to download pinned Q3 weights into `~/.local/share/ai-station/models/qwen3.8-27b-gguf-q3`, the vision projector into `models/qwen3.8-27b-gguf`, and the checksum-verified chat template into `~/.local/share/ai-station/chat-templates/`. For an existing model installation, `scripts/download-chat-template` downloads only the template.
 5. Run `scripts/validate-quadlets`.
 6. Copy Quadlets with `scripts/install-quadlets`.
 7. Reload and start `llama-coder`, then `litellm`, then `open-webui`.
@@ -22,6 +22,12 @@ in [automation](automation.md#brains-simple-native-opencode-configuration).
 `llama-coder`, `litellm` and `open-webui` have `[Install]` sections and start with the user systemd session after `daemon-reload`. The alternative `vllm-coder` has no automatic-start section. Finish the model download before installing/reloading the Quadlets. To prevent automatic startup, remove the unit's `WantedBy` entry and reload; generated Quadlet services cannot be disabled with `systemctl disable`.
 
 ## Upgrade to Qwen3.8 Dynamic GGUF
+
+For an already deployed stack, use `make profile-capacity` or
+`make profile-precision` to select a persistent global profile. Both retain
+256K per-agent context. These commands validate first, restart backend/gateway,
+smoke-test and restore the previous profile on failure. `make profile-status`
+checks the running selection. See [switching](concurrency.md#global-profile-switching).
 
 Run from the repository on the host:
 
@@ -42,13 +48,22 @@ scripts/smoke-test http://192.168.1.11:4000
 
 Downloads resume when rerun. Previous checkpoints are retained. The API model alias remains `coder`.
 
-The selected profile uses llama.cpp b11960, 256K context (262,144 tokens), GPU Q8 K/V cache, one request slot and medium reasoning. MTP is disabled. Since 2026-10-31 the pinned froggeric v22.5 template preserves supplied historical reasoning, and LiteLLM provides per-alias reasoning ceilings. See [reasoning profiles](reasoning-profiles.md) for current behavior and rollback. The earlier 252,996-token retrieval test and NVFP4 comparison predate this template change; see `docs/model-profile.md` and `docs/benchmarks/`.
+The selected capacity profile uses llama.cpp b11960, **three fixed 256K slots**
+(786,432 total cache tokens), Q3_K_XL weights, GPU Q4 K/V cache, CPU vision
+processing and a 16 GiB RAM prompt cache. Medium reasoning remains the default;
+MTP is disabled. See [capacity tuning](concurrency.md) for measured tradeoffs,
+reproduction and rollback. The pinned froggeric v22.5 template preserves supplied
+reasoning, with per-alias ceilings documented in [reasoning profiles](reasoning-profiles.md).
 
 ### Optional NVFP4 profile
 
 Download with `scripts/download-qwen38-candidates nvfp4`. To use the alternative profile, stop `llama-coder`, start `vllm-coder`, change LiteLLM's `api_base` to `http://vllm-coder:8000/v1` and restart LiteLLM. Set every OpenCode client's context to `163840`. For persistent selection across boot, move the `[Install] WantedBy=default.target` section from `llama-coder.container` to `vllm-coder.container`, update LiteLLM's `After` dependency, and reinstall/reload Quadlets. Never enable both GPU backends together.
 
-The vLLM profile uses one sequence, calibrated FP8 KV and utilization 0.94. This checkpoint already selected FP8 with `auto`; explicit FP8 is not another 2x reduction. Native 256K needed 8.33 GiB cache versus 5.64 GiB available. Its measured advantage is faster cold long-prompt processing, not a larger context.
+The installed optional vLLM Quadlet still uses one sequence, calibrated FP8 KV
+and utilization 0.94. Native 256K did not fit that profile. A separate **tested
+NVFP4 KV-cache** candidate does support a 256K maximum with approximately 1.2
+full-context capacity and faster cold prefill; it is not the installed optional
+Quadlet. Reproduce it with `scripts/tune-concurrency`; see [results](concurrency.md).
 
 ### OpenCode context limit
 
@@ -63,7 +78,7 @@ On every OpenCode client using any `brain/coder-*` model (or legacy `brain/coder
 
 Input, reasoning and output must fit within the total context budget. These limits are client metadata used for request budgeting and compaction, not server settings. Keep them explicit for this custom provider: the standard `/v1/models` response is not a reliable source of context/output limits. A 16K output cap gives thinking and final output more room than the old 8K cap; it does not require generating 16K tokens on every turn. The 2026-10-31 Home handoff edits only `~/Downloads/{opencode,omo}.jsonc` on Brain; it does not install or activate client configuration there.
 
-Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's `--ctx-size` and the explicit OpenCode limits are authoritative for this deployment.
+Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's per-slot context and explicit OpenCode limits are authoritative; `--ctx-size 786432` is an aggregate across three slots, not a client context limit.
 
 The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4 and llama.cpp b11960 (commit `8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin the corresponding linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
 

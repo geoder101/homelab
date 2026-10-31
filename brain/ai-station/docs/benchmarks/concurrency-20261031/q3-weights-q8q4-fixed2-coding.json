@@ -1,0 +1,170 @@
+{
+  "label": "q3-weights-q8q4-fixed2",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "mtp": false
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 3.095,
+      "elapsed_seconds": 8.834,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 89.22,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is designed for systematic diagnosis of memory growth in a Python HTTP server (e.g., Flask, FastAPI, Django, raw `http.server`, or custom WSGI/ASGI app) during long-running integration tests. Work through each section in order; stop and investigate when you find anomalies.\n\n---\n\n## 1. Establish a Baseline & Reproduce the Leak\n\n### 1.1 Confirm the leak exists\n```bash\n# Run the server with memory tracking enabled\npython -m tracemalloc --traceback-limit=25 your_server.py &\nSERVER_PID=$!\n\n# Or use psutil for external observation:\npip install psutil\npython -c \"\nimport psutil, time\nproc = psutil.Process($SERVER_PID)\nfor i in range(60):\n    mem_mb = proc.memory_info().rss / 1024**2\n    print(f't={i*5}s RSS={mem_mb:.1f} MB')\n    time.sleep(5)\n\"\n```\n\n### 1.2 Define a stable workload\n- Create a **reproducible integration test script** that sends N requests (e.g., 10k\u2013100k) with realistic payloads.\n- Ensure the test exercises all code paths: auth, DB queries, file I/O, WebSocket upgrades (if any), error paths (4xx/5xx).\n- Record baseline memory after warmup (first ~100 requests) to exclude JIT/import overhead.\n\n### 1.3 Check for known non-leak causes\nBefore deep profiling, rule out:\n- **Caching layers** (Redis, in-memory dicts) that are *intentionally* growing \u2014 verify cache size is bounded.\n- **Thread/process pool growth** \u2014 check `psutil.Process().num_threads()` over time.\n- **File descriptors** leaking (see \u00a74).\n- **GC disabled or misconfigured** \u2014 ensure `gc.disable()` isn't called inadvertently.\n\n---\n\n## 2. Profile with tracemalloc (Built-in, Low Overhead)\n\n### 2.1 Enable detailed tracing in the server process\n```python\n# At the top of your server entry point (development/debug only):\nimport tracemalloc\ntracemalloc.start(25)  # keep last 25 frames per allocation\n\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.119,
+      "elapsed_seconds": 5.854,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 89.28,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is designed for systematic diagnosis of memory growth in a Python HTTP server (e.g., Flask, FastAPI, Django, raw `http.server`, or custom WSGI/ASGI app) during long-running integration tests. Work through each section in order; stop and investigate when you find anomalies.\n\n---\n\n## 1. Establish a Baseline & Reproduce the Leak\n\n### 1.1 Confirm the leak exists\n```bash\n# Run the server with memory tracking enabled\npython -m tracemalloc --traceback-limit=25 your_server.py &\nSERVER_PID=$!\n\n# Or use psutil for external observation:\npip install psutil\npython -c \"\nimport psutil, time\nproc = psutil.Process($SERVER_PID)\nfor i in range(60):\n    mem_mb = proc.memory_info().rss / 1024**2\n    print(f't={i*5}s RSS={mem_mb:.1f} MB')\n    time.sleep(5)\n\"\n```\n\n### 1.2 Define a stable workload\n- Create a **reproducible integration test script** that sends N requests (e.g., 10k\u2013100k) with realistic payloads.\n- Ensure the test exercises all code paths: auth, DB queries, file I/O, WebSocket upgrades (if any), error paths (4xx/5xx).\n- Record baseline memory after warmup (first ~100 requests) to exclude JIT/import overhead.\n\n### 1.3 Check for known non-leak causes\nBefore deep profiling, rule out:\n- **Caching layers** (Redis, in-memory dicts) that are *intentionally* growing \u2014 verify cache size is bounded.\n- **Thread/process pool growth** \u2014 check `psutil.Process().num_threads()` over time.\n- **File descriptors** leaking (see \u00a74).\n- **GC disabled or misconfigured** \u2014 ensure `gc.disable()` isn't called inadvertently.\n\n---\n\n## 2. Profile with tracemalloc (Built-in, Low Overhead)\n\n### 2.1 Enable detailed tracing in the server process\n```python\n# At the top of your server entry point (development/debug only):\nimport tracemalloc\ntracemalloc.start(25)  # keep last 25 frames per allocation\n\n"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.063,
+      "elapsed_seconds": 5.816,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 89.0,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is designed for systematic diagnosis of memory growth in a Python HTTP server (e.g., Flask, FastAPI, Django, raw `http.server`, or custom WSGI/ASGI app) during long-running integration tests. Work through each section in order; stop and investigate when you find anomalies.\n\n---\n\n## 1. Establish a Baseline & Reproduce the Leak\n\n### 1.1 Confirm the leak exists\n```bash\n# Run the server with memory tracking enabled\npython -m tracemalloc --traceback-limit=25 your_server.py &\nSERVER_PID=$!\n\n# Or use psutil for external observation:\npip install psutil\npython -c \"\nimport psutil, time\nproc = psutil.Process($SERVER_PID)\nfor i in range(60):\n    mem_mb = proc.memory_info().rss / 1024**2\n    print(f't={i*5}s RSS={mem_mb:.1f} MB')\n    time.sleep(5)\n\"\n```\n\n### 1.2 Define a stable workload\n- Create a **reproducible integration test script** that sends N requests (e.g., 10k\u2013100k) with realistic payloads.\n- Ensure the test exercises all code paths: auth, DB queries, file I/O, WebSocket upgrades (if any), error paths (4xx/5xx).\n- Record baseline memory after warmup (first ~100 requests) to exclude JIT/import overhead.\n\n### 1.3 Check for known non-leak causes\nBefore deep profiling, rule out:\n- **Caching layers** (Redis, in-memory dicts) that are *intentionally* growing \u2014 verify cache size is bounded.\n- **Thread/process pool growth** \u2014 check `psutil.Process().num_threads()` over time.\n- **File descriptors** leaking (see \u00a74).\n- **GC disabled or misconfigured** \u2014 ensure `gc.disable()` isn't called inadvertently.\n\n---\n\n## 2. Profile with tracemalloc (Built-in, Low Overhead)\n\n### 2.1 Enable detailed tracing in the server process\n```python\n# At the top of your server entry point (development/debug only):\nimport tracemalloc\ntracemalloc.start(25)  # keep last 25 frames per allocation\n\n"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 8.698,
+      "usage": {
+        "completion_tokens": 794,
+        "prompt_tokens": 98,
+        "total_tokens": 892,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n    merged = [list(sorted_intervals[0])]\n    for i in range(1, len(sorted_intervals)):\n        start, end = sorted_intervals[i]\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 9.651,
+      "usage": {
+        "completion_tokens": 875,
+        "prompt_tokens": 131,
+        "total_tokens": 1006,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {n: [] for n in nodes}\n    in_degree = {n: 0 for n in nodes}\n\n    seen = set()\n    for src, dst in edges:\n        if (src, dst) not in seen:\n            seen.add((src, dst))\n            adj[src].append(dst)\n            in_degree[dst] += 1\n\n    heap = [n for n in nodes if in_degree[n] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 3.039,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was made with `dry_run: true`, so no actual filesystem modifications were performed.\n\n**Requested changes:**\n- **Create** `src/a.py` with content `print(42)\\n`\n- **Delete** `obsolete.txt`\n\n**Metadata:** `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\n**Tool result:** `{\"status\": \"dry-run-ok\", \"changed_files\": 2}` \u2014 the operation was validated successfully and 2 files would be changed, but nothing was actually written or removed since this was a dry run."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 2.491,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Files affected:** 2\n  - **Created:** `src/a.py` (with content `print(42)`)\n  - **Deleted:** `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual file modifications were made \u2014 the operation was validated and reported without side effects."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.279,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 the operations were validated but not actually applied (since `dry_run` was `true`).\n- **Changed files:** 2\n  1. **Created** `src/a.py` with content `print(42)\\n`\n  2. **Deleted** `obsolete.txt`\n\nSince this was a dry run, no files were actually modified on disk. If you'd like to perform the real operations, I can re-run with `dry_run` set to `false`."
+    }
+  ]
+}

@@ -9,14 +9,15 @@ case "${1:-}" in
     model_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-nvfp4"
     files=()
     ;;
-  gguf)
+  gguf|vision)
     repository="unsloth/Qwen3.8-27B-GGUF"
     revision="4ca720788d1e01f1bff70c033e0d0028fd02e502"
     model_dir="${HOME}/.local/share/ai-station/models/qwen3.8-27b-gguf"
     files=(Qwen3.8-27B-UD-Q4_K_XL.gguf mmproj-BF16.gguf)
+    if [[ "$1" == vision ]]; then files=(mmproj-BF16.gguf); fi
     ;;
   *)
-    printf 'Usage: %s nvfp4|gguf\n' "$0" >&2
+    printf 'Usage: %s nvfp4|gguf|vision\n' "$0" >&2
     exit 2
     ;;
 esac

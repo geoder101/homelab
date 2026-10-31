@@ -1,5 +1,10 @@
 # Brain reasoning profiles and Home handoff — 2026-10-31
 
+**Later capacity update:** the same aliases/template now serve three fixed
+256K slots using Q3 weights and Q4 cache with CPU vision. See
+[local capacity tuning](concurrency.md). Measurements and one-slot/Q4/Q8
+descriptions below record the earlier reasoning-profile handoff.
+
 This report describes the initial Home handoff. A subsequently authorized
 follow-up adds Makefile automation and updates **Brain's native OpenCode**
 config, without OmO; see [automation](automation.md). The Home Downloads copies

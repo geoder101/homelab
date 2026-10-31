@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+"""Exercise three independent native OpenCode sessions with read-only tool work."""
+import argparse
+import concurrent.futures
+import json
+import pathlib
+import subprocess
+import sys
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--output', type=pathlib.Path)
+args = parser.parse_args()
+jobs = [('ALPHA', 'README.md', 'AI Station'),
+        ('BETA', 'docs/model-profile.md', 'Default coding-agent profile'),
+        ('GAMMA', 'docs/operations.md', 'Operations')]
+
+
+def run(job):
+    tag, path, heading = job
+    result = subprocess.run(['opencode', 'run', '--model', 'brain/coder-medium',
+        '--thinking', '--format', 'json', f'Use the read tool to inspect {path}. '
+        f'Reply with {tag} followed by the first heading. Do not edit files or use bash.'],
+        cwd=ROOT, capture_output=True, text=True, timeout=240)
+    events = [json.loads(line) for line in result.stdout.splitlines() if line.startswith('{')]
+    text = '\n'.join(e['part'].get('text', '') for e in events if e.get('type') == 'text')
+    tools = [e['part']['tool'] for e in events if e.get('type') == 'tool_use'
+             and e['part']['state']['status'] == 'completed']
+    return {'agent': tag, 'passed': result.returncode == 0 and tag in text
+        and heading in text and 'read' in tools, 'tools': tools,
+        'reasoning': any(e.get('type') == 'reasoning' for e in events),
+        'answer': text, 'stderr': result.stderr[-2000:]}
+
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+    results = list(pool.map(run, jobs))
+if args.output:
+    args.output.write_text(json.dumps(results, indent=2))
+for result in results:
+    print(json.dumps(result))
+sys.exit(0 if all(r['passed'] for r in results) else 1)

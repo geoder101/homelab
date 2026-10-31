@@ -1,0 +1,170 @@
+{
+  "label": "q4-fixed2",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "mtp": false
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.26,
+      "elapsed_seconds": 9.668,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 69.12,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore diving into tools, ensure you have a **reproducible, measurable** leak.\n\n### 0.1 Establish Baseline Metrics\n\n```bash\n# Record initial RSS (Resident Set Size) of the server process\nPID=$(pgrep -f \"your_server.py\")\nps -o pid,rss,vsz,%mem -p $PID | tee baseline_metrics.txt\n\n# Or use /proc for more detail\ncat /proc/$PID/status | grep -E \"VmRSS|VmSize|Threads\"\n```\n\n### 0.2 Create a Steady-State Load Script\n\n```python\n#!/usr/bin/env python3\n\"\"\"\nload_generator.py - Generate sustained HTTP traffic to trigger the leak.\nRun this against your server in a separate terminal/process.\n\"\"\"\nimport requests\nimport time\nimport sys\n\nURL = \"http://127.0.0.1:8080/your_endpoint\"\nDURATION_SECONDS = int(sys.argv[1]) if len(sys.argv) > 1 else 3600\nINTERVAL = 0.5  # seconds between requests\n\nstart = time.time()\nrequest_count = 0\n\nprint(f\"Generating load for {DURATION_SECONDS}s...\")\nwhile time.time() - start < DURATION_SECONDS:\n    try:\n        resp = requests.get(URL, timeout=10)\n        request_count += 1\n        if request_count % 100 == 0:\n            print(f\"[{request_count}] Status: {resp.status_code}\")\n    except Exception as e:\n        print(f\"Request failed: {e}\")\n    time.sleep(INTERVAL)\n\nprint(f\"Total requests sent: {request_count}\")\n```\n\n### 0.3 Monitor Memory Over Time\n\n```bash\n# Run the server, then monitor RSS every 10 seconds for an hour\nPID=$(pgrep -f \"your_server.py\")\nfor i in $(seq 1 360); do\n    RSS=$(ps -o rss= -p $PID)\n    THREADS=$(cat /proc/$PID/status | grep Threads | awk '{print $2}')\n    OPEN_FDS=$(ls /proc/$PID/fd 2>/dev/null | wc -l)\n    echo \"$("
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.122,
+      "elapsed_seconds": 7.487,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 69.52,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore diving into tools, ensure you have a **reproducible, measurable** leak.\n\n### 0.1 Establish Baseline Metrics\n\n```bash\n# Record initial RSS (Resident Set Size) of the server process\nPID=$(pgrep -f \"your_server.py\")\nps -o pid,rss,vsz,%mem -p $PID | tee baseline_metrics.txt\n\n# Or use /proc for more detail\ncat /proc/$PID/status | grep -E \"VmRSS|VmSize|Threads\"\n```\n\n### 0.2 Create a Steady-State Load Script\n\n```python\n#!/usr/bin/env python3\n\"\"\"\nload_generator.py - Generate sustained HTTP traffic to trigger the leak.\nRun this against your server in a separate terminal/process.\n\"\"\"\nimport requests\nimport time\nimport sys\n\nURL = \"http://127.0.0.1:8080/your_endpoint\"\nDURATION_SECONDS = int(sys.argv[1]) if len(sys.argv) > 1 else 3600\nINTERVAL = 0.5  # seconds between requests\n\nstart = time.time()\nrequest_count = 0\n\nprint(f\"Generating load for {DURATION_SECONDS}s...\")\nwhile time.time() - start < DURATION_SECONDS:\n    try:\n        resp = requests.get(URL, timeout=10)\n        request_count += 1\n        if request_count % 100 == 0:\n            print(f\"[{request_count}] Status: {resp.status_code}\")\n    except Exception as e:\n        print(f\"Request failed: {e}\")\n    time.sleep(INTERVAL)\n\nprint(f\"Total requests sent: {request_count}\")\n```\n\n### 0.3 Monitor Memory Over Time\n\n```bash\n# Run the server, then monitor RSS every 10 seconds for an hour\nPID=$(pgrep -f \"your_server.py\")\nfor i in $(seq 1 360); do\n    RSS=$(ps -o rss= -p $PID)\n    THREADS=$(cat /proc/$PID/status | grep Threads | awk '{print $2}')\n    OPEN_FDS=$(ls /proc/$PID/fd 2>/dev/null | wc -l)\n    echo \"$("
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.066,
+      "elapsed_seconds": 7.432,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 69.51,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore diving into tools, ensure you have a **reproducible, measurable** leak.\n\n### 0.1 Establish Baseline Metrics\n\n```bash\n# Record initial RSS (Resident Set Size) of the server process\nPID=$(pgrep -f \"your_server.py\")\nps -o pid,rss,vsz,%mem -p $PID | tee baseline_metrics.txt\n\n# Or use /proc for more detail\ncat /proc/$PID/status | grep -E \"VmRSS|VmSize|Threads\"\n```\n\n### 0.2 Create a Steady-State Load Script\n\n```python\n#!/usr/bin/env python3\n\"\"\"\nload_generator.py - Generate sustained HTTP traffic to trigger the leak.\nRun this against your server in a separate terminal/process.\n\"\"\"\nimport requests\nimport time\nimport sys\n\nURL = \"http://127.0.0.1:8080/your_endpoint\"\nDURATION_SECONDS = int(sys.argv[1]) if len(sys.argv) > 1 else 3600\nINTERVAL = 0.5  # seconds between requests\n\nstart = time.time()\nrequest_count = 0\n\nprint(f\"Generating load for {DURATION_SECONDS}s...\")\nwhile time.time() - start < DURATION_SECONDS:\n    try:\n        resp = requests.get(URL, timeout=10)\n        request_count += 1\n        if request_count % 100 == 0:\n            print(f\"[{request_count}] Status: {resp.status_code}\")\n    except Exception as e:\n        print(f\"Request failed: {e}\")\n    time.sleep(INTERVAL)\n\nprint(f\"Total requests sent: {request_count}\")\n```\n\n### 0.3 Monitor Memory Over Time\n\n```bash\n# Run the server, then monitor RSS every 10 seconds for an hour\nPID=$(pgrep -f \"your_server.py\")\nfor i in $(seq 1 360); do\n    RSS=$(ps -o rss= -p $PID)\n    THREADS=$(cat /proc/$PID/status | grep Threads | awk '{print $2}')\n    OPEN_FDS=$(ls /proc/$PID/fd 2>/dev/null | wc -l)\n    echo \"$("
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 11.927,
+      "usage": {
+        "completion_tokens": 853,
+        "prompt_tokens": 98,
+        "total_tokens": 951,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n\n    merged = [list(sorted_intervals[0])]\n\n    for i in range(1, len(sorted_intervals)):\n        curr_start, curr_end = sorted_intervals[i]\n        last = merged[-1]\n        if curr_start <= last[1]:\n            last[1] = max(last[1], curr_end)\n        else:\n            merged.append([curr_start, curr_end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 13.965,
+      "usage": {
+        "completion_tokens": 995,
+        "prompt_tokens": 131,
+        "total_tokens": 1126,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for src, dst in edges:\n        if dst not in adj[src]:\n            adj[src].add(dst)\n            in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 4.238,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 the operations were validated but not actually applied (since `dry_run` was set to `true`).\n- **Changed files:** `2` \u2014 both the creation of `src/a.py` and the deletion of `obsolete.txt` were confirmed in the dry run.\n\nNo files were permanently modified or removed."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.73,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run mode**. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\n### Actions that would have been performed (not actually executed due to dry-run):\n\n| Operation | Path | Details |\n|-----------|------|---------|\n| **Create** | `src/a.py` | Content: `print(42)\\n` |\n| **Delete** | `obsolete.txt` | \u2014 |\n\n### Metadata\n- `dry_run`: `true`\n- `labels`: `[\"coding\", \"test\"]`\n\nNo files were actually modified on disk since the dry-run flag was set."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 4.05,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run mode**. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nNo files were actually modified on disk because `dry_run` was set to `true`. The tool confirmed it would have:\n1. **Created** `src/a.py` with content `print(42)`\n2. **Deleted** `obsolete.txt`\n\nLabels applied: `coding`, `test`."
+    }
+  ]
+}

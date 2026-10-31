@@ -17,10 +17,9 @@ def main():
     config = json.loads(output('debug', 'config'))
     assert config['model'] == 'brain/coder-medium'
     assert config['small_model'] == 'brain/coder-off'
-    assert config['enabled_providers'] == ['brain']
     assert not config.get('plugin'), 'Expected the simple native client with no external plugins'
     assert config['provider']['brain']['options']['baseURL'] == 'http://127.0.0.1:4000/v1'
-    print('Defaults: medium / small off; only brain enabled; no external plugins')
+    print('Defaults: medium / small off; no external plugins; built-in providers available')
     verbose = output('models', 'brain', '--verbose')
     models = {}
     decoder = json.JSONDecoder()

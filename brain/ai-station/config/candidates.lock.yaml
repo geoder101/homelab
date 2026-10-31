@@ -1,6 +1,21 @@
 # Evaluation artifacts; these do not change the active coder deployment.
 # Resolved 2026-10-29. Candidate results belong in docs/benchmark-results.md.
 candidates:
+  qwen38_gguf_q3:
+    repository: unsloth/Qwen3.8-27B-GGUF
+    revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
+    directory: qwen3.8-27b-gguf-q3
+    file: Qwen3.8-27B-UD-Q3_K_XL.gguf
+    sha256: 8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e
+    role: alternative-weight-quantization-benchmark
+  qwen35_4b_helper:
+    repository: unsloth/Qwen3.5-4B-GGUF
+    revision: e87f176479d0855a907a41277aca2f8ee7a09523
+    directory: qwen35-4b-helper
+    file: Qwen3.5-4B-Q4_K_M.gguf
+    sha256: 00fe7986ff5f6b463e62455821146049db6f9313603938a70800d1fb69ef11a4
+    context: 262144
+    role: optional-local-helper-benchmark
   qwen38_nvfp4:
     repository: unsloth/Qwen3.8-27B-NVFP4
     revision: f0b7c9e722f5565102fff8481c99e4d86ae099c7

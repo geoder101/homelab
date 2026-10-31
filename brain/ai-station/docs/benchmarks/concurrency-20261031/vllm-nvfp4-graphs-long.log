@@ -1,0 +1,1338 @@
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347] 
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347]        █     █     █▄   ▄█
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347]  ▄▄ ▄█ █     █     █ ▀▄▀ █  version 0.32.0
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347]   █▄█▀ █     █     █     █  model   /models/candidate
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347]    ▀▀  ▀▀▀▀▀ ▀▀▀▀▀ ▀     ▀
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:347] 
+(APIServer pid=1) INFO 10-31 19:11:49 [api_utils.py:286] non-default args: {'model_tag': '/models/candidate', 'chat_template': '/templates/chat_template.jinja', 'default_chat_template_kwargs': {'reasoning_effort': 'medium', 'preserve_thinking': True}, 'enable_auto_tool_choice': True, 'tool_call_parser': 'qwen3_xml', 'host': '0.0.0.0', 'model': '/models/candidate', 'max_model_len': 262144, 'served_model_name': ['coder'], 'reasoning_parser': 'qwen3', 'gpu_memory_utilization': 0.94, 'kv_cache_dtype': 'nvfp4', 'max_num_batched_tokens': 2048, 'max_num_seqs': 2}
+(APIServer pid=1) INFO 10-31 19:11:55 [model.py:733] Resolved architecture: Qwen3_5ForConditionalGeneration
+(APIServer pid=1) INFO 10-31 19:11:55 [model.py:2152] Using max model len 262144
+(APIServer pid=1) INFO 10-31 19:11:57 [cache.py:361] Using nvfp4 data type to store kv cache. It reduces the GPU memory footprint and boosts the performance. Meanwhile, it may cause accuracy drop without a proper scaling factor
+(APIServer pid=1) INFO 10-31 19:11:57 [config.py:688] Mamba cache mode is set to 'align' for Qwen3_5ForConditionalGeneration by default when prefix caching is enabled
+(APIServer pid=1) INFO 10-31 19:11:57 [kernel.py:467] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+(EngineCore pid=375) INFO 10-31 19:12:07 [core.py:133] Initializing a V1 LLM engine (v0.32.0) with config: model='/models/candidate', speculative_config=None, tokenizer='/models/candidate', skip_tokenizer_init=False, tokenizer_mode=auto, revision=None, tokenizer_revision=None, trust_remote_code=False, dtype=torch.bfloat16, max_seq_len=262144, download_dir=None, load_format=auto, tensor_parallel_size=1, pipeline_parallel_size=1, data_parallel_size=1, decode_context_parallel_size=1, dcp_comm_backend=ag_rs, disable_custom_all_reduce=False, quantization=compressed-tensors, quantization_config=None, enforce_eager=False, aux_output_config=AuxOutputConfig(enable_return_routed_experts=False, max_bytes=None), kv_cache_dtype=nvfp4, device_config=cuda, structured_outputs_config=StructuredOutputsConfig(backend='auto', disable_any_whitespace=False, disable_additional_properties=False, reasoning_parser='qwen3', reasoning_parser_plugin='', enable_in_reasoning=False), observability_config=ObservabilityConfig(show_hidden_metrics_for_version=None, otlp_traces_endpoint=None, collect_detailed_traces=None, per_request_spec_decode_metrics='none', kv_cache_metrics=False, kv_cache_metrics_sample=0.01, custom_histogram_buckets=None, cudagraph_metrics=False, enable_layerwise_nvtx_tracing=False, enable_mfu_metrics=False, enable_mm_processor_stats=False, enable_logging_iteration_details=False, jit_monitor_mode='warn', jit_monitor_verbose=False), seed=0, served_model_name=coder, enable_prefix_caching=True, enable_chunked_prefill=True, pooler_config=None, compilation_config={'mode': <CompilationMode.VLLM_COMPILE: 3>, 'debug_dump_path': None, 'cache_dir': '', 'compile_cache_save_format': 'binary', 'backend': 'inductor', 'custom_ops': ['none'], 'ir_enable_torch_wrap': True, 'splitting_ops': ['vllm::unified_attention_with_output', 'vllm::unified_mla_attention_with_output', 'vllm::mamba_mixer2', 'vllm::mamba_mixer', 'vllm::short_conv', 'vllm::qwen4_exp_ple_short_conv', 'vllm::qwen4_exp_qsa_with_output', 'vllm::qwen4_exp_qsa_prepare_with_output', 'vllm::linear_attention', 'vllm::qwen_gdn_attention_core', 'vllm::qwen_gdn_attention_core_fused_norm_packed', 'vllm::gdn_attention_core_xpu', 'vllm::olmo_hybrid_gdn_full_forward', 'vllm::sparse_attn_indexer', 'vllm::rocm_aiter_sparse_attn_indexer', 'vllm::deepseek_v4_attention', 'vllm::hpc_rope_norm_forward', 'vllm::unified_kv_cache_update', 'vllm::unified_mla_kv_cache_update'], 'compile_mm_encoder': False, 'cudagraph_mm_encoder': False, 'encoder_cudagraph_token_budgets': [], 'encoder_cudagraph_max_vision_items_per_batch': 0, 'encoder_cudagraph_max_frames_per_batch': None, 'cudagraph_decoder_replay': True, 'decoder_replay_cudagraph_capture_sizes': [], 'decoder_replay_trim_threshold': 768, 'compile_sizes': [], 'compile_ranges_endpoints': [2048], 'inductor_compile_config': {'enable_auto_functionalized_v2': False, 'combo_kernels': True, 'benchmark_combo_kernel': True}, 'inductor_passes': {}, 'cudagraph_mode': <CUDAGraphMode.FULL_AND_PIECEWISE: (2, 1)>, 'cudagraph_num_of_warmups': 1, 'cudagraph_capture_sizes': [1, 2, 4], 'cudagraph_copy_inputs': False, 'cudagraph_specialize_lora': True, 'use_inductor_graph_partition': False, 'pass_config': {'fuse_norm_quant': False, 'fuse_act_quant': False, 'fuse_attn_quant': False, 'fuse_allreduce_rms': False, 'enable_qk_norm_rope_fusion': False, 'fuse_rope_kvcache_cat_mla': False, 'fuse_act_padding': False, 'fuse_qk_norm_rope_kvcache': False}, 'max_cudagraph_capture_size': 4, 'dynamic_shapes_config': {'type': <DynamicShapesType.BACKED: 'backed'>, 'evaluate_guards': False, 'assume_32_bit_indexing': False}, 'local_cache_dir': None, 'fast_moe_cold_start': False, 'static_all_moe_layers': []}, kernel_config=KernelConfig(ir_op_priority=IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native']), enable_flashinfer_autotune=True, enable_rocm_segmented_attn_autotune=False, enable_cutedsl_warmup=True, enable_jit_warmup=True, moe_backend='auto', sparse_indexer_topk_backend='auto', linear_backend='auto', linear_backend_per_quant=None)
+(EngineCore pid=375) INFO 10-31 19:12:07 [parallel_state.py:1906] world_size=1 rank=0 local_rank=0 distributed_init_method=file:///tmp/vllm_dist_7fca054f3e6846209c25d230223f88c6 backend=nccl
+(EngineCore pid=375) INFO 10-31 19:12:07 [parallel_state.py:2350] rank 0 in world size 1 is assigned as DP rank 0, PP rank 0, PCP rank 0, TP rank 0, ETP rank 0, EP rank N/A, EPLB rank N/A
+(EngineCore pid=375) INFO 10-31 19:12:07 [gpu_worker.py:518] Using V2 Model Runner
+(EngineCore pid=375) INFO 10-31 19:12:08 [model_runner.py:392] Loading model from scratch...
+(APIServer pid=1) INFO 10-31 19:12:12 [base.py:280] Multi-modal warmup completed in 9.327s
+(EngineCore pid=375) INFO 10-31 19:12:13 [cuda.py:565] Using backend AttentionBackendEnum.FLASH_ATTN for vit attention
+(EngineCore pid=375) INFO 10-31 19:12:13 [mm_encoder_attention.py:372] Using AttentionBackendEnum.FLASH_ATTN for MMEncoderAttention.
+(EngineCore pid=375) INFO 10-31 19:12:13 [__init__.py:797] Selected CutlassFP8ScaledMMLinearKernel for CompressedTensorsW8A8Fp8
+(EngineCore pid=375) INFO 10-31 19:12:13 [deep_gemm.py:198] deep_gemm not found in site-packages, trying vendored vllm.third_party.deep_gemm
+(EngineCore pid=375) INFO 10-31 19:12:13 [deep_gemm.py:225] DeepGEMM PDL enabled on vllm.third_party.deep_gemm.
+(EngineCore pid=375) INFO 10-31 19:12:13 [deep_gemm.py:137] DeepGEMM E8M0 enabled on current platform.
+(EngineCore pid=375) INFO 10-31 19:12:13 [qwen_gdn_linear_attn.py:221] Using FlashInfer GDN prefill kernel (requested=auto, head_k_dim=128).
+(EngineCore pid=375) INFO 10-31 19:12:13 [__init__.py:1240] Using FlashInferCutlassNvFp4LinearKernel for NVFP4 GEMM
+(EngineCore pid=375) INFO 10-31 19:12:13 [cuda.py:506] Using FLASHINFER attention backend out of potential backends: ['FLASHINFER'].
+(EngineCore pid=375) INFO 10-31 19:12:14 [base_loader.py:82] Initializing model took 5.379609 seconds
+(EngineCore pid=375) INFO 10-31 19:12:14 [weight_utils.py:1108] Filesystem type for checkpoints: BTRFS. Checkpoint size: 21.81 GiB. Available RAM: 53.30 GiB.
+(EngineCore pid=375) INFO 10-31 19:12:14 [weight_utils.py:1131] Auto-prefetch is disabled because the filesystem (BTRFS) is not a recognized network FS (NFS/Lustre). If you want to force prefetching, start vLLM with --safetensors-load-strategy=prefetch.
+(EngineCore pid=375) INFO 10-31 19:12:18 [default_loader.py:501] Loading weights took 4.05 seconds
+(EngineCore pid=375) INFO 10-31 19:12:20 [model_runner.py:424] Model loading took 21.22 GiB memory and 11.987760 seconds
+(EngineCore pid=375) INFO 10-31 19:12:20 [topk_topp_sampler.py:124] Using FlashInfer for top-p & top-k sampling.
+(EngineCore pid=375) INFO 10-31 19:12:20 [torch_utils.py:295] Reducing Torch threads from 16 to 1 for serving. Set OMP_NUM_THREADS in the external environment to override.
+(EngineCore pid=375) INFO 10-31 19:12:20 [interface.py:1096] Setting attention block size to 2784 tokens to ensure that attention page size is >= mamba page size.
+(EngineCore pid=375) INFO 10-31 19:12:20 [utils.py:347] Using LBNHC KV cache layout.
+(EngineCore pid=375) INFO 10-31 19:12:24 [encoder_runner.py:131] Encoder cache will be initialized with a budget of 16384 tokens, and profiled with 1 image items of the maximum feature size.
+(EngineCore pid=375) INFO 10-31 19:12:40 [monitor.py:40] [backbone] Starting torch.compile
+(EngineCore pid=375) INFO 10-31 19:12:49 [backends.py:1104] [backbone] Using cache directory: /root/.cache/vllm/torch_compile_cache/087d4a64c3/rank_0_0/backbone for vLLM's torch.compile
+(EngineCore pid=375) INFO 10-31 19:12:49 [backends.py:1166] [backbone] Dynamo bytecode transform time: 8.88 s
+(EngineCore pid=375) INFO 10-31 19:13:06 [backends.py:398] [backbone] Compiling a graph for compile range (1, 2048) takes 17.62 s
+(EngineCore pid=375) INFO 10-31 19:13:12 [backends.py:927] collected artifacts: 65 entries, 23 artifacts, 57505911 bytes total
+(EngineCore pid=375) INFO 10-31 19:13:12 [decorators.py:743] [backbone] saved AOT compiled function to /root/.cache/vllm/torch_compile_cache/torch_aot_compile/1ba12183c8dc498d73d4b232f555cd14b259e954193173efa778ff480fcae0d3/rank_0_0/model
+(EngineCore pid=375) INFO 10-31 19:13:12 [monitor.py:62] [backbone] torch.compile took 32.55 s in total
+(EngineCore pid=375) INFO 10-31 19:13:20 [monitor.py:91] [backbone] Initial profiling/warmup run took 7.44 s
+(EngineCore pid=375) INFO 10-31 19:13:22 [flashinfer.py:966] FlashInfer resolved query dtypes: prefill=torch.bfloat16, decode=torch.bfloat16, decode_backend=xqa, kv_cache_dtype=torch.uint8, arch=sm120
+(EngineCore pid=375) INFO 10-31 19:13:45 [model_runner.py:1127] Graph capturing finished in 23 secs, took 0.47 GiB
+(EngineCore pid=375) INFO 10-31 19:13:45 [gpu_worker.py:759] Available KV cache memory: 5.67 GiB
+(EngineCore pid=375) INFO 10-31 19:13:45 [gpu_worker.py:774] CUDA graph memory profiling is enabled (default since v0.21.0). The current --gpu-memory-utilization=0.9400 is equivalent to --gpu-memory-utilization=0.9250 without CUDA graph memory profiling. To maintain the same effective KV cache size as before, increase --gpu-memory-utilization to 0.9550. To disable, set VLLM_MEMORY_PROFILER_ESTIMATE_CUDAGRAPHS=0.
+(EngineCore pid=375) INFO 10-31 19:13:45 [kv_cache_utils.py:2327] GPU KV cache size: 306,267 tokens, Maximum concurrency for 262,144 tokens per request: 1.17x
+(EngineCore pid=375) INFO 10-31 19:13:45 [kv_cache_utils.py:853] kv cache group sizes (2784, 2784, 2784, 2784)
+(EngineCore pid=375) INFO 10-31 19:13:45 [kv_cache_utils.py:854] kv lcm block sizes 2784
+(EngineCore pid=375) INFO 10-31 19:13:45 [kernel_warmup.py:176] JIT kernel warmup starting.
+(EngineCore pid=375) INFO 10-31 19:13:45 [kernel_warmup.py:189] JIT kernel warmup finished in 0.00s.
+(EngineCore pid=375) INFO 10-31 19:13:45 [qwen_triton_warmup.py:296] Warming up Qwen GDN Triton kernels for model_type=qwen3_5_text.
+(EngineCore pid=375) INFO 10-31 19:13:46 [qwen_vl_triton_warmup.py:57] Warmed position embedding and vision rotary kernels on grids=[(1, 16, 16), (1, 16, 2), (1, 2, 16), (1, 2, 2)].
+(EngineCore pid=375) INFO 10-31 19:13:46 [mamba_triton_warmup.py:42] Warmed Mamba batch_memcpy_kernel.
+(EngineCore pid=375) INFO 10-31 19:13:46 [cache.py:361] Using nvfp4 data type to store kv cache. It reduces the GPU memory footprint and boosts the performance. Meanwhile, it may cause accuracy drop without a proper scaling factor
+(EngineCore pid=375) INFO 10-31 19:13:46 [kernel.py:467] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+(EngineCore pid=375) INFO 10-31 19:13:46 [kernel_warmup.py:460] Using FlashInfer autotune cache file: /root/.cache/vllm/flashinfer_autotune_cache/0.7.0.post1/120f/45508414f2aeffd095bc6c491a60b6f7c3931c17cf212611408202e077f214a1/autotune_configs_dp0_rank0.json
+(EngineCore pid=375) INFO 10-31 19:13:46 [kernel_warmup.py:367] Running FlashInfer autotune with 2048 tokens and token buckets (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 768, 1024, 1280, 1536, 1792, 2048).
+(EngineCore pid=375) INFO 10-31 19:13:56 [model_runner.py:1127] Graph capturing finished in 1 secs, took 0.04 GiB
+(EngineCore pid=375) INFO 10-31 19:13:56 [gpu_worker.py:971] CUDA graph pool memory: 0.04 GiB (actual), 0.47 GiB (estimated), difference: 0.44 GiB (1244.4%).
+(EngineCore pid=375) INFO 10-31 19:13:56 [gpu_worker.py:1034] Free memory on device (30.81/31.44 GiB) on startup. Desired GPU memory utilization is (0.94, 29.56 GiB). Actual usage is 21.67 GiB for consumed memory (weights + non-torch), 2.22 GiB for peak activation, and 0.04 GiB for CUDAGraph memory. Replace gpu_memory_utilization config with `--kv-cache-memory=5891751158` (5.49 GiB) to fit into requested memory, or `--kv-cache-memory=7235982336` (6.74 GiB) to fully utilize gpu memory. Current kv cache memory in use is 5.67 GiB.
+(EngineCore pid=375) INFO 10-31 19:13:57 [jit_monitor.py:84] Kernel JIT monitor activated; monitored JIT compilations during inference will use mode=warn.
+(EngineCore pid=375) INFO 10-31 19:13:57 [core.py:395] init engine (profile, create kv cache, warmup model) took 97.25 s (compilation: 32.55 s)
+(EngineCore pid=375) INFO 10-31 19:13:57 [kernel.py:467] Final IR op priority after setting platform defaults: IrOpPriorityConfig(rms_norm=['native'], fused_add_rms_norm=['native'], gelu_and_mul_sparse=['triton', 'native'])
+(APIServer pid=1) INFO 10-31 19:13:57 [entry.py:136] Supported tasks: ['generate']
+(APIServer pid=1) INFO 10-31 19:13:57 [factories.py:89] Scale-out endpoints are disabled. Restart vllm serve with --enable-scale-out to enable them.
+(APIServer pid=1) INFO 10-31 19:13:57 [parser_manager.py:38] "auto" tool choice has been enabled.
+(APIServer pid=1) INFO 10-31 19:13:58 [hf.py:648] Detected the chat template content format to be 'openai'. You can set `--chat-template-content-format` to override this.
+(APIServer pid=1) WARNING 10-31 19:13:58 [model.py:1893] Default vLLM sampling parameters have been overridden by the model's `generation_config.json`: `{'temperature': 1.0, 'top_k': 20, 'top_p': 0.95}`. If this is not intended, please relaunch vLLM instance with `--generation-config vllm`.
+(APIServer pid=1) INFO 10-31 19:13:58 [entry.py:140] Starting vLLM server on http://0.0.0.0:8000
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:186] Available routes are:
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /openapi.json, Methods: GET, HEAD
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /docs, Methods: GET, HEAD
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /docs/oauth2-redirect, Methods: GET, HEAD
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /redoc, Methods: GET, HEAD
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /load, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /version, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /kv_event_sources, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /health, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /metrics, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /tokenize, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /detokenize, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/models, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/systemone, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /ping, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /ping, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /invocations, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/chat/completions, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/chat/completions/batch, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/responses, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/responses/{response_id}, Methods: GET
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/responses/{response_id}/cancel, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/completions, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/messages, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/messages/count_tokens, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /generative_scoring, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /scale_elastic_ep, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /is_scaling_elastic_ep, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/chat/completions/render, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/messages/render, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/completions/render, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/responses/render, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/chat/completions/derender, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /v1/completions/derender, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /inference/v1/generate, Methods: POST
+(APIServer pid=1) INFO 10-31 19:13:58 [launcher.py:195] Route: /inference/v1/abort_requests, Methods: POST
+INFO:     10.89.0.8:34052 - "GET /health HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34060 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34064 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34066 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34074 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34086 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34094 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34096 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34104 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34118 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34130 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34134 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34144 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34160 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34162 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34176 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34186 - "GET /metrics HTTP/1.1" 200 OK
+(EngineCore pid=375) WARNING 10-31 19:14:00 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _topk_topp_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=375) WARNING 10-31 19:14:00 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _topp_sb_stats_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO:     10.89.0.8:34194 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34202 - "GET /metrics HTTP/1.1" 200 OK
+(EngineCore pid=375) WARNING 10-31 19:14:01 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _topp_sb_step_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO:     10.89.0.8:34212 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34222 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34230 - "GET /metrics HTTP/1.1" 200 OK
+(EngineCore pid=375) WARNING 10-31 19:14:01 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _topp_sb_mask_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+(EngineCore pid=375) WARNING 10-31 19:14:01 [jit_monitor.py:140] Triton kernel JIT compilation during inference: _gumbel_sample_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO:     10.89.0.8:34246 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34258 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34264 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34278 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34286 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34290 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34306 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34316 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34328 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34342 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34344 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34350 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34362 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34376 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34378 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34384 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34394 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34402 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34416 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34428 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34430 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34436 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34446 - "GET /metrics HTTP/1.1" 200 OK
+(EngineCore pid=375) WARNING 10-31 19:14:05 [jit_monitor.py:140] Triton kernel JIT compilation during inference: fused_sigmoid_gating_delta_rule_update_kernel. This causes a latency spike; consider extending warmup to cover this shape/config.
+INFO:     10.89.0.8:34448 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34452 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34462 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34466 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34484 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34500 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34510 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34524 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34540 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34556 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34568 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34578 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34580 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34588 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34592 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34608 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34614 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34622 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34628 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34642 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:14:08 [loggers.py:335] Engine 000: Avg prompt throughput: 1484.3 tokens/s, Avg generation throughput: 1.6 tokens/s, Running: 2 reqs, Waiting: 0 reqs, GPU KV cache usage: 21.4%, Prefix cache hit rate: 0.0%
+INFO:     10.89.0.8:34658 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34666 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:34672 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40260 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40264 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40270 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40282 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40296 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40310 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40322 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40338 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40350 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40362 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40372 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40386 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40402 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40416 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40432 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40448 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40458 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40472 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40486 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40490 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40506 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40522 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40540 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40574 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40588 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40600 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40606 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40614 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40626 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40640 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40642 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40652 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40662 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40668 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40678 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40680 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40682 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40696 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40700 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40716 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40730 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40742 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40756 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40772 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40774 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40786 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40802 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40806 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40808 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40820 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40824 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40830 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40836 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40838 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40842 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40844 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40858 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:14:18 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 3.1 tokens/s, Running: 2 reqs, Waiting: 0 reqs, GPU KV cache usage: 35.0%, Prefix cache hit rate: 0.0%
+INFO:     10.89.0.8:40860 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40862 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40864 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41422 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41438 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41452 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41460 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41470 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41484 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41498 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41504 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41508 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41516 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41522 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41534 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41540 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41562 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41578 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41592 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41594 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41610 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41612 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41628 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41630 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41636 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41638 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41654 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41660 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41676 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41702 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41714 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41724 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41734 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41736 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41752 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41760 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41772 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41782 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41792 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41806 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41814 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41824 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41840 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41848 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41850 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41870 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41878 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41884 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41892 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41904 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41906 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41914 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41926 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41932 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41940 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41948 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41964 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41972 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41982 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41994 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:42006 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:42012 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:42016 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:14:28 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 1.7 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 35.9%, Prefix cache hit rate: 0.0%
+INFO:     10.89.0.8:42022 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:42024 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40166 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40170 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40176 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40192 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40194 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40208 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40216 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40226 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40228 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40242 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40244 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40260 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40270 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40278 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40292 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40294 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40298 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40314 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40320 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40328 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40330 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40334 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40350 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40360 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40374 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40378 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40386 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40392 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40394 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40410 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40420 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40424 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40432 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40448 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40450 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40452 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40458 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40468 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40494 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40496 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40510 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40522 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40530 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40542 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40556 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40570 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40594 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40606 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40612 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40624 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40632 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40634 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40642 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40650 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40652 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40664 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40678 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40692 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40706 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40710 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:14:38 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 43.6%, Prefix cache hit rate: 0.0%
+INFO:     10.89.0.8:40724 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40740 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40748 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53396 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53404 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53414 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53430 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53438 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53448 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53460 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53472 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53478 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53488 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53498 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53506 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53520 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53536 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53544 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53558 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53562 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53564 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53572 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53588 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53602 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53616 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53630 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53640 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53648 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53656 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53658 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53668 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53672 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53696 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53710 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53716 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53718 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53726 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53730 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53742 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53750 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53762 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53764 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53776 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53786 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53802 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53806 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53808 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53820 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53838 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53852 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53860 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53874 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53882 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53884 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53892 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53902 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53914 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53926 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53938 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53954 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53962 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53978 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:53990 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49400 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49414 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49430 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49434 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49440 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49446 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49450 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49458 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49466 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49480 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49486 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49492 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49502 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49508 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49514 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49520 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49536 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49544 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49546 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49560 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49574 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49578 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49586 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49588 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49602 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49606 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49610 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49616 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49620 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49622 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49638 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49644 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49660 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49666 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49674 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49688 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49696 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49702 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49710 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49714 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49716 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49732 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49736 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49740 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49746 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49754 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49756 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49760 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49768 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49776 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49782 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49784 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49790 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49806 - "POST /tokenize HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:14:58 [loggers.py:335] Engine 000: Avg prompt throughput: 16126.9 tokens/s, Avg generation throughput: 8.8 tokens/s, Running: 0 reqs, Waiting: 0 reqs, GPU KV cache usage: 0.0%, Prefix cache hit rate: 47.2%
+INFO:     10.89.0.8:49814 - "POST /tokenize HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49826 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49854 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49842 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:49858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39570 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39580 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39586 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39598 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39610 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39614 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39620 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39624 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39632 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39636 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39640 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39646 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39662 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39668 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39670 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39672 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39694 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39698 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39702 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39710 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39722 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39730 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39742 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39756 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39764 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39778 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39786 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39798 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39806 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39820 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39836 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39840 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39846 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39856 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39872 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39884 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39896 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39910 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39922 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39928 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39934 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39940 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39952 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39966 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39970 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39980 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:39986 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40000 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40006 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40022 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40024 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40036 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40046 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40056 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40068 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40072 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40082 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40090 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40106 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40116 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:15:08 [loggers.py:335] Engine 000: Avg prompt throughput: 591.7 tokens/s, Avg generation throughput: 3.8 tokens/s, Running: 2 reqs, Waiting: 0 reqs, GPU KV cache usage: 27.4%, Prefix cache hit rate: 26.8%
+INFO:     10.89.0.8:40128 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40134 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41264 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41272 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41282 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41284 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41286 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41294 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41296 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41302 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41306 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41316 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41320 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41332 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41336 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41344 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41358 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41372 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41398 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41412 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41422 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41424 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41428 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41432 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41438 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41442 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41456 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41468 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41476 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41492 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41502 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41516 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41524 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41526 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41530 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41538 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41554 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41568 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41598 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41614 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41626 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41642 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41656 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41670 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41690 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41706 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41714 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41726 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41728 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41744 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41750 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41764 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41772 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41782 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41788 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41796 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41802 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41808 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41816 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41844 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:15:18 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 2.3 tokens/s, Running: 2 reqs, Waiting: 0 reqs, GPU KV cache usage: 37.6%, Prefix cache hit rate: 26.8%
+INFO:     10.89.0.8:41846 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41848 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41850 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54592 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54606 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54612 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54618 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54634 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54646 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54654 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54666 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54674 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54682 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54696 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54712 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54722 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54736 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54752 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54768 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54772 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54774 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54786 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54794 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54804 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54818 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54830 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54838 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54854 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54870 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54878 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54886 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54892 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54902 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54914 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54930 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54944 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54952 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54954 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54962 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54968 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54976 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54986 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:54996 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55002 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55008 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55020 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55024 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55028 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55036 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55052 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55064 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55066 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55082 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55086 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55100 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55116 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55128 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55136 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55150 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55166 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55170 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55178 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55180 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55184 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55194 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:15:28 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.1 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 40.2%, Prefix cache hit rate: 26.8%
+INFO:     10.89.0.8:55206 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:55220 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36028 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36032 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36034 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36044 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36060 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36068 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36076 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36084 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36096 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36104 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36108 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36114 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36120 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36134 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36150 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36160 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36176 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36188 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36192 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36204 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36206 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36208 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36214 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36216 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36228 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36238 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36252 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36268 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36282 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36296 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36302 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36314 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36328 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36330 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36332 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36344 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36350 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36362 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36376 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36390 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36402 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36412 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36420 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36434 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36450 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36456 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36470 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36484 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36486 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36490 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36500 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36514 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36518 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36544 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36548 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36562 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36568 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36574 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36588 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36604 - "GET /metrics HTTP/1.1" 200 OK
+(APIServer pid=1) INFO 10-31 19:15:38 [loggers.py:335] Engine 000: Avg prompt throughput: 0.0 tokens/s, Avg generation throughput: 0.0 tokens/s, Running: 1 reqs, Waiting: 0 reqs, GPU KV cache usage: 47.0%, Prefix cache hit rate: 26.8%
+INFO:     10.89.0.8:36610 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36618 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:36632 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40624 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40626 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40632 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40648 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40664 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40674 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40684 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40688 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40694 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40700 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40710 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40720 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40730 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40744 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40756 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40768 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40780 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40796 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40800 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40802 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40818 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40830 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40842 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40856 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40868 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40880 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40890 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40898 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40902 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40910 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40926 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40930 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40942 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40954 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40958 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40966 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40968 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40978 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40980 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40986 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:40998 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41006 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41018 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41026 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41036 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41048 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41056 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41066 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41072 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41082 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41098 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41108 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41120 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41130 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41144 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41146 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41150 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41154 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41162 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41170 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41178 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41190 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41200 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:41216 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60502 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60512 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60516 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60532 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60536 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60550 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60562 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60574 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60586 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60600 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60614 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60624 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60640 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60656 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60670 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60698 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60706 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60716 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60728 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60730 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60742 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60746 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60748 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60764 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60772 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60784 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60798 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60800 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60810 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60812 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60816 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60818 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60834 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60836 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60850 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60864 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60868 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60872 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60884 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60894 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60910 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60922 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60934 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60940 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60944 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60948 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60950 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60964 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60974 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60980 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60996 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32774 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32788 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32804 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32818 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32834 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32850 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32852 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32856 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32858 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32864 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32870 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:32882 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:45998 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46008 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46018 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46032 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46048 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46056 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46058 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46060 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46074 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46090 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46102 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46112 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46122 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46138 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46144 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46146 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46156 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46172 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46186 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46190 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46194 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46196 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46212 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46216 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46226 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46238 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46254 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46266 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46268 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46282 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46288 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46300 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46310 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46316 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46328 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46332 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46338 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46346 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46352 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46358 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46372 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46376 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46386 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46394 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46396 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46408 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46412 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46428 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46438 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46442 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46452 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46468 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46488 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46496 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46502 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46518 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46534 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46546 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46568 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:46598 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59812 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59824 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59838 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59840 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59852 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59868 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59884 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59898 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59904 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59910 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59918 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59928 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59936 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59952 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59966 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59972 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59982 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59986 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59998 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60008 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60022 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60032 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60036 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60044 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60054 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60064 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60074 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60080 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60090 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60104 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60108 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60122 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60128 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60130 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60138 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60148 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60150 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60154 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60164 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60172 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60188 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60200 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60212 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60220 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60236 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60238 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60248 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60262 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60266 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60268 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60276 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60290 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60294 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60296 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60308 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60324 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60334 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60340 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60354 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60368 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60372 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60386 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60392 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:60404 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43064 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43078 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43092 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43106 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43108 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43118 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43122 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43126 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43128 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43136 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43138 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43148 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43158 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43160 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43172 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43174 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43190 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43202 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43210 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43226 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43234 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43236 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43248 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43258 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43268 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43270 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43276 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43286 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43288 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43302 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43304 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43316 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43330 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43342 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43352 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43366 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43378 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43384 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43388 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43404 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43414 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43420 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43428 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43434 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43446 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43460 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43464 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43480 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43492 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43500 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43512 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43514 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43526 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43540 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43546 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43550 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43556 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43558 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43572 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43580 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43584 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43600 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43610 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:43622 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56012 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56014 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56030 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56036 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56040 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56054 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56064 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56076 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56084 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56088 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56094 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56104 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56110 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56116 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56118 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56132 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56136 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56138 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56152 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56160 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56170 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56172 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56188 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56204 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56216 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56222 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56238 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56244 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56252 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56266 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56278 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56286 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56300 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56310 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56320 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56330 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56336 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56338 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56348 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56360 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56376 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56380 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56394 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56408 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56424 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56438 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56452 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56454 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56464 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56476 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56480 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56494 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56500 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56504 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56514 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56532 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56538 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56558 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56568 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56582 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56596 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56598 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56600 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:56602 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51148 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51152 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51164 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51176 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51178 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51190 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51204 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51208 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51214 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51230 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51238 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51250 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51254 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51270 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51280 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51286 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51292 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51298 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51308 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51318 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51324 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51330 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51332 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51336 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51348 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51352 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51358 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51374 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51386 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51398 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51410 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51418 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51426 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51440 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51442 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51446 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51460 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51472 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51476 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51482 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51494 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51510 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51526 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51528 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51534 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51540 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51542 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51552 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51566 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51576 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51580 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51594 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51604 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51616 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51620 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51626 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51642 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51654 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51658 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51660 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51666 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51682 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51686 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51696 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:51708 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58682 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58692 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58704 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58714 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58724 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58726 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58738 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58752 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58764 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58780 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58792 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58806 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58816 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58822 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58832 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58842 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58856 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58860 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58862 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58870 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58882 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58886 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58896 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58902 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58906 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58910 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58922 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58934 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58940 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58944 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58950 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58954 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58970 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58982 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58984 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58988 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:58994 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59006 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59010 - "GET /metrics HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59026 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+INFO:     10.89.0.8:59028 - "POST /v1/chat/completions HTTP/1.1" 200 OK
+[transformers] Qwen3VL video processing does not apply the per-frame pixel cap the reference implementation (qwen-vl-utils) applies, so some videos cost far more tokens than they would there. In v5.22 the capped behavior will become the default and `cap_pixels_per_frame` will be removed. Pass `cap_pixels_per_frame=True` to adopt the reference behavior now, or `False` to keep the current behavior and silence this warning.
+
+Loading safetensors checkpoint shards:   0% Completed | 0/2 [00:00<?, ?it/s]
+
+Loading safetensors checkpoint shards:  50% Completed | 1/2 [00:03<00:03,  3.97s/it]
+
+Loading safetensors checkpoint shards: 100% Completed | 2/2 [00:03<00:00,  1.99s/it]
+
+
+Capturing CUDA graphs (PIECEWISE):   0%|          | 0/3 [00:00<?, ?it/s]2026-10-31 19:13:22,995 - INFO - core.py:564 - flashinfer.jit: Building JIT module batch_prefill_with_kv_cache_dtype_q_bf16_dtype_kv_fp4x2_e2m1_dtype_o_bf16_dtype_idx_i32_head_dim_qk_256_head_dim_vo_256_posenc_0_use_swa_False_use_logits_cap_False_f16qk_False_kv_stride_equal; this can take several minutes on first use.
+
+Capturing CUDA graphs (PIECEWISE):  33%|███▎      | 1/3 [00:17<00:35, 17.81s/it]2026-10-31 19:13:41,067 - INFO - core.py:564 - flashinfer.jit: Building JIT module xqa_input_bf16_kv_cache_u8_output_bf16_page_size_32_head_dim_256_head_group_ratio_6_use_sliding_window_False_use_spec_dec_False_spec_q_seq_len_1; this can take several minutes on first use.
+
+Capturing CUDA graphs (PIECEWISE):  67%|██████▋   | 2/3 [00:21<00:09,  9.46s/it]
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 3/3 [00:21<00:00,  5.20s/it]
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 3/3 [00:21<00:00,  7.19s/it]
+
+Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 23.66it/s]
+2026-10-31 19:13:46,246 - INFO - autotuner.py:1046 - flashinfer.jit: [Autotuner]: Autotuning process starts ...
+
+[AutoTuner]: Tuning fp4_gemm:   0%|          | 0/16 [00:00<?, ?profile/s]2026-10-31 19:13:46,440 - INFO - core.py:564 - flashinfer.jit: Building JIT module trtllm_utils; this can take several minutes on first use.
+
+[AutoTuner]: Tuning fp4_gemm:   6%|▋         | 1/16 [00:02<00:39,  2.66s/profile]
+[AutoTuner]: Tuning fp4_gemm:  12%|█▎        | 2/16 [00:02<00:16,  1.16s/profile]
+[AutoTuner]: Tuning fp4_gemm:  25%|██▌       | 4/16 [00:02<00:05,  2.03profile/s]
+[AutoTuner]: Tuning fp4_gemm:  38%|███▊      | 6/16 [00:03<00:03,  3.27profile/s]
+[AutoTuner]: Tuning fp4_gemm:  50%|█████     | 8/16 [00:03<00:01,  4.66profile/s]
+[AutoTuner]: Tuning fp4_gemm:  62%|██████▎   | 10/16 [00:03<00:01,  5.45profile/s]
+[AutoTuner]: Tuning fp4_gemm:  69%|██████▉   | 11/16 [00:03<00:00,  5.44profile/s]
+[AutoTuner]: Tuning fp4_gemm:  75%|███████▌  | 12/16 [00:03<00:00,  5.07profile/s]
+[AutoTuner]: Tuning fp4_gemm:  81%|████████▏ | 13/16 [00:04<00:00,  4.42profile/s]
+[AutoTuner]: Tuning fp4_gemm:  88%|████████▊ | 14/16 [00:04<00:00,  3.89profile/s]
+[AutoTuner]: Tuning fp4_gemm:  94%|█████████▍| 15/16 [00:05<00:00,  3.36profile/s]
+[AutoTuner]: Tuning fp4_gemm: 100%|██████████| 16/16 [00:05<00:00,  3.00profile/s]
+[AutoTuner]: Tuning fp4_gemm: 100%|██████████| 16/16 [00:05<00:00,  2.91profile/s]
+
+[AutoTuner]: Tuning fp4_gemm:   0%|          | 0/16 [00:00<?, ?profile/s]
+[AutoTuner]: Tuning fp4_gemm:  12%|█▎        | 2/16 [00:00<00:01, 12.87profile/s]
+[AutoTuner]: Tuning fp4_gemm:  25%|██▌       | 4/16 [00:00<00:00, 12.95profile/s]
+[AutoTuner]: Tuning fp4_gemm:  38%|███▊      | 6/16 [00:00<00:00, 13.34profile/s]
+[AutoTuner]: Tuning fp4_gemm:  50%|█████     | 8/16 [00:00<00:00, 13.72profile/s]
+[AutoTuner]: Tuning fp4_gemm:  62%|██████▎   | 10/16 [00:00<00:00, 12.94profile/s]
+[AutoTuner]: Tuning fp4_gemm:  75%|███████▌  | 12/16 [00:01<00:00, 10.61profile/s]
+[AutoTuner]: Tuning fp4_gemm:  88%|████████▊ | 14/16 [00:01<00:00,  8.37profile/s]
+[AutoTuner]: Tuning fp4_gemm:  94%|█████████▍| 15/16 [00:01<00:00,  7.40profile/s]
+[AutoTuner]: Tuning fp4_gemm: 100%|██████████| 16/16 [00:01<00:00,  6.51profile/s]
+[AutoTuner]: Tuning fp4_gemm: 100%|██████████| 16/16 [00:01<00:00,  8.97profile/s]
+2026-10-31 19:13:53,919 - INFO - autotuner.py:1069 - flashinfer.jit: [Autotuner]: Autotuning process ends
+2026-10-31 19:13:53,960 - INFO - autotuner.py:3554 - flashinfer.jit: [Autotuner]: Saved 32 configs to /root/.cache/vllm/flashinfer_autotune_cache/0.7.0.post1/120f/45508414f2aeffd095bc6c491a60b6f7c3931c17cf212611408202e077f214a1/autotune_configs_dp0_rank0.json (32 new, 0 from previous config)
+
+Capturing CUDA graphs (PIECEWISE):   0%|          | 0/3 [00:00<?, ?it/s]
+Capturing CUDA graphs (PIECEWISE):  67%|██████▋   | 2/3 [00:00<00:00, 16.21it/s]
+Capturing CUDA graphs (PIECEWISE): 100%|██████████| 3/3 [00:00<00:00, 17.50it/s]
+
+Capturing CUDA graphs (FULL):   0%|          | 0/2 [00:00<?, ?it/s]
+Capturing CUDA graphs (FULL): 100%|██████████| 2/2 [00:00<00:00, 25.87it/s]
+INFO:     Started server process [1]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

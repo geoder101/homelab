@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+"""Persistently switch the deployed local coder profile, with checked rollback.
+
+Run on Brain's host. No downloads, client edits or secret-value output.
+"""
+import argparse
+import datetime
+import fcntl
+import json
+import os
+import pathlib
+import re
+import shlex
+import shutil
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+import uuid
+import urllib.request
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+MODEL = pathlib.Path('config/models.lock.yaml')
+UNIT = pathlib.Path('quadlets/llama-coder.container')
+
+
+def run(*args, capture=True):
+    result = subprocess.run(args, text=True, capture_output=capture)
+    if result.returncode:
+        detail = ((result.stderr or '') + (result.stdout or ''))[-5000:]
+        raise RuntimeError(f'{args[0]} exited {result.returncode}: {detail}')
+    return result.stdout or ''
+
+
+def active(name):
+    return subprocess.run(['systemctl', '--user', 'is-active', '--quiet', name]).returncode == 0
+
+
+def backend(path):
+    # Only aggregate status/properties are printed, never slot prompt contents.
+    code = '''import json,sys,urllib.request
+value=json.load(urllib.request.urlopen('http://llama-coder:8000'+sys.argv[1],timeout=5))
+if sys.argv[1]=='/slots': value={'active':sum(bool(s['is_processing']) for s in value)}
+else: value={k:value[k] for k in ('model_path','total_slots','default_generation_settings')}
+print(json.dumps(value))'''
+    return json.loads(run('podman', 'exec', 'ai-station-litellm', 'python', '-c', code, path))
+
+
+def arguments(unit):
+    return shlex.split(next(line[5:] for line in unit.splitlines() if line.startswith('Exec=')))
+
+
+def render(model_text, unit_text, name, profile):
+    """Change only profile-controlled fields; preserve other checkout settings."""
+    settings = {'profile': name, **profile['model']}
+    for key, value in settings.items():
+        scalar = str(value).lower() if isinstance(value, bool) else str(value)
+        pattern = rf'^    {re.escape(key)}:.*$'
+        if re.search(pattern, model_text, re.M):
+            model_text = re.sub(pattern, f'    {key}: {scalar}', model_text, flags=re.M)
+        else:
+            model_text += f'    {key}: {scalar}\n'
+    model = yaml.safe_load(model_text)['models']['coder']
+    tokens = arguments(unit_text)
+
+    def set_value(flag, value):
+        if flag in tokens:
+            tokens[tokens.index(flag)+1] = str(value)
+        else:
+            tokens.extend([flag, str(value)])
+
+    vision_target = '/models/coder' if model['vision_directory'] == model['directory'] else '/models/vision'
+    for flag, value in {'--model': '/models/coder/' + model['file'],
+            '--mmproj': vision_target + '/' + model['vision_file'],
+            '--ctx-size': model['total_context'], '--parallel': model['parallel'],
+            '--cache-type-k': model['kv_cache'], '--cache-type-v': model['kv_cache'],
+            '--cache-ram': model['cache_ram_mib']}.items():
+        set_value(flag, value)
+    for flag in ('--kv-unified', '--no-kv-unified', '--no-mmproj-offload'):
+        while flag in tokens:
+            tokens.remove(flag)
+    tokens.insert(tokens.index('--parallel')+2, '--no-kv-unified')
+    if not model['vision_offload']:
+        tokens.insert(tokens.index('--mmproj')+2, '--no-mmproj-offload')
+    mounts = [f"Volume=%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"]
+    if vision_target != '/models/coder':
+        mounts.append(f"Volume=%h/.local/share/ai-station/models/{model['vision_directory']}:/models/vision:ro,Z")
+    lines, inserted = [], False
+    for line in unit_text.splitlines():
+        if line.startswith('Volume=') and any(target in line for target in (':/models/coder:', ':/models/vision:')):
+            if not inserted:
+                lines.extend(mounts)
+                inserted = True
+        elif line.startswith('Exec='):
+            lines.append('Exec=' + shlex.join(tokens))
+        elif line.startswith('# Three fixed') or line.startswith('# Selected coder profile:'):
+            lines.append(f"# Selected coder profile: {name}; {model['parallel']} fixed 256K slots.")
+        elif line.startswith('# Weights and Q4 K/V'):
+            lines.append('# GPU weights/cache; projector placement is selected by the profile. MTP is disabled.')
+        else:
+            lines.append(line)
+    if not inserted:
+        raise ValueError('Missing managed model volume in llama Quadlet')
+    return model_text, '\n'.join(lines) + '\n'
+
+
+def write_atomic(path, data, mode):
+    fd, temporary = tempfile.mkstemp(prefix='.' + path.name + '-', dir=path.parent)
+    try:
+        with os.fdopen(fd, 'wb') as stream:
+            stream.write(data)
+        os.chmod(temporary, mode)
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def wait_ready(unit_text):
+    deadline = time.monotonic() + 180
+    while time.monotonic() < deadline:
+        result = subprocess.run(['podman', 'exec', 'ai-station-llama-coder', 'curl',
+            '--fail', '--silent', '--max-time', '3', 'http://127.0.0.1:8000/health'], capture_output=True)
+        if result.returncode == 0:
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError('Backend readiness timeout; inspect llama-coder.service')
+    run('systemctl', '--user', 'restart', 'litellm')
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+    deadline = time.monotonic() + 120
+    while time.monotonic() < deadline:
+        try:
+            with opener.open('http://127.0.0.1:4000/health/liveliness', timeout=3):
+                break
+        except OSError:
+            time.sleep(1)
+    else:
+        raise RuntimeError('LiteLLM readiness timeout; inspect litellm.service')
+    live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
+    if live != arguments(unit_text):
+        raise RuntimeError('Running backend arguments do not match selected Quadlet')
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('profile', nargs='?', choices=['capacity', 'precision'])
+    parser.add_argument('--status', action='store_true')
+    parser.add_argument('--check', action='store_true', help='Validate target artifacts/units without changing deployment')
+    parser.add_argument('--base-url', default='http://127.0.0.1:4000', help='Smoke-test gateway URL, without /v1')
+    args = parser.parse_args()
+    profiles = yaml.safe_load((ROOT / 'config/coder-profiles.yaml').read_text())['profiles']
+    current_text = (ROOT / MODEL).read_text()
+    current = yaml.safe_load(current_text)['models']['coder']
+    if args.status:
+        print(f"Selected: {current.get('profile', 'custom')}; {current.get('parallel', 1)} x {current['context']} tokens; {current['quantization']}")
+        props = backend('/props')
+        matches = (props['model_path'].endswith('/' + current['file'])
+            and props['total_slots'] == current.get('parallel', 1)
+            and props['default_generation_settings']['n_ctx'] == current['context'])
+        live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
+        matches = matches and live == arguments((ROOT / UNIT).read_text())
+        if current.get('profile') in profiles:
+            matches = matches and all(current.get(k) == v for k, v in profiles[current['profile']]['model'].items())
+        print(f"Running: {props['total_slots']} slots; {props['model_path']}; matches selection: {matches}")
+        return 0 if matches else 1
+    if not args.profile:
+        parser.error('Choose capacity or precision, or use --status')
+    state = pathlib.Path.home() / '.local/share/ai-station'
+    lock = (state / 'tune-concurrency.lock').open('a')
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        raise RuntimeError('A profile switch or concurrency experiment is already running')
+    if active('vllm-coder') or subprocess.run(['podman', 'container', 'exists', 'ai-station-coder-candidate']).returncode == 0:
+        raise RuntimeError('Stop the alternative/candidate backend before switching profiles')
+    unit_text = (ROOT / UNIT).read_text()
+    target_model, target_unit = render(current_text, unit_text, args.profile, profiles[args.profile])
+    print(f"Checking {args.profile}: {profiles[args.profile]['description']}", flush=True)
+    # Stage a complete non-secret config/unit tree. Existing validators remain authoritative.
+    with tempfile.TemporaryDirectory(prefix='ai-station-profile-') as temporary:
+        stage = pathlib.Path(temporary)
+        shutil.copytree(ROOT / 'config', stage / 'config')
+        shutil.copytree(ROOT / 'quadlets', stage / 'quadlets')
+        (stage / 'scripts').mkdir()
+        for script in ('preflight', 'validate-quadlets'):
+            shutil.copy2(ROOT / 'scripts' / script, stage / 'scripts' / script)
+        (stage / MODEL).write_text(target_model)
+        (stage / UNIT).write_text(target_unit)
+        try:
+            print(run(sys.executable, str(stage / 'scripts/preflight')), end='', flush=True)
+            run('bash', str(stage / 'scripts/validate-quadlets'))
+        except RuntimeError as error:
+            preparation = ('make download-precision' if args.profile == 'precision' else 'scripts/download-capacity-model')
+            raise RuntimeError(f'{error}\nNo deployment changes made. Missing artifacts can be prepared with: {preparation}') from error
+    print('Staged Quadlet generator validation: PASS', flush=True)
+    if args.check:
+        return 0
+    if not active('llama-coder') or not active('litellm'):
+        raise RuntimeError('Switching requires the deployed llama-coder and LiteLLM stack; use make deploy for initial setup')
+    installed = pathlib.Path(os.environ.get('XDG_CONFIG_HOME', str(pathlib.Path.home() / '.config'))) / 'containers/systemd/llama-coder.container'
+    if not installed.is_file():
+        raise RuntimeError('Missing installed llama Quadlet; use make install first')
+    live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
+    if live != arguments(installed.read_text()):
+        raise RuntimeError('Running backend differs from its installed Quadlet; reconcile pending deployment changes first')
+    if target_model == current_text and installed.read_text() == target_unit and live == arguments(target_unit):
+        print(f'{args.profile} is already selected and running; no restart needed.')
+        return 0
+    if backend('/slots')['active']:
+        raise RuntimeError('Inference is active. Retry between tasks; no deployment changes made.')
+    backup = state / 'backups' / ('coder-profile-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ-') + uuid.uuid4().hex[:8])
+    backup.mkdir(parents=True, mode=0o700)
+    files = {ROOT / MODEL: (ROOT / MODEL).read_bytes(), ROOT / UNIT: (ROOT / UNIT).read_bytes(), installed: installed.read_bytes()}
+    modes = {path: path.stat().st_mode & 0o777 for path in files}
+    for label, path in [('models.lock.yaml.before', ROOT / MODEL), ('llama-coder.container.before', ROOT / UNIT), ('installed-llama-coder.container.before', installed)]:
+        (backup / label).write_bytes(files[path])
+    (backup / 'models.lock.yaml.after').write_text(target_model)
+    (backup / 'llama-coder.container.after').write_text(target_unit)
+    (backup / 'selection.json').write_text(json.dumps({'from': current.get('profile', 'custom'), 'to': args.profile, 'checkout': str(ROOT)}))
+    print(f'Rollback snapshot: {backup}', flush=True)
+    def interrupted(signum, frame):
+        raise KeyboardInterrupt(f'signal {signum}')
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, interrupted)
+    try:
+        write_atomic(ROOT / MODEL, target_model.encode(), modes[ROOT / MODEL])
+        write_atomic(ROOT / UNIT, target_unit.encode(), modes[ROOT / UNIT])
+        write_atomic(installed, target_unit.encode(), 0o600)
+        run('systemctl', '--user', 'daemon-reload')
+        run('systemctl', '--user', 'restart', 'llama-coder')
+        wait_ready(target_unit)
+        run(str(ROOT / 'scripts/smoke-test'), args.base_url)
+    except (Exception, KeyboardInterrupt) as error:
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            signal.signal(sig, signal.SIG_IGN)
+        print(f'Switch failed: {error}\nRestoring previous configuration...', file=sys.stderr, flush=True)
+        for path, data in files.items():
+            write_atomic(path, data, modes[path])
+        try:
+            run('systemctl', '--user', 'daemon-reload')
+            run('systemctl', '--user', 'restart', 'llama-coder')
+            wait_ready(files[installed].decode())
+            run(str(ROOT / 'scripts/smoke-test'), 'http://127.0.0.1:4000')
+        except Exception as recovery:
+            raise RuntimeError(f'Rollback needs attention: {recovery}. Snapshot: {backup}') from error
+        print('Previous profile restored and inference verified.', file=sys.stderr, flush=True)
+        return 1
+    print(f'{args.profile} selected, persisted and verified; existing coder aliases remain available.', flush=True)
+    return 0
+
+
+if __name__ == '__main__':
+    os.umask(0o077)
+    try:
+        sys.exit(main())
+    except (RuntimeError, OSError, ValueError, KeyError) as error:
+        print(f'Profile switch failed: {error}', file=sys.stderr)
+        sys.exit(1)

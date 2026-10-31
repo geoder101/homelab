@@ -1,5 +1,9 @@
 # Benchmark Results
 
+The Q4/Q8/one-slot selection below is historical. The current three-slot
+Q3/Q4 capacity profile and its local alternatives are measured in
+[capacity tuning](concurrency.md).
+
 ## 2026-10-29: Qwen3.8 NVFP4 versus GGUF
 
 Selected **Qwen3.8-27B Dynamic V3 UD-Q4_K_XL / llama.cpp**, native 256K

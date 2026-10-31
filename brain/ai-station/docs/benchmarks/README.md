@@ -1,5 +1,9 @@
 # Qwen3.8 coding-agent comparison
 
+**Current capacity results:** [fully local concurrency tuning](../concurrency.md),
+with raw results in `concurrency-20261031/`. The comparison below is historical;
+its Q4 weights/one-slot settings are not the current Q3/three-slot deployment.
+
 The 2026-10-29 comparison below uses the original embedded template. The
 2026-10-31 production alias/template checks, measured reasoning lengths and
 budget tests are recorded in [reasoning profiles](../reasoning-profiles.md).
@@ -44,7 +48,7 @@ Stop the active production backend before starting either GPU candidate. Run onl
 
 ```bash
 systemctl --user stop llama-coder vllm-coder
-scripts/run-coder-candidate nvfp4  # or gguf, in a separate host terminal
+scripts/run-coder-candidate nvfp4  # or gguf-baseline, in a separate host terminal
 ```
 
 After candidate readiness, run the suite from the repository on the host:

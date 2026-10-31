@@ -18,7 +18,9 @@ LAN clients need a stable router DNS or DHCP reservation for `brain`. Tailscale 
 
 ```text
 ~/.local/share/ai-station/
-  models/qwen3.8-27b-gguf/   active Qwen3.8 Dynamic Q4_K_XL + vision projector
+  models/qwen3.8-27b-gguf-q3/ active Qwen3.8 Dynamic Q3_K_XL weights
+  models/qwen3.8-27b-gguf/   CPU vision projector + retained Q4 comparison weights
+  models/qwen35-4b-helper/   optional local helper experiment, not deployed
   models/qwen3.8-27b-nvfp4/  optional vLLM profile
   models/qwen3.6-27b-nvfp4/  previous checkpoint, retained for rollback
   models/coder/             original AWQ checkpoint
@@ -36,7 +38,13 @@ Bind mounts use `:Z` so Podman applies a private SELinux label to persisted appl
 
 One GPU backend serves one base model at a time, exposed externally as `coder`. This stable alias decouples OpenCode and Open WebUI from model repository changes. Only `llama-coder` has an automatic-start `[Install]` section; the optional `vllm-coder` must be started explicitly after stopping llama.cpp.
 
-The selected llama.cpp profile uses Unsloth Dynamic V3 `UD-Q4_K_XL`, a 262,144-token context, Q8 K/V cache, Flash Attention and one request slot. Transformer layers, active K/V cache and the vision projector are GPU-offloaded. Medium reasoning is the default; historical reasoning preservation and MTP are disabled to prioritize a useful context and bounded turn latency. Standard prompt-cache reuse remains enabled. See `docs/model-profile.md`.
+The selected llama.cpp capacity profile uses Unsloth Dynamic V3 `UD-Q3_K_XL`,
+three fixed 262,144-token contexts, GPU Q4 K/V cache, Flash Attention, and
+16 GiB RAM prompt-cache capacity. The 786,432-token aggregate is not a client
+context limit. Transformer layers and active K/V stay on GPU; the vision
+projector runs on CPU. Medium reasoning and historical reasoning preservation
+are enabled through the pinned template; MTP is disabled. See
+`docs/concurrency.md` for measurements and tradeoffs.
 
 The alternative Qwen3.8 NVFP4 profile uses vLLM 0.32.0 with FlashInfer 0.7.0.post1 and CUTLASS DSL 4.8.0. It has 163,840-token context, explicit calibrated FP8 attention KV, utilization 0.94 and one concurrent sequence. Even with one sequence, 256K required 8.33 GiB cache versus 5.64 GiB available. Both Unsloth NVFP4 checkpoints already select FP8 KV with `auto`; earlier descriptions of those runs as BF16 were incorrect.
 

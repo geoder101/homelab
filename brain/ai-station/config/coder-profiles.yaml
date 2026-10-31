@@ -1,0 +1,31 @@
+# Global llama.cpp profiles. context/output limits and reasoning aliases are shared.
+# Applied selection is recorded in models.lock.yaml and llama-coder.container.
+profiles:
+  capacity:
+    description: Three fixed 256K agents, Q3 weights, Q4 cache, CPU vision
+    model:
+      quantization: unsloth-dynamic-v3-UD-Q3_K_XL
+      directory: qwen3.8-27b-gguf-q3
+      file: Qwen3.8-27B-UD-Q3_K_XL.gguf
+      sha256: 8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e
+      vision_directory: qwen3.8-27b-gguf
+      total_context: 786432
+      parallel: 3
+      kv_cache: q4_0
+      kv_unified: false
+      cache_ram_mib: 16384
+      vision_offload: false
+  precision:
+    description: Two fixed 256K agents, Q4 weights, Q4 cache, GPU vision
+    model:
+      quantization: unsloth-dynamic-v3-UD-Q4_K_XL
+      directory: qwen3.8-27b-gguf
+      file: Qwen3.8-27B-UD-Q4_K_XL.gguf
+      sha256: 3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e
+      vision_directory: qwen3.8-27b-gguf
+      total_context: 524288
+      parallel: 2
+      kv_cache: q4_0
+      kv_unified: false
+      cache_ram_mib: 16384
+      vision_offload: true

@@ -10,7 +10,8 @@ API_URL := $(patsubst %/,%,$(BASE_URL))/v1
 
 .PHONY: help secrets pull download download-template preflight validate install reload \
         start restart status logs smoke verify verify-stress verify-budgets \
-        verify-history audit validate-home client-check client-smoke backup-webui deploy bootstrap
+        verify-history verify-concurrency audit validate-home client-check client-smoke client-concurrency backup-webui deploy bootstrap \
+        profile-capacity profile-precision profile-status download-precision
 
 help:
 	@printf '%s\n' \
@@ -19,6 +20,10 @@ help:
 	  '  make deploy            Back up UI, pull/download, install/reload, restart, smoke' \
 	  '  make pull / download   Fetch pinned images / model + template' \
 	  '  make download-template Fetch only the pinned, checksum-verified template' \
+	  '  make profile-capacity  Switch globally to three 256K agents, Q3 weights' \
+	  '  make profile-precision Switch globally to two 256K agents, Q4 weights' \
+	  '  make profile-status    Show selected and running profile' \
+	  '  make download-precision Prepare Q4 weights/projector for offline switching' \
 	  '  make preflight         Verify artifact hashes, image presence, secret files' \
 	  '  make validate          Run Fedora Quadlet generator dry-run' \
 	  '  make install / reload  Checked Quadlet installation / systemd reload' \
@@ -28,10 +33,12 @@ help:
 	  '  make verify-stress     Also run bounded coding-plan probes' \
 	  '  make verify-budgets    Exercise low/medium thinking ceilings' \
 	  '  make verify-history   Tool-error recovery and local image check' \
+	  '  make verify-concurrency  Concurrent streaming through LiteLLM' \
 	  '  make audit             Check installed LiteLLM request serialization' \
 	  '  make backup-webui      Stop UI, archive persistent data, resume if active' \
 	  '  make client-check      Check this environment’s native Brain OpenCode config' \
 	  '  make client-smoke      Run a small local OpenCode inference request' \
+	  '  make client-concurrency  Run three native OpenCode read-only sessions' \
 	  '  make validate-home     Validate offline Downloads copies (local Python)' \
 	  'BASE_URL defaults to http://brain.local:4000 (exclude /v1).'
 
@@ -43,6 +50,14 @@ download:
 	$(HOST) "$(ROOT)/scripts/download-coder-candidate"
 download-template:
 	$(HOST) "$(ROOT)/scripts/download-chat-template"
+download-precision:
+	$(HOST) "$(ROOT)/scripts/download-qwen38-candidates" gguf
+profile-capacity:
+	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" capacity --base-url "$(BASE_URL)"
+profile-precision:
+	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" precision --base-url "$(BASE_URL)"
+profile-status:
+	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" --status
 preflight:
 	$(HOST) python3 "$(ROOT)/scripts/preflight"
 validate:
@@ -69,6 +84,8 @@ verify-budgets:
 	$(HOST) python3 "$(ROOT)/scripts/verify-reasoning-profiles" --base-url "$(API_URL)" --budget-check
 verify-history:
 	$(HOST) python3 "$(ROOT)/scripts/verify-reasoning-profiles" --base-url "$(API_URL)" --history-check
+verify-concurrency:
+	$(HOST) python3 "$(ROOT)/scripts/verify-concurrency"
 audit:
 	$(HOST) podman exec -i ai-station-litellm python < "$(ROOT)/scripts/audit-reasoning-forwarding"
 validate-home:
@@ -77,6 +94,8 @@ client-check:
 	python3 "$(ROOT)/scripts/check-brain-client"
 client-smoke:
 	opencode run --model brain/coder-off --thinking --format json 'Reply with exactly READY. Do not use tools.'
+client-concurrency:
+	python3 "$(ROOT)/scripts/check-native-concurrency"
 backup-webui:
 	$(HOST) "$(ROOT)/scripts/backup-webui"
 

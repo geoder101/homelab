@@ -1,0 +1,170 @@
+{
+  "label": "baseline",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "mtp": false
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.264,
+      "elapsed_seconds": 9.325,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 72.51,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 1. Reproduce & Establish Baseline\n\n### 1.1 Confirm the leak exists\n```bash\n# Run your integration test suite with memory tracking enabled\npython -X tracemalloc=25 my_integration_tests.py --duration 3600\n\n# Or use a simple wrapper to track RSS over time:\n#!/bin/bash\n# monitor_rss.sh\nPID=$1\nwhile kill -0 $PID 2>/dev/null; do\n    RSS=$(ps -o rss= -p $PID)\n    echo \"$(date +%s) $RSS\" >> /tmp/rss_$PID.log\n    sleep 5\ndone\n```\n\n### 1.2 Establish baseline memory behavior\n```bash\n# Run a short, clean session and record memory\npython -m tracemalloc my_server.py --port 8080 &\nSERVER_PID=$!\n\n# Make a few requests to warm up caches\nfor i in $(seq 1 100); do\n    curl -s http://localhost:8080/health > /dev/null\ndone\n\n# Record baseline after warm-up\npython3 -c \"\nimport psutil, sys\nproc = psutil.Process($SERVER_PID)\nmem = proc.memory_info()\nprint(f'Baseline RSS: {mem.rss / 1024 / 1024:.2f} MB')\nprint(f'Baseline VMS: {mem.vms / 1024 / 1024:.2f} MB')\n\"\n\n# Kill the server\nkill $SERVER_PID\n```\n\n---\n\n## 2. Profiling with `tracemalloc` (Built-in, Low Overhead)\n\n### 2.1 Enable tracemalloc in your server entry point\n```python\n# my_server.py\nimport tracemalloc\nimport atexit\n\n# Start tracing at the very beginning of main()\ndef main():\n    tracemalloc.start(25)  # Keep up to 25 frames for each trace\n    \n    @atexit.register\n    def dump_traces():\n        snapshot = tracemalloc.take_snapshot()\n        top_stats = snapshot.statistics('lineno')\n        \n        print(\"\\n=== TOP 10 MEMORY ALLOCATIONS BY LINE ===\")\n        for stat in top_stats[:10]:\n            print"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.124,
+      "elapsed_seconds": 7.145,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 72.92,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 1. Reproduce & Establish Baseline\n\n### 1.1 Confirm the leak exists\n```bash\n# Run your integration test suite with memory tracking enabled\npython -X tracemalloc=25 my_integration_tests.py --duration 3600\n\n# Or use a simple wrapper to track RSS over time:\n#!/bin/bash\n# monitor_rss.sh\nPID=$1\nwhile kill -0 $PID 2>/dev/null; do\n    RSS=$(ps -o rss= -p $PID)\n    echo \"$(date +%s) $RSS\" >> /tmp/rss_$PID.log\n    sleep 5\ndone\n```\n\n### 1.2 Establish baseline memory behavior\n```bash\n# Run a short, clean session and record memory\npython -m tracemalloc my_server.py --port 8080 &\nSERVER_PID=$!\n\n# Make a few requests to warm up caches\nfor i in $(seq 1 100); do\n    curl -s http://localhost:8080/health > /dev/null\ndone\n\n# Record baseline after warm-up\npython3 -c \"\nimport psutil, sys\nproc = psutil.Process($SERVER_PID)\nmem = proc.memory_info()\nprint(f'Baseline RSS: {mem.rss / 1024 / 1024:.2f} MB')\nprint(f'Baseline VMS: {mem.vms / 1024 / 1024:.2f} MB')\n\"\n\n# Kill the server\nkill $SERVER_PID\n```\n\n---\n\n## 2. Profiling with `tracemalloc` (Built-in, Low Overhead)\n\n### 2.1 Enable tracemalloc in your server entry point\n```python\n# my_server.py\nimport tracemalloc\nimport atexit\n\n# Start tracing at the very beginning of main()\ndef main():\n    tracemalloc.start(25)  # Keep up to 25 frames for each trace\n    \n    @atexit.register\n    def dump_traces():\n        snapshot = tracemalloc.take_snapshot()\n        top_stats = snapshot.statistics('lineno')\n        \n        print(\"\\n=== TOP 10 MEMORY ALLOCATIONS BY LINE ===\")\n        for stat in top_stats[:10]:\n            print"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.066,
+      "elapsed_seconds": 7.089,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 72.91,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 1. Reproduce & Establish Baseline\n\n### 1.1 Confirm the leak exists\n```bash\n# Run your integration test suite with memory tracking enabled\npython -X tracemalloc=25 my_integration_tests.py --duration 3600\n\n# Or use a simple wrapper to track RSS over time:\n#!/bin/bash\n# monitor_rss.sh\nPID=$1\nwhile kill -0 $PID 2>/dev/null; do\n    RSS=$(ps -o rss= -p $PID)\n    echo \"$(date +%s) $RSS\" >> /tmp/rss_$PID.log\n    sleep 5\ndone\n```\n\n### 1.2 Establish baseline memory behavior\n```bash\n# Run a short, clean session and record memory\npython -m tracemalloc my_server.py --port 8080 &\nSERVER_PID=$!\n\n# Make a few requests to warm up caches\nfor i in $(seq 1 100); do\n    curl -s http://localhost:8080/health > /dev/null\ndone\n\n# Record baseline after warm-up\npython3 -c \"\nimport psutil, sys\nproc = psutil.Process($SERVER_PID)\nmem = proc.memory_info()\nprint(f'Baseline RSS: {mem.rss / 1024 / 1024:.2f} MB')\nprint(f'Baseline VMS: {mem.vms / 1024 / 1024:.2f} MB')\n\"\n\n# Kill the server\nkill $SERVER_PID\n```\n\n---\n\n## 2. Profiling with `tracemalloc` (Built-in, Low Overhead)\n\n### 2.1 Enable tracemalloc in your server entry point\n```python\n# my_server.py\nimport tracemalloc\nimport atexit\n\n# Start tracing at the very beginning of main()\ndef main():\n    tracemalloc.start(25)  # Keep up to 25 frames for each trace\n    \n    @atexit.register\n    def dump_traces():\n        snapshot = tracemalloc.take_snapshot()\n        top_stats = snapshot.statistics('lineno')\n        \n        print(\"\\n=== TOP 10 MEMORY ALLOCATIONS BY LINE ===\")\n        for stat in top_stats[:10]:\n            print"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 9.747,
+      "usage": {
+        "completion_tokens": 730,
+        "prompt_tokens": 98,
+        "total_tokens": 828,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted((list(iv) for iv in intervals), key=lambda x: x[0])\n\n    merged = [sorted_intervals[0][:]]\n    for start, end in sorted_intervals[1:]:\n        if start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 19.732,
+      "usage": {
+        "completion_tokens": 1483,
+        "prompt_tokens": 131,
+        "total_tokens": 1614,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    edge_set = set(edges)\n\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for source, dest in edge_set:\n        adj[source].add(dest)\n        in_degree[dest] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 4.918,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run** mode. Here's the result:\n\n| Field | Value |\n|-------|-------|\n| **Status** | `dry-run-ok` |\n| **Changed files** | 2 |\n\n### What was planned (not actually applied):\n1. **Created** `src/a.py` with content `print(42)\\n`\n2. **Deleted** `obsolete.txt`\n\nSince `dry_run` was set to `true`, no files were actually modified on disk. The labels `[\"coding\", \"test\"]` were recorded as metadata for this operation."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.705,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run mode**. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\n### Actions that would have been performed (dry run only, no real changes):\n\n| Operation | Path | Details |\n|-----------|------|---------|\n| **Create** | `src/a.py` | Content: `print(42)\\n` |\n| **Delete** | `obsolete.txt` | Remove file |\n\n### Metadata used:\n- `dry_run`: `true`\n- `labels`: `[\"coding\", \"test\"]`\n\nSince `dry_run` was set to `true`, no actual file system changes were made \u2014 the operation was validated and reported only."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.425,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 the operation was simulated (no actual files were modified).\n- **Changed files:** `2` (src/a.py created, obsolete.txt deleted).\n\nSince `dry_run` was set to `true`, no changes were actually written to disk."
+    }
+  ]
+}
