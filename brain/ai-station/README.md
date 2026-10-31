@@ -2,7 +2,7 @@
 
 Declarative, rootless Podman deployment for the local AI workstation `brain`.
 
-## Phase 1
+## Current deployment
 
 - llama.cpp provides the active OpenAI-compatible inference backend; vLLM is an optional NVFP4 profile.
 - LiteLLM is the single API gateway for OpenCode and other API clients.

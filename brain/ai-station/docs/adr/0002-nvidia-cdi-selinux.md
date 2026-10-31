@@ -17,3 +17,7 @@ The vLLM Quadlet uses `AddDevice=nvidia.com/gpu=all` and `SecurityLabelDisable=t
 - GPU workloads function on this SELinux-enforcing Fedora host.
 - vLLM has a weaker SELinux process boundary than the other containers.
 - The exception is narrow, documented, and must not be copied to LiteLLM or Open WebUI without a demonstrated need.
+
+## Update (2026-10-31)
+
+The llama.cpp backend (`llama-coder.container`) now uses the same `AddDevice=nvidia.com/gpu=all` + `SecurityLabelDisable=true` pair. The decision and its consequences therefore apply to **both** GPU backends, not vLLM alone; the weaker SELinux process boundary extends to `ai-station-llama-coder` as well. The decision text above is preserved as originally written.

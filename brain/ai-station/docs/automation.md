@@ -34,7 +34,7 @@ linger setup remains an explicit administrative command documented in
 
 1. Back up existing Open WebUI data while its service is stopped; resume it
    if it was running. On initial installation, absent UI data is skipped.
-2. Pull pinned images using the existing Quadlet-driven image script.
+2. Pull the pinned images recorded in `config/images.lock.yaml`.
 3. Download the pinned default model, projector and chat template.
 4. Verify local artifacts and run the Fedora Quadlet generator; only then
    install the Quadlets.
@@ -51,7 +51,7 @@ services. Individual steps remain available:
 | Target | Action |
 | --- | --- |
 | `secrets` | Initial secret-file creation only |
-| `pull` | Pull pinned images from Quadlets |
+| `pull` | Pull pinned images from `config/images.lock.yaml` |
 | `download` | Download default GGUF, projector and template |
 | `download-template` | Download/check only the selected template |
 | `preflight` | Hash artifacts; check lock/Quadlet agreement, default images and secret-file presence |
