@@ -1,24 +1,24 @@
 # Model artifacts are pinned independently from container images.
 models:
   coder:
-    profile: capacity
+    profile: precision
     repository: unsloth/Qwen3.8-27B-GGUF
     revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
-    quantization: unsloth-dynamic-v3-UD-Q3_K_XL
-    directory: qwen3.8-27b-gguf-q3
-    file: Qwen3.8-27B-UD-Q3_K_XL.gguf
-    sha256: 8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e
+    quantization: unsloth-dynamic-v3-UD-Q4_K_XL
+    directory: qwen3.8-27b-gguf
+    file: Qwen3.8-27B-UD-Q4_K_XL.gguf
+    sha256: 3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e
     vision_directory: qwen3.8-27b-gguf
     vision_file: mmproj-BF16.gguf
     vision_sha256: 83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53
     backend: llama.cpp
     context: 262144
-    total_context: 786432
-    parallel: 3
+    total_context: 524288
+    parallel: 2
     kv_cache: q4_0
     kv_unified: false
     cache_ram_mib: 16384
-    vision_offload: false
+    vision_offload: true
     reasoning_effort: medium
     preserve_thinking: true
     chat_template: qwen3.8-froggeric-v22.5 # see chat-templates.lock.yaml
