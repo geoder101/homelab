@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+model_dir="${HOME}/.local/share/ai-station/models/ornith-1.5-35b-gguf"
+install -d -m 700 "${model_dir}"
+podman run --rm --pull never --name ai-station-ornith-download \
+  --entrypoint /usr/local/bin/hf \
+  --volume "${model_dir}:/models/candidate:Z" \
+  docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9 \
+  download ornith-ai/Ornith-1.5-35B-A3B-GGUF \
+  Ornith-1.5-35B-Q4_K_M.gguf mmproj-Ornith-1.5-35B-BF16.gguf \
+  --revision 12393612fd4f730ff5aadc23e9b8f9648aa49ceb --local-dir /models/candidate
+
+(cd "${model_dir}" && sha256sum --check <<'HASHES'
+42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f  Ornith-1.5-35B-Q4_K_M.gguf
+1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d  mmproj-Ornith-1.5-35B-BF16.gguf
+HASHES
+)
+python3 "$(dirname "$(realpath "$0")")/download-ornith-template"

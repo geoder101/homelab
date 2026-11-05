@@ -1,0 +1,32 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "ALPHA AI Station",
+    "stderr": ""
+  },
+  {
+    "agent": "BETA",
+    "passed": false,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "BETA\nSelection: Ornith-1.5-35B-A3B Q4_K_M",
+    "stderr": ""
+  },
+  {
+    "agent": "GAMMA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "GAMMA\nOperations",
+    "stderr": ""
+  }
+]

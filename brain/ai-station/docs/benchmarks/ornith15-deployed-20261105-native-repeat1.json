@@ -1,0 +1,30 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "ALPHA AI Station",
+    "stderr": ""
+  },
+  {
+    "agent": "BETA",
+    "passed": false,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "BETA\nSelection: Ornith-1.5-35B-A3B Q4_K_M",
+    "stderr": ""
+  },
+  {
+    "agent": "GAMMA",
+    "passed": false,
+    "tools": [],
+    "reasoning": true,
+    "answer": "",
+    "stderr": "\u001b[93m\u001b[1m! \u001b[0mpermission requested: external_directory (/home/user/opencode/ai-station/docs/*); auto-rejecting\n"
+  }
+]

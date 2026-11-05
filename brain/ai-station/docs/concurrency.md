@@ -1,12 +1,17 @@
 # Fully local capacity tuning — 2026-10-31
 
-## Selected and deployed: three fixed 256K agents
+**Current selection (2026-11-05):** Qwen Q4 precision, two fixed 256K slots and
+GPU vision. The [Ornith trial](benchmarks/ornith-20261105.md) ended with Qwen
+restored. This document records the earlier three-slot capacity study, whose
+profile remains available with `make profile-capacity`.
 
-This is the default **capacity** profile. A persistent global **precision**
-profile is also available; `make profile-status` shows the selected and running
+## 2026-10-31 selection: three fixed 256K agents
+
+This is the **capacity** alternative. The persistent global **precision**
+profile is currently selected; `make profile-status` shows the selected and running
 configuration. See [switching profiles](#global-profile-switching).
 
-Brain now runs Qwen3.8-27B Dynamic V3 **UD-Q3_K_XL weights**, GPU **Q4 K/V
+The capacity-study configuration uses Qwen3.8-27B Dynamic V3 **UD-Q3_K_XL weights**, GPU **Q4 K/V
 cache**, **three fixed 262,144-token slots**, a **16 GiB RAM prompt-cache
 limit**, and the vision projector on CPU. Model inference remains on the
 RTX 5090. The checkpoint revision, reasoning aliases, pinned froggeric template

@@ -1,0 +1,147 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": false,
+      "error": "{'path': 'test_client.py'}",
+      "elapsed_seconds": 2.576,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 22.985,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # Pre-check: if any waiting reservation exceeds the total budget, raise ValueError\n    for value in waiting:\n        if value > budget:\n            raise ValueError(f\"Reservation {value} exceeds total budget {budget}\")\n\n    remaining_budget = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    for value in waiting:\n        if value <= remaining_budget and remaining_slots > 0:\n            admitted.append(value)\n            remaining_budget -= value\n            remaining_slots -= 1\n        else:\n            break\n\n    remaining = waiting[len(admitted):]\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": false,
+      "error": "{'path': 'test_client.py'}",
+      "elapsed_seconds": 2.681,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": false,
+      "error": "{'path': 'test_queueing.py'}",
+      "elapsed_seconds": 19.378,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": false,
+      "error": "{'path': 'test_client.py'}",
+      "elapsed_seconds": 2.432,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": false,
+      "error": "{'path': 'test_queueing.py'}",
+      "elapsed_seconds": 29.003,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 14, in <module>\nAssertionError\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+    }
+  ]
+}

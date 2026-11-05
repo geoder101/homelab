@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+# Run on Brain after downloading and verifying Ornith. Restore the active backend on exit.
+set -euo pipefail
+root="$(dirname "$(dirname "$(realpath "$0")")")"
+exec 9>"${HOME}/.local/share/ai-station/tune-concurrency.lock"
+flock --nonblock 9
+image=docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9
+restore=()
+for unit in llama-coder vllm-coder; do
+  if systemctl --user is-active --quiet "${unit}"; then restore+=("${unit}"); fi
+done
+if podman container exists ai-station-coder-candidate; then
+  printf 'A GPU candidate already exists. Stop it before evaluation.\n' >&2
+  exit 1
+fi
+cleanup() {
+  podman stop --ignore ai-station-ornith-benchmark ai-station-ornith-ready ai-station-model-repeat ai-station-model-concurrency || true
+  podman stop --ignore ai-station-coder-candidate || true
+  if ((${#restore[@]})); then systemctl --user start "${restore[@]}"; fi
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+if ((${#restore[@]})); then systemctl --user stop "${restore[@]}"; fi
+bash "${root}/scripts/run-coder-candidate" ornith &
+candidate_pid=$!
+podman run --rm --pull never --name ai-station-ornith-ready --network ai-station \
+  --entrypoint python3 "${image}" -c '
+import time, urllib.request
+for _ in range(180):
+    try:
+        with urllib.request.urlopen("http://coder-candidate:8000/health", timeout=5) as r:
+            if r.status == 200:
+                break
+    except Exception:
+        time.sleep(5)
+else:
+    raise SystemExit("Candidate did not become ready")
+'
+kill -0 "${candidate_pid}"
+nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
+if [[ "${1:-}" == --agent-only ]]; then
+  bash "${root}/scripts/benchmark-coder-concurrency" http://coder-candidate:8000 \
+    "${LABEL:-ornith15-q4-k-m-16k-20261105}" --agent-only
+  exit
+fi
+if [[ "${1:-}" == --repeats ]]; then
+  status=0
+  bash "${root}/scripts/benchmark-coder-repeats" http://coder-candidate:8000 \
+    "${LABEL:-ornith15-q4-k-m-16k-20261105}" || status=1
+  bash "${root}/scripts/benchmark-coder-concurrency" http://coder-candidate:8000 \
+    "${LABEL:-ornith15-q4-k-m-16k-20261105}" || status=1
+  exit "${status}"
+fi
+timeout 45m podman run --rm --pull never --name ai-station-ornith-benchmark \
+  --network ai-station --memory 2g --cpus 4 \
+  --security-opt no-new-privileges --cap-drop all \
+  --volume "${root}/scripts/benchmark-coder:/benchmark.py:ro,z" \
+  --volume "${root}/docs/benchmarks:/results:z" --entrypoint python3 "${image}" \
+  /benchmark.py --backend llama --label "${LABEL:-ornith15-q4-k-m-20261105}" \
+  --preserve-thinking --extended --contexts 32000,122000,154000,253000 \
+  --output "/results/${LABEL:-ornith15-q4-k-m-20261105}.json" "$@"

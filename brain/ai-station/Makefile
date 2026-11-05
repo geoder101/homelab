@@ -11,7 +11,7 @@ API_URL := $(patsubst %/,%,$(BASE_URL))/v1
 .PHONY: help secrets pull download download-template preflight validate install reload \
         start restart status logs smoke verify verify-stress verify-budgets \
         verify-history verify-concurrency audit validate-home client-check client-smoke client-concurrency backup-webui deploy bootstrap \
-        profile-capacity profile-precision profile-status download-precision
+        profile-capacity profile-precision profile-ornith profile-status download-precision download-ornith
 
 help:
 	@printf '%s\n' \
@@ -22,8 +22,10 @@ help:
 	  '  make download-template Fetch only the pinned, checksum-verified template' \
 	  '  make profile-capacity  Switch globally to three 256K agents, Q3 weights' \
 	  '  make profile-precision Switch globally to two 256K agents, Q4 weights' \
+	  '  make profile-ornith    Experimental Ornith Q4_K_M, two 256K agents' \
 	  '  make profile-status    Show selected and running profile' \
 	  '  make download-precision Prepare Q4 weights/projector for offline switching' \
+	  '  make download-ornith   Prepare pinned Ornith Q4_K_M weights/projector' \
 	  '  make preflight         Verify artifact hashes, image presence, secret files' \
 	  '  make validate          Run Fedora Quadlet generator dry-run' \
 	  '  make install / reload  Checked Quadlet installation / systemd reload' \
@@ -52,10 +54,15 @@ download-template:
 	$(HOST) "$(ROOT)/scripts/download-chat-template"
 download-precision:
 	$(HOST) "$(ROOT)/scripts/download-qwen38-candidates" gguf
+	$(HOST) "$(ROOT)/scripts/download-chat-template" qwen_fixed
+download-ornith:
+	$(HOST) bash "$(ROOT)/scripts/download-ornith-candidate"
 profile-capacity:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" capacity --base-url "$(BASE_URL)"
 profile-precision:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" precision --base-url "$(BASE_URL)"
+profile-ornith:
+	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" ornith --base-url "$(BASE_URL)"
 profile-status:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" --status
 preflight:

@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+script_dir="$(dirname "$(realpath "$0")")"
+selection="${1:-$(python3 -c 'import pathlib,sys,yaml; print(yaml.safe_load(pathlib.Path(sys.argv[1]).read_text())["models"]["coder"].get("chat_template_key", "qwen_fixed"))' "${script_dir}/../config/models.lock.yaml")}"
+if [[ "${selection}" == ornith_fixed ]]; then
+  exec python3 "${script_dir}/download-ornith-template"
+fi
+
 # Immutable upstream artifact; never edit the downloaded template in place.
 revision=855bffc49448e299789730ff92c9b8d834d6cc14
 sha256=e57684bae4156211a55473c5a63be976a405a37ab5be5ae0e5abf1df5349c4b2

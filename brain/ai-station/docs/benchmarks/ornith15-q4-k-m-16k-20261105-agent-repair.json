@@ -1,0 +1,389 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": false,
+      "error": "Agent did not finish within 12 turns",
+      "elapsed_seconds": 51.347,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "error": "File not found or not editable. The only source file is client.py."
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "error": "File not found or not editable. The only source file is client.py."
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+          }
+        }
+      ],
+      "code": "import re\n\n\ndef endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The base may already end with a version suffix (``/v1`` or ``/v1/``),\n    possibly preceded by a deployment prefix (e.g.\n    ``https://example.test/proxy/v1/``), or it may have no version suffix at\n    all. The ``path`` is a relative resource name such as ``models`` or\n    ``/chat/completions``.\n\n    The result always preserves the deployment prefix (if any) and includes\n    exactly one ``/v1`` before the resource.\n    \"\"\"\n    # Strip trailing slashes so version detection is reliable.\n    base = base_url.rstrip('/')\n\n    # If the base already carries a version suffix (e.g. ``/v1``), keep it.\n    # Otherwise insert a single ``/v1`` right after the deployment prefix.\n    if not re.search(r'/v\\d+$', base):\n        base = f'{base}/v1'\n\n    # Ensure the resource path begins with exactly one slash.\n    resource = '/' + path.lstrip('/')\n\n    return base + resource\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 35.02,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 14, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    admitted = []\n    total = sum(active)\n\n    # A waiting reservation that alone exceeds the total budget can never be\n    # admitted, so flag it even if the FIFO scan would stop before reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                \"waiting reservation {} exceeds total budget {}\".format(value, budget)\n            )\n\n    # FIFO: admit reservations in order and stop at the first one that does not\n    # fit either in the remaining budget or in a free slot. Never skip past it.\n    for value in waiting:\n        fits_budget = total + value <= budget\n        fits_slots = len(active) + len(admitted) < slots\n        if fits_budget and fits_slots:\n            admitted.append(value)\n            total += value\n        else:\n            break\n\n    # Admitted reservations always form a prefix of ``waiting``, so slicing by\n    # position (rather than by value) keeps duplicate values intact.\n    remaining = waiting[len(admitted):]\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 25.117,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    # Preserve the deployment prefix; ensure exactly one '/v1' before the resource.\n    if base.endswith('/v1'):\n        base = base[:-len('/v1')]\n    return base + '/v1/' + path.lstrip('/')\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    # Preserve the deployment prefix; ensure exactly one '/v1' before the resource.\n    if base.endswith('/v1'):\n        base = base[:-len('/v1')]\n    return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 64.328,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 41, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 41, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    \"\"\"FIFO admission of waiting bookings onto the active base.\n\n    active and waiting hold positive integers. Active bookings are always\n    valid and form the base load. Processing is strictly in order: each\n    waiting booking is admitted while it fits in the remaining budget AND a\n    slot is free. The moment the first booking fails either test we stop and\n    never skip it. If any waiting booking alone exceeds the total budget we\n    raise ValueError, even if processing would never reach it. Duplicate\n    values are preserved by slicing the original list.\n    \"\"\"\n    active_sum = sum(active)\n\n    # A single booking that already exceeds the total budget is invalid no\n    # matter where it sits in the queue.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                \"booking of size %d exceeds total budget %d\" % (value, budget)\n            )\n\n    # `slots` is the total number of slots; active bookings already occupy\n    # some of them, so the room left for new admissions is the difference.\n    free = slots - len(active)\n\n    admitted = []\n    running = active_sum\n    for value in waiting:\n        if free <= 0 or running + value > budget:\n            break\n        free -= 1\n        admitted.append(value)\n        running += value\n\n    # admitted is exactly a prefix of waiting, so the rest stays in order\n    # and duplicates are handled correctly.\n    remaining = list(waiting[len(admitted):])\n    return admitted, remaining\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    \"\"\"FIFO admission of waiting bookings onto the active base.\n\n    active and waiting hold positive integers. Active bookings are always\n    valid and form the base load. Processing is strictly in order: each\n    waiting booking is admitted while it fits in the remaining budget AND a\n    slot is free. The moment the first booking fails either test we stop and\n    never skip it. If any waiting booking alone exceeds the total budget we\n    raise ValueError, even if processing would never reach it. Duplicate\n    values are preserved by slicing the original list.\n    \"\"\"\n    active_sum = sum(active)\n\n    # A single booking that already exceeds the total budget is invalid no\n    # matter where it sits in the queue.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                \"booking of size %d exceeds total budget %d\" % (value, budget)\n            )\n\n    # `slots` is the total number of slots; active bookings already occupy\n    # some of them, so the room left for new admissions is the difference.\n    free = slots - len(active)\n\n    admitted = []\n    running = active_sum\n    for value in waiting:\n        if free <= 0 or running + value > budget:\n            break\n        free -= 1\n        admitted.append(value)\n        running += value\n\n    # admitted is exactly a prefix of waiting, so the rest stays in order\n    # and duplicates are handled correctly.\n    remaining = list(waiting[len(admitted):])\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 14.35,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The base may end with ``/v1`` or ``/v1/``, have no version suffix, or carry\n    a deployment prefix that already ends in ``/v1`` (e.g.\n    ``https://example.test/proxy/v1/``). The resource ``path`` is a relative\n    name such as ``models`` or ``/chat/completions``. The result preserves the\n    deployment prefix and contains exactly one ``/v1`` before the resource.\n    \"\"\"\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        base = base[:-len('/v1')]\n    return '{}/v1/{}'.format(base, path.lstrip('/'))\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The base may end with ``/v1`` or ``/v1/``, have no version suffix, or carry\n    a deployment prefix that already ends in ``/v1`` (e.g.\n    ``https://example.test/proxy/v1/``). The resource ``path`` is a relative\n    name such as ``models`` or ``/chat/completions``. The result preserves the\n    deployment prefix and contains exactly one ``/v1`` before the resource.\n    \"\"\"\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        base = base[:-len('/v1')]\n    return '{}/v1/{}'.format(base, path.lstrip('/'))\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 78.592,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    # A booking that exceeds the total budget is invalid, even if FIFO admission\n    # would stop before ever reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(f\"booking {value} exceeds total budget {budget}\")\n\n    admitted = []\n    used = sum(active)\n    for i, value in enumerate(waiting):\n        if len(admitted) < slots and used + value <= budget:\n            admitted.append(value)\n            used += value\n        else:\n            # FIFO stop: the first booking that does not fit (either because of\n            # the remaining budget or the slots) and everything after it remain.\n            return admitted, waiting[i:]\n    return admitted, []\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 26, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "PROBE active=[6] waiting=[5, 2] budget=10 slots=3\nPROBE active=[3] waiting=[4, 3, 1] budget=10 slots=3\nPROBE active=[] waiting=[2, 2, 2] budget=4 slots=3\nPROBE active=[1] waiting=[1, 1] budget=10 slots=1\nTraceback (most recent call last):\n  File \"<string>\", line 26, in <module>\nAssertionError\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    # A booking that exceeds the total budget is invalid, even if FIFO admission\n    # would stop before ever reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(f\"booking {value} exceeds total budget {budget}\")\n\n    admitted = []\n    used = sum(active)\n    free = slots - len(active)  # slots are shared with the already-active bookings\n    for i, value in enumerate(waiting):\n        if free > 0 and used + value <= budget:\n            admitted.append(value)\n            used += value\n            free -= 1\n        else:\n            # FIFO stop: the first booking that does not fit (either because of\n            # the remaining budget or the free slots) and everything after it.\n            return admitted, waiting[i:]\n    return admitted, []\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # A booking that exceeds the total budget is invalid, even if FIFO admission\n    # would stop before ever reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(f\"booking {value} exceeds total budget {budget}\")\n\n    admitted = []\n    used = sum(active)\n    free = slots - len(active)  # slots are shared with the already-active bookings\n    for i, value in enumerate(waiting):\n        if free > 0 and used + value <= budget:\n            admitted.append(value)\n            used += value\n            free -= 1\n        else:\n            # FIFO stop: the first booking that does not fit (either because of\n            # the remaining budget or the free slots) and everything after it.\n            return admitted, waiting[i:]\n    return admitted, []\n"
+    }
+  ]
+}

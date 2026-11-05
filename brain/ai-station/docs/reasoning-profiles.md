@@ -1,7 +1,8 @@
 # Brain reasoning profiles and Home handoff — 2026-10-31
 
-**Later capacity update:** the same aliases/template now serve three fixed
-256K slots using Q3 weights and Q4 cache with CPU vision. See
+**Current selection (2026-11-05):** the same Qwen aliases/template serve two
+fixed 256K slots using Q4 precision weights, Q4 cache and GPU vision. The
+three-slot Q3/CPU-vision alternative is recorded in
 [local capacity tuning](concurrency.md). Measurements and one-slot/Q4/Q8
 descriptions below record the earlier reasoning-profile handoff.
 

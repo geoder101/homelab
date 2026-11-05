@@ -1,7 +1,8 @@
 # LiteLLM is the only client-facing model router. The backend stays on the
 # ai-station Podman network and has no host-published port.
-# Effort is soft prompt steering. Budgets are per-alias hard thinking ceilings;
-# max_tokens still bounds reasoning + answer. Clients may override defaults.
+# Budgets are per-alias hard thinking ceilings; max_tokens bounds thinking + answer.
+# Effort additionally steers templates that support it (Qwen froggeric, not Ornith's
+# embedded template). Clients may override defaults.
 model_list:
   - model_name: coder
     litellm_params:

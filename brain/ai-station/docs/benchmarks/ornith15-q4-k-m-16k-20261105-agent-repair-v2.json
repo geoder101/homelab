@@ -1,0 +1,251 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 15.935,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    # Normalise the base by trimming any trailing slash so the version check\n    # is reliable and the joined URL stays clean.\n    base = base_url.rstrip('/')\n\n    # If the base already carries the version suffix (for example a deployment\n    # prefix ending in \"/v1\"), don't inject another \"/v1\". Note that this is a\n    # strict match on the trailing \"/v1\", so a prefix like \"/v10\" is preserved\n    # and a fresh \"/v1\" is still added before the resource.\n    if base.endswith('/v1'):\n        return base + '/' + path.lstrip('/')\n\n    return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 23.987,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # Any reservation larger than the entire budget can never be admitted,\n    # even if FIFO processing would stop before reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\"reservation exceeds total budget\")\n\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value > budget:\n            break  # does not fit in the budget\n        if len(active) + len(admitted) >= slots:\n            break  # no slot left\n        admitted.append(value)\n\n    return admitted, waiting[len(admitted):]\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 12.114,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    # If the base already ends with a full /v1 path segment, drop it so we can\n    # re-insert exactly one /v1. A bare endswith('/v1') check avoids treating a\n    # distinct version such as '/v10' as the '/v1' segment.\n    if base.endswith('/v1'):\n        base = base[: -len('/v1')]\n    path = path.lstrip('/')\n    return base + '/v1/' + path\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 20.007,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # Oversized reservations are rejected up front, even ones we would never\n    # reach (e.g. because an earlier one already stopped the scan).\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                \"reservation %d exceeds the total budget %d\" % (value, budget))\n\n    # FIFO: admit waiting reservations while each one fits in both the budget\n    # and the remaining slots. Stop at the first one that fits in neither; do\n    # not skip over it.\n    admitted = []\n    for value in waiting:\n        fits_budget = sum(active) + sum(admitted) + value <= budget\n        fits_slots = len(active) + len(admitted) + 1 <= slots\n        if fits_budget and fits_slots:\n            admitted.append(value)\n        else:\n            break\n\n    # Admitted reservations are always a prefix of `waiting`, so the remainder\n    # is the untouched suffix. This handles duplicate values correctly.\n    return admitted, waiting[len(admitted):]\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 14.146,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    # Strip any trailing slashes so the base is normalized, e.g. \"v1/\" -> \"v1\".\n    base = base_url.rstrip('/')\n\n    # Preserve the deployment prefix and include exactly one /v1 segment.\n    # If the base already ends with the \"/v1\" version segment, don't append\n    # another one; otherwise insert \"/v1\" before the resource.\n    if not base.endswith('/v1'):\n        base += '/v1'\n\n    return base + '/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 30.47,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    # A reservation that by itself exceeds the total budget is invalid,\n    # even if the FIFO scan would never reach it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError('reservation exceeds total budget')\n\n    # FIFO: admit reservations while both the budget and the number of\n    # available slots allow it, then stop at the first one that fits neither.\n    admitted = []\n    for value in waiting:\n        fits_budget = sum(active) + sum(admitted) + value <= budget\n        fits_slots = len(active) + len(admitted) < slots\n        if fits_budget and fits_slots:\n            admitted.append(value)\n        else:\n            break\n\n    return admitted, waiting[len(admitted):]\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # A reservation that by itself exceeds the total budget is invalid,\n    # even if the FIFO scan would never reach it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError('reservation exceeds total budget')\n\n    # FIFO: admit reservations while both the budget and the number of\n    # available slots allow it, then stop at the first one that fits neither.\n    admitted = []\n    for value in waiting:\n        fits_budget = sum(active) + sum(admitted) + value <= budget\n        fits_slots = len(active) + len(admitted) < slots\n        if fits_budget and fits_slots:\n            admitted.append(value)\n        else:\n            break\n\n    return admitted, waiting[len(admitted):]\n"
+    }
+  ]
+}

@@ -14,17 +14,19 @@ in [automation](automation.md#brains-simple-native-opencode-configuration).
 1. Generate secret files with `scripts/create-secrets`.
 2. Enable lingering once with `sudo loginctl enable-linger geoder101`.
 3. Pull locked images with `scripts/pull-images`.
-4. Run `scripts/download-coder-candidate` to download pinned Q3 weights into `~/.local/share/ai-station/models/qwen3.8-27b-gguf-q3`, the vision projector into `models/qwen3.8-27b-gguf`, and the checksum-verified chat template into `~/.local/share/ai-station/chat-templates/`. For an existing model installation, `scripts/download-chat-template` downloads only the template.
+4. Run `scripts/download-coder-candidate` to download the profile selected in `config/models.lock.yaml`. Ornith downloads its pinned Q4_K_M weights and projector into `~/.local/share/ai-station/models/ornith-1.5-35b-gguf` and installs the checksum-pinned history-fixed template. Both model families store their selected external template under `~/.local/share/ai-station/chat-templates/`. `scripts/download-chat-template` follows the selected template family.
 5. Run `scripts/validate-quadlets`.
 6. Copy Quadlets with `scripts/install-quadlets`.
 7. Reload and start `llama-coder`, then `litellm`, then `open-webui`.
 
 `llama-coder`, `litellm` and `open-webui` have `[Install]` sections and start with the user systemd session after `daemon-reload`. The alternative `vllm-coder` has no automatic-start section. Finish the model download before installing/reloading the Quadlets. To prevent automatic startup, remove the unit's `WantedBy` entry and reload; generated Quadlet services cannot be disabled with `systemctl disable`.
 
-## Upgrade to Qwen3.8 Dynamic GGUF
+## Select or upgrade the GGUF backend
 
-For an already deployed stack, use `make profile-capacity` or
-`make profile-precision` to select a persistent global profile. Both retain
+For an already deployed stack, use `make profile-precision` (current Qwen Q4
+selection), `make profile-capacity` (Qwen Q3), or `make profile-ornith`
+(experimental candidate; promotion declined after native OpenCode regressions) to
+select a persistent global profile. All retain
 256K per-agent context. These commands validate first, restart backend/gateway,
 smoke-test and restore the previous profile on failure. `make profile-status`
 checks the running selection. See [switching](concurrency.md#global-profile-switching).
@@ -48,12 +50,12 @@ scripts/smoke-test http://192.168.1.11:4000
 
 Downloads resume when rerun. Previous checkpoints are retained. The API model alias remains `coder`.
 
-The selected capacity profile uses llama.cpp b11960, **three fixed 256K slots**
-(786,432 total cache tokens), Q3_K_XL weights, GPU Q4 K/V cache, CPU vision
-processing and a 16 GiB RAM prompt cache. Medium reasoning remains the default;
-MTP is disabled. See [capacity tuning](concurrency.md) for measured tradeoffs,
-reproduction and rollback. The pinned froggeric v22.5 template preserves supplied
-reasoning, with per-alias ceilings documented in [reasoning profiles](reasoning-profiles.md).
+The selected Qwen precision profile uses llama.cpp b11960, **two fixed 256K
+slots** (524,288 aggregate tokens), UD-Q4_K_XL weights, GPU Q4 K/V, GPU vision
+and a 16 GiB RAM prompt cache. Medium is the default alias; MTP is disabled.
+The pinned froggeric template preserves and normalizes supplied reasoning,
+with soft effort steering and hard alias budgets. See the [Ornith comparison
+and rollback record](benchmarks/ornith-20261105.md) and [current settings](model-profile.md).
 
 ### Optional NVFP4 profile
 
@@ -78,7 +80,7 @@ On every OpenCode client using any `brain/coder-*` model (or legacy `brain/coder
 
 Input, reasoning and output must fit within the total context budget. These limits are client metadata used for request budgeting and compaction, not server settings. Keep them explicit for this custom provider: the standard `/v1/models` response is not a reliable source of context/output limits. A 16K output cap gives thinking and final output more room than the old 8K cap; it does not require generating 16K tokens on every turn. The 2026-10-31 Home handoff edits only `~/Downloads/{opencode,omo}.jsonc` on Brain; it does not install or activate client configuration there.
 
-Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's per-slot context and explicit OpenCode limits are authoritative; `--ctx-size 786432` is an aggregate across three slots, not a client context limit.
+Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's per-slot context and explicit OpenCode limits are authoritative; `--ctx-size 524288` is aggregate across two precision slots, not a client context limit. Qwen capacity's `786432` is likewise aggregate across three slots.
 
 The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4 and llama.cpp b11960 (commit `8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin the corresponding linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
 

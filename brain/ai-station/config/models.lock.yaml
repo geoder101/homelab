@@ -21,5 +21,6 @@ models:
     vision_offload: true
     reasoning_effort: medium
     preserve_thinking: true
-    chat_template: qwen3.8-froggeric-v22.5 # see chat-templates.lock.yaml
+    chat_template: qwen3.8-froggeric-v22.5
     status: selected
+    chat_template_key: qwen_fixed

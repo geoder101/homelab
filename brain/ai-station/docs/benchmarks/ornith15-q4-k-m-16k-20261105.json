@@ -1,0 +1,236 @@
+{
+  "label": "ornith15-q4-k-m-16k-20261105",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 8192,
+    "max_tokens": 16384,
+    "seed": 42,
+    "mtp": false
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.572,
+      "elapsed_seconds": 6.758,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "decode_tokens_per_second": 234.22,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\nThis checklist assumes you're running an HTTP server (likely under Flask/FastAPI/Django/gunicorn/uvicorn) that grows memory during long-running integration tests. Work through it systematically from least to most invasive.\n\n---\n\n## Phase 1: Confirm and Quantify the Leak\n\nBefore assuming a leak, verify the behavior and get a baseline.\n\n**[ ] Capture a memory baseline**\n```bash\n# Record RSS at start of a test run\nps -o pid,rss,vsz,etime -p $(pgrep -f \"your_server\") \n```\n\n**[ ] Sample memory over time during the test run**\n```bash\n# Snapshot RSS every 5 seconds while tests run\nwhile true; do\n  ps -o rss= -p $(pgrep -f \"your_server\") | awk '{printf \"%s RSS: %.1f MB\\n\", strftime(\"%H:%M:%S\"), $1/1024}'\n  sleep 5\ndone\n```\n\n**[ ] Confirm growth is monotonic (not just warmup)**\n- Run the test suite at least 2\u20133\u00d7 and confirm memory keeps climbing rather than plateauing.\n- Note whether growth correlates with request count or wall-clock time.\n\n**[ ] Rule out garbage collection pressure**\n```bash\npython -c \"import gc; print(gc.get_threshold())\"\n# Enable debug tracking to see if objects are being collected\npython -X tracemalloc -c \"your_test_command\"   # if using tracemalloc (Phase 3)\n```\n\n---\n\n## Phase 2: Reproduce in Isolation\n\n**[ ] Minimize the reproduction**\n- Write a focused loop hitting the leaking endpoint repeatedly.\n```python\nimport requests, time\n\nfor i in range(1000):\n    r = requests.post(\"http://localhost:8000/leaky\", json={\"payload\": \"x\" * 1000})\n    if i % 50 == 0:\n        print(i, r.status_code)\n```\n\n**[ ] Test each endpoint separately** to localize the leak.\n\n**[ ] Check for external (non-Python) leaks** \u2014 a worker process may be leaking, not the main interpreter.\n\n---\n\n## Phase 3: Profile with tracemalloc (Python-level only)\n\nBest for identifying *which Python objects"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.05,
+      "elapsed_seconds": 2.194,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 238.8,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\nThis checklist assumes you're running an HTTP server (likely under Flask/FastAPI/Django/gunicorn/uvicorn) that grows memory during long-running integration tests. Work through it systematically from least to most invasive.\n\n---\n\n## Phase 1: Confirm and Quantify the Leak\n\nBefore assuming a leak, verify the behavior and get a baseline.\n\n**[ ] Capture a memory baseline**\n```bash\n# Record RSS at start of a test run\nps -o pid,rss,vsz,etime -p $(pgrep -f \"your_server\") \n```\n\n**[ ] Sample memory over time during the test run**\n```bash\n# Snapshot RSS every 5 seconds while tests run\nwhile true; do\n  ps -o rss= -p $(pgrep -f \"your_server\") | awk '{printf \"%s RSS: %.1f MB\\n\", strftime(\"%H:%M:%S\"), $1/1024}'\n  sleep 5\ndone\n```\n\n**[ ] Confirm growth is monotonic (not just warmup)**\n- Run the test suite at least 2\u20133\u00d7 and confirm memory keeps climbing rather than plateauing.\n- Note whether growth correlates with request count or wall-clock time.\n\n**[ ] Rule out garbage collection pressure**\n```bash\npython -c \"import gc; print(gc.get_threshold())\"\n# Enable debug tracking to see if objects are being collected\npython -X tracemalloc -c \"your_test_command\"   # if using tracemalloc (Phase 3)\n```\n\n---\n\n## Phase 2: Reproduce in Isolation\n\n**[ ] Minimize the reproduction**\n- Write a focused loop hitting the leaking endpoint repeatedly.\n```python\nimport requests, time\n\nfor i in range(1000):\n    r = requests.post(\"http://localhost:8000/leaky\", json={\"payload\": \"x\" * 1000})\n    if i % 50 == 0:\n        print(i, r.status_code)\n```\n\n**[ ] Test each endpoint separately** to localize the leak.\n\n**[ ] Check for external (non-Python) leaks** \u2014 a worker process may be leaking, not the main interpreter.\n\n---\n\n## Phase 3: Profile with tracemalloc (Python-level only)\n\nBest for identifying *which Python objects"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.027,
+      "elapsed_seconds": 2.174,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "decode_tokens_per_second": 238.42,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\nThis checklist assumes you're running an HTTP server (likely under Flask/FastAPI/Django/gunicorn/uvicorn) that grows memory during long-running integration tests. Work through it systematically from least to most invasive.\n\n---\n\n## Phase 1: Confirm and Quantify the Leak\n\nBefore assuming a leak, verify the behavior and get a baseline.\n\n**[ ] Capture a memory baseline**\n```bash\n# Record RSS at start of a test run\nps -o pid,rss,vsz,etime -p $(pgrep -f \"your_server\") \n```\n\n**[ ] Sample memory over time during the test run**\n```bash\n# Snapshot RSS every 5 seconds while tests run\nwhile true; do\n  ps -o rss= -p $(pgrep -f \"your_server\") | awk '{printf \"%s RSS: %.1f MB\\n\", strftime(\"%H:%M:%S\"), $1/1024}'\n  sleep 5\ndone\n```\n\n**[ ] Confirm growth is monotonic (not just warmup)**\n- Run the test suite at least 2\u20133\u00d7 and confirm memory keeps climbing rather than plateauing.\n- Note whether growth correlates with request count or wall-clock time.\n\n**[ ] Rule out garbage collection pressure**\n```bash\npython -c \"import gc; print(gc.get_threshold())\"\n# Enable debug tracking to see if objects are being collected\npython -X tracemalloc -c \"your_test_command\"   # if using tracemalloc (Phase 3)\n```\n\n---\n\n## Phase 2: Reproduce in Isolation\n\n**[ ] Minimize the reproduction**\n- Write a focused loop hitting the leaking endpoint repeatedly.\n```python\nimport requests, time\n\nfor i in range(1000):\n    r = requests.post(\"http://localhost:8000/leaky\", json={\"payload\": \"x\" * 1000})\n    if i % 50 == 0:\n        print(i, r.status_code)\n```\n\n**[ ] Test each endpoint separately** to localize the leak.\n\n**[ ] Check for external (non-Python) leaks** \u2014 a worker process may be leaking, not the main interpreter.\n\n---\n\n## Phase 3: Profile with tracemalloc (Python-level only)\n\nBest for identifying *which Python objects"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 6.7,
+      "usage": {
+        "completion_tokens": 1749,
+        "prompt_tokens": 98,
+        "total_tokens": 1847,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    merged = []\n    for start, end in sorted(intervals):\n        if not merged or start > merged[-1][1]:\n            merged.append([start, end])\n        else:\n            merged[-1][1] = max(merged[-1][1], end)\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 6.442,
+      "usage": {
+        "completion_tokens": 1661,
+        "prompt_tokens": 131,
+        "total_tokens": 1792,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    in_degree = {node: 0 for node in nodes}\n    adj = {node: [] for node in nodes}\n\n    seen_edges = set()\n    for src, dst in edges:\n        if (src, dst) in seen_edges:\n            continue\n        seen_edges.add((src, dst))\n        adj[src].append(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Graph contains a cycle\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 6.605,
+      "usage": {
+        "completion_tokens": 1703,
+        "prompt_tokens": 138,
+        "total_tokens": 1841,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    \"\"\"Parse environment assignments from text into a dict.\"\"\"\n    key_pattern = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    result = {}\n    for line in text.splitlines():\n        stripped = line.strip()\n        if not stripped or stripped.startswith('#'):\n            continue\n        if '=' not in stripped:\n            raise ValueError(f\"Invalid environment assignment: {stripped!r}\")\n        key, value = stripped.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n        if not key_pattern.match(key):\n            raise ValueError(f\"Invalid environment key: {key!r}\")\n        result[key] = value\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 33.962,
+      "usage": {
+        "completion_tokens": 8566,
+        "prompt_tokens": 148,
+        "total_tokens": 8714,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buffer = b''\n    events = []\n    current_data = []\n\n    for chunk in chunks:\n        buffer += chunk\n        while True:\n            nl = buffer.find(b'\\n')\n            if nl == -1:\n                break\n            line = buffer[:nl]\n            buffer = buffer[nl + 1:]\n            if line.endswith(b'\\r'):\n                line = line[:-1]\n            # Splitting on \\n (0x0A) never bisects a UTF-8 multibyte char,\n            # so decoding each complete \\n-delimited segment is safe even\n            # when a chunk boundary split the character.\n            text = line.decode('utf-8', errors='replace')\n\n            if not text:\n                # Blank line dispatches an event.\n                if current_data:\n                    data = '\\n'.join(current_data)\n                    if data == '[DONE]':\n                        return events  # exclude and stop processing everything after\n                    events.append(data)\n                    current_data = []\n            elif text.startswith(':'):\n                # Comment line.\n                pass\n            else:\n                colon = text.find(':')\n                if colon != -1:\n                    name = text[:colon]\n                    value = text[colon + 1:]\n                    if name == 'data':\n                        if value.startswith(' '):\n                            value = value[1:]  # remove at most one space\n                        current_data.append(value)\n            # Other field types (event/id/retry/...) are ignored.\n            # If no colon at all, the whole line is a field name with no value -> ignored.\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 33.886,
+      "usage": {
+        "completion_tokens": 8541,
+        "prompt_tokens": 106,
+        "total_tokens": 8647,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    # Validate arguments.\n    if attempt < 0:\n        raise ValueError(\"attempt must be nonnegative\")\n    if base < 0:\n        raise ValueError(\"base must be nonnegative\")\n    if cap < 0:\n        raise ValueError(\"cap must be nonnegative\")\n    if not math.isfinite(base):\n        raise ValueError(\"base must be finite\")\n    if not math.isfinite(cap):\n        raise ValueError(\"cap must be finite\")\n\n    base = float(base)\n    cap = float(cap)\n\n    # Any zero factor makes the product 0, and min(cap, 0) == 0 because cap >= 0.\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # value = base * 2**attempt.\n    # Represent base = mant * 2**exp with 0.5 <= mant < 1, so\n    # value = mant * 2**(exp + attempt).  Build it with ldexp so the huge\n    # power of two is never materialized and no intermediate overflows.\n    mant, exp = math.frexp(base)\n    k = exp + attempt\n\n    try:\n        value = math.ldexp(mant, k)  # mant * 2**k\n    except OverflowError:\n        value = math.inf\n    except ValueError:\n        # Subnormal/underflow result that ldexp cannot represent.\n        value = 0.0\n\n    return min(cap, value)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 5.783,
+      "usage": {
+        "completion_tokens": 1487,
+        "prompt_tokens": 133,
+        "total_tokens": 1620,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for q in queued:\n        if q > budget:\n            raise ValueError(\"queued reservation exceeds budget\")\n\n    used = sum(active)\n    available_slots = slots - len(active)\n\n    admitted = []\n    remaining = []\n\n    for i, q in enumerate(queued):\n        if available_slots > 0 and used + q <= budget:\n            admitted.append(q)\n            used += q\n            available_slots -= 1\n        else:\n            remaining = list(queued[i:])\n            break\n\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.402,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully with the following result:\n\n- **Status**: `dry-run-ok` - This was a dry run, so no actual changes were made to the filesystem.\n- **Changed files**: 2 files were processed:\n  - `src/a.py` was created with content `print(42)\\n`\n  - `obsolete.txt` was deleted\n\nSince `dry_run` was set to `true`, these changes were simulated and not actually applied to your filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.453,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here's the result:\n\n- **Status**: `dry-run-ok` \u2014 This was a dry run, so no actual changes were made to the filesystem.\n- **Changed files**: 2 \u2014 This counts both the creation of `src/a.py` and the deletion of `obsolete.txt`.\n\nIn summary, the operation simulated creating `src/a.py` with the content `print(42)\\n` and deleting `obsolete.txt`, marked with the labels `[\"coding\", \"test\"]`, but since `dry_run` was set to `true`, no files were actually modified."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.399,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here's the result:\n\n- **Status**: `dry-run-ok` (changes were simulated, not actually applied to the filesystem)\n- **Changed files**: 2\n  - `src/a.py` was created with content `\"print(42)\\n\"`\n  - `obsolete.txt` was deleted\n\nSince `metadata.dry_run` was set to `true`, no actual changes were made to the filesystem. If you'd like to apply these changes for real, re-run with `dry_run` set to `false`."
+    }
+  ]
+}

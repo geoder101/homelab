@@ -1,0 +1,32 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "ALPHA AI Station",
+    "stderr": ""
+  },
+  {
+    "agent": "BETA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "BETA Default coding-agent profile",
+    "stderr": ""
+  },
+  {
+    "agent": "GAMMA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "GAMMA # Operations",
+    "stderr": ""
+  }
+]

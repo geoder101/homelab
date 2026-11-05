@@ -1,8 +1,12 @@
 # Qwen3.8 coding-agent comparison
 
-**Current capacity results:** [fully local concurrency tuning](../concurrency.md),
+**Latest trial (2026-11-05):** [Ornith Q4_K_M versus Qwen precision](ornith-20261105.md).
+Ornith was faster and matched the small coding suite, but failed native
+OpenCode checks. Qwen Q4/two-slot precision remains selected.
+
+**Capacity-study results:** [fully local concurrency tuning](../concurrency.md),
 with raw results in `concurrency-20261031/`. The comparison below is historical;
-its Q4 weights/one-slot settings are not the current Q3/three-slot deployment.
+its Q4 weights/one-slot settings are not the current Q4/two-slot precision deployment.
 
 The 2026-10-29 comparison below uses the original embedded template. The
 2026-10-31 production alias/template checks, measured reasoning lengths and

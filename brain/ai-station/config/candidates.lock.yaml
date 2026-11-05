@@ -1,6 +1,16 @@
 # Evaluation artifacts; these do not change the active coder deployment.
 # Resolved 2026-10-29. Candidate results belong in docs/benchmark-results.md.
 candidates:
+  ornith15_35b_gguf:
+    repository: ornith-ai/Ornith-1.5-35B-A3B-GGUF
+    revision: 12393612fd4f730ff5aadc23e9b8f9648aa49ceb
+    directory: ornith-1.5-35b-gguf
+    file: Ornith-1.5-35B-Q4_K_M.gguf
+    sha256: 42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f
+    vision_file: mmproj-Ornith-1.5-35B-BF16.gguf
+    vision_sha256: 1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d
+    context: 262144
+    image: ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99
   qwen38_gguf_q3:
     repository: unsloth/Qwen3.8-27B-GGUF
     revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502

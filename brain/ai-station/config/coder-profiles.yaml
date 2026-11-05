@@ -4,6 +4,12 @@ profiles:
   capacity:
     description: Three fixed 256K agents, Q3 weights, Q4 cache, CPU vision
     model:
+      repository: unsloth/Qwen3.8-27B-GGUF
+      revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
+      vision_file: mmproj-BF16.gguf
+      vision_sha256: 83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53
+      chat_template: qwen3.8-froggeric-v22.5
+      chat_template_key: qwen_fixed
       quantization: unsloth-dynamic-v3-UD-Q3_K_XL
       directory: qwen3.8-27b-gguf-q3
       file: Qwen3.8-27B-UD-Q3_K_XL.gguf
@@ -18,11 +24,37 @@ profiles:
   precision:
     description: Two fixed 256K agents, Q4 weights, Q4 cache, GPU vision
     model:
+      repository: unsloth/Qwen3.8-27B-GGUF
+      revision: 4ca720788d1e01f1bff70c033e0d0028fd02e502
+      vision_file: mmproj-BF16.gguf
+      vision_sha256: 83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53
+      chat_template: qwen3.8-froggeric-v22.5
+      chat_template_key: qwen_fixed
       quantization: unsloth-dynamic-v3-UD-Q4_K_XL
       directory: qwen3.8-27b-gguf
       file: Qwen3.8-27B-UD-Q4_K_XL.gguf
       sha256: 3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e
       vision_directory: qwen3.8-27b-gguf
+      total_context: 524288
+      parallel: 2
+      kv_cache: q4_0
+      kv_unified: false
+      cache_ram_mib: 16384
+      vision_offload: true
+  ornith:
+    description: Experimental Ornith 1.5 Q4_K_M, two 256K agents; native OpenCode regressions
+    model:
+      repository: ornith-ai/Ornith-1.5-35B-A3B-GGUF
+      revision: 12393612fd4f730ff5aadc23e9b8f9648aa49ceb
+      quantization: Q4_K_M
+      directory: ornith-1.5-35b-gguf
+      file: Ornith-1.5-35B-Q4_K_M.gguf
+      sha256: 42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f
+      vision_directory: ornith-1.5-35b-gguf
+      vision_file: mmproj-Ornith-1.5-35B-BF16.gguf
+      vision_sha256: 1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d
+      chat_template: ornith1.5-history-v1
+      chat_template_key: ornith_fixed
       total_context: 524288
       parallel: 2
       kv_cache: q4_0

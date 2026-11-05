@@ -68,7 +68,10 @@ def main():
     assert props['total_slots'] == profile.get('parallel', 1)
     assert props['default_generation_settings']['n_ctx'] == profile['context']
     assert props['model_path'].endswith('/' + profile['file'])
-    assert 'qwen3.8-froggeric-v22.5' in props['chat_template']
+    frogger_template = profile['chat_template'] == 'qwen3.8-froggeric-v22.5'
+    assert props['chat_template'], 'Missing runtime chat template'
+    if profile['chat_template'] != 'embedded':
+        assert profile['chat_template'] in props['chat_template']
     emit('deployment', models=models, build=props['build_info'], slots=props['total_slots'],
          model_path=props['model_path'], template_caps=props['chat_template_caps'])
 
@@ -86,9 +89,11 @@ def main():
                  'content': '{"error":"Unknown city Pariss. Correct the city argument to Paris."}'}]
         rendered = backend('/apply-template', {'messages': history, 'tools': tools,
             'chat_template_kwargs': {'preserve_thinking': True}})['prompt']
-        assert '2 consecutive tool errors detected' in rendered, rendered
+        second_error_warning = '2 consecutive tool errors detected' in rendered
+        if frogger_template:
+            assert second_error_warning, rendered
         assert '<parameter=city>\nPariss\n</parameter>' in rendered, rendered
-        emit('tool-error-render', normalized_xml=True, second_error_warning=True)
+        emit('tool-error-render', normalized_xml=True, second_error_warning=second_error_warning)
         result = json.load(gateway('/chat/completions', {'model': 'coder-medium',
             'messages': history, 'tools': tools, 'max_tokens': 2048, 'seed': 42}))
         calls = result['choices'][0]['message']['tool_calls']
@@ -208,7 +213,8 @@ def main():
             'chat_template_kwargs': {'reasoning_effort': effort, 'preserve_thinking': True}})['prompt']
         assert rendered.count('HISTORY_SENTINEL') == 1, rendered
         assert '<think>\n\n</think>\n\n<think>' not in rendered, rendered
-        assert ('Reasoning effort is set to ' + effort in rendered) == (effort != 'medium')
+        expected_steering = frogger_template and effort != 'medium'
+        assert ('Reasoning effort is set to ' + effort in rendered) == expected_steering
         emit('render-history', effort=effort, prompt=rendered)
     rendered = backend('/apply-template', {'messages': [{'role': 'user', 'content': question}],
         'chat_template_kwargs': {'enable_thinking': False}})['prompt']

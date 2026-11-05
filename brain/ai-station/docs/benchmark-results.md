@@ -1,8 +1,22 @@
 # Benchmark Results
 
-The Q4/Q8/one-slot selection below is historical. The current three-slot
-Q3/Q4 capacity profile and its local alternatives are measured in
-[capacity tuning](concurrency.md).
+## 2026-11-05: Ornith Q4_K_M trial — promotion declined
+
+Compared the requested Ornith-1.5-35B-A3B Q4_K_M with the actual deployed
+Qwen3.8 UD-Q4_K_XL precision profile, two fixed 256K slots. Ornith measured
+229.94 versus 71.665 tok/s warm short decode; both passed 21/21 coding cases,
+9/9 nested tool round trips and 6/6 repair fixtures. Two 253K requests finished
+in 109.72 versus 414.24 seconds.
+
+Native OpenCode checks changed the decision: Ornith passed 3/6 read-only
+sessions, repeatedly choosing a subheading and once requesting an incorrect
+absolute path. Qwen passed 3/3 initially and 3/3 again after rollback on the
+same updated documents. The upstream Ornith template also required a pinned
+duplicate-history fix before API checks passed. **Qwen precision was restored
+and remains the default.** See the [full report and artifacts](benchmarks/ornith-20261105.md).
+
+The comparisons below are historical. Qwen's three-slot capacity alternative
+and measured cache tradeoffs are recorded in [capacity tuning](concurrency.md).
 
 ## 2026-10-29: Qwen3.8 NVFP4 versus GGUF
 

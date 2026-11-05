@@ -1,4 +1,4 @@
-# Immutable upstream copy installed by scripts/download-chat-template.
+# Pinned upstream templates; Ornith's minimal local patch has its own output hash.
 qwen_fixed:
   repository: froggeric/Qwen-Fixed-Chat-Templates
   revision: 855bffc49448e299789730ff92c9b8d834d6cc14
@@ -7,3 +7,12 @@ qwen_fixed:
   sha256: e57684bae4156211a55473c5a63be976a405a37ab5be5ae0e5abf1df5349c4b2
   directory: chat-templates/855bffc49448e299789730ff92c9b8d834d6cc14
   license: Apache-2.0
+ornith_fixed:
+  repository: ornith-ai/Ornith-1.5-35B-A3B
+  revision: 10fbf86fed7ecee4a061f8b499a618f46001cac1
+  version: ornith1.5-history-v1
+  file: chat_template.jinja
+  upstream_sha256: 182e77dd83bd8e9ca818b240b82e28f243762cd5dda32e6eef327df7b1cd107e
+  sha256: 5d7c6dd4e14e15880d852536762c620e7e8c2fe54fcd9a998c6c99eca0b78e3b
+  directory: chat-templates/10fbf86fed7ecee4a061f8b499a618f46001cac1-ornith-history-v1
+  license: MIT

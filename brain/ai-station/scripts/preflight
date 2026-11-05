@@ -38,7 +38,7 @@ def main():
         for key, expected in profiles[model['profile']]['model'].items():
             if model.get(key) != expected:
                 raise ValueError(f"Selected profile {model['profile']} disagrees with model lock: {key}")
-    template = yaml.safe_load((config / 'chat-templates.lock.yaml').read_text())['qwen_fixed']
+    template = yaml.safe_load((config / 'chat-templates.lock.yaml').read_text())[model.get('chat_template_key', 'qwen_fixed')]
     unit = (root / 'quadlets/llama-coder.container').read_text()
     model_mount = f"%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"
     template_mount = f"%h/.local/share/ai-station/{template['directory']}:/templates:ro,Z"

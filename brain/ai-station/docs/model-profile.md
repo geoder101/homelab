@@ -1,36 +1,41 @@
 # Default coding-agent profile
 
-## Selection: Qwen3.8-27B Dynamic V3 GGUF capacity profile
+## Selection: Qwen3.8-27B UD-Q4_K_XL precision profile
 
-The default is `unsloth/Qwen3.8-27B-GGUF`, `UD-Q3_K_XL`, served by
-llama.cpp b11960 on the RTX 5090. The selected weight quantization is now
-`UD-Q3_K_XL`; the original Q4 baseline remains available. Artifact revisions and image digests are
-in `config/models.lock.yaml` and `config/images.lock.yaml`.
+The default is `unsloth/Qwen3.8-27B-GGUF`, `UD-Q4_K_XL`, served by
+llama.cpp b11960 on the RTX 5090. Artifact revisions and image digests are
+in `config/models.lock.yaml` and `config/images.lock.yaml`; the external
+froggeric template is pinned in `config/chat-templates.lock.yaml`.
 
-The priority is useful fully local agent concurrency while preserving native
-256K context for every active agent. See [capacity tuning](concurrency.md) for
-the measured alternatives, quality limits and higher-precision fallback.
+The [2026-11-05 Ornith comparison](benchmarks/ornith-20261105.md) found matching
+small-suite coding/tool pass rates and much faster inference, but actual
+OpenCode read-only tasks exposed instruction-following and path regressions.
+Promotion was declined and Qwen precision restored. `make profile-precision`
+selects this profile; `make profile-capacity` selects the Q3/three-slot tradeoff
+described in [capacity tuning](concurrency.md). `make profile-ornith` is experimental.
 
 | Setting | Default |
 | --- | --- |
 | API model | `coder-medium`; `coder` remains compatible |
 | Backend | `llama-coder.service` |
-| Context | 262,144 tokens per slot; 786,432 aggregate, no YaRN |
-| Active request slots | 3 fixed slots; additional requests queue |
+| Context | 262,144 tokens per slot; 524,288 aggregate, no YaRN |
+| Active request slots | 2 fixed slots; additional requests queue |
 | Attention K/V cache | GPU `q4_0` / `q4_0`, Flash Attention; no unified pool |
 | RAM prompt cache | Up to 16,384 MiB, plus other host/runtime state |
-| Reasoning effort | `medium` |
-| Historical thinking preservation | Enabled for supplied history, pinned froggeric v22.5 template |
+| Default alias | `coder-medium`; soft effort steering plus hard thinking ceilings |
+| Historical thinking preservation | Pinned froggeric v22.5 retains supplied reasoning and normalizes duplicate inline history |
 | Reasoning ceilings | off: 0; low: 2,048; medium/legacy: 6,144; xhigh: 12,288 |
 | MTP | Disabled |
 | Thinking sampling | temperature 1.0, top-p 0.95, top-k 20, min-p 0, presence penalty 0, repetition penalty 1 |
 | OpenCode output cap | 16,384 tokens, including reasoning |
-| Vision projector | CPU-only; verified with an image request through LiteLLM |
+| Vision projector | GPU; verified with a local image request through LiteLLM |
 
-The sampling and reasoning controls follow the
-[Unsloth Qwen3.8 guide](https://unsloth.ai/docs/models/qwen3.8).
-The much larger 2.4T variant is outside this workstation's memory capacity.
-The guide's B200 throughput is not used as an RTX 5090 prediction.
+Sampling follows the [Unsloth Qwen3.8 guide](https://unsloth.ai/docs/models/qwen3.8).
+`coder-off` uses .7 temperature, .8 top-p and 1.5 presence penalty. The selected
+template supports soft effort steering, supplied reasoning history and its
+consecutive-tool-error warning. The RAM prompt cache is reusable state, not
+active-KV spill. Ornith's experimental history-fixed template and its limits
+are documented with the trial results.
 
 ## Historical tradeoff, 2026-10-29 (Q4 weights, original embedded template)
 
@@ -70,10 +75,9 @@ same seed; shorter reasoning is not treated as evidence of greater quality.
 
 - **256K is capacity, not the desired size of every prompt.** Smaller prompts
   remain cheaper to prefill. OpenCode still needs compaction for extended tasks.
-- **Medium is the default reasoning balance.** The model's default `xhigh`
-  can use substantial output and time; low/medium/xhigh can be selected via
-  request `chat_template_kwargs.reasoning_effort` when appropriate.
-- **Historical thinking preservation changed on 2026-10-31.** The new template
+- **Medium is the default reasoning balance.** Select low/medium/xhigh aliases
+  for soft prompt steering and their respective hard thinking ceilings.
+- **Qwen's historical thinking preservation changed on 2026-10-31.** Its template
   retains supplied reasoning and fixes duplicated in-content think blocks.
   This grows context; Home's thinking aliases declare `interleaved.field` as
   `reasoning_content` so the client can actually resend that history. Earlier
@@ -89,7 +93,7 @@ same seed; shorter reasoning is not treated as evidence of greater quality.
 For each OpenCode custom `brain/coder` model:
 
 ```jsonc
-"name": "Qwen3.8 27B Dynamic Q3_K_XL (brain)",
+"name": "Local coder (brain)",
 "reasoning": true,
 "tool_call": true,
 "limit": { "context": 262144, "output": 16384 }

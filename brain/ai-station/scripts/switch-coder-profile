@@ -79,6 +79,14 @@ def render(model_text, unit_text, name, profile):
             '--cache-type-k': model['kv_cache'], '--cache-type-v': model['kv_cache'],
             '--cache-ram': model['cache_ram_mib']}.items():
         set_value(flag, value)
+    template_mount = None
+    if '--chat-template-file' in tokens:
+        index = tokens.index('--chat-template-file')
+        del tokens[index:index+2]
+    if model['chat_template'] != 'embedded':
+        template = yaml.safe_load((ROOT / 'config/chat-templates.lock.yaml').read_text())[model.get('chat_template_key', 'qwen_fixed')]
+        set_value('--chat-template-file', '/templates/' + template['file'])
+        template_mount = f"Volume=%h/.local/share/ai-station/{template['directory']}:/templates:ro,Z"
     for flag in ('--kv-unified', '--no-kv-unified', '--no-mmproj-offload'):
         while flag in tokens:
             tokens.remove(flag)
@@ -88,9 +96,11 @@ def render(model_text, unit_text, name, profile):
     mounts = [f"Volume=%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"]
     if vision_target != '/models/coder':
         mounts.append(f"Volume=%h/.local/share/ai-station/models/{model['vision_directory']}:/models/vision:ro,Z")
+    if template_mount:
+        mounts.append(template_mount)
     lines, inserted = [], False
     for line in unit_text.splitlines():
-        if line.startswith('Volume=') and any(target in line for target in (':/models/coder:', ':/models/vision:')):
+        if line.startswith('Volume=') and any(target in line for target in (':/models/coder:', ':/models/vision:', ':/templates:')):
             if not inserted:
                 lines.extend(mounts)
                 inserted = True
@@ -146,13 +156,13 @@ def wait_ready(unit_text):
 
 
 def main():
+    profiles = yaml.safe_load((ROOT / 'config/coder-profiles.yaml').read_text())['profiles']
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('profile', nargs='?', choices=['capacity', 'precision'])
+    parser.add_argument('profile', nargs='?', choices=list(profiles))
     parser.add_argument('--status', action='store_true')
     parser.add_argument('--check', action='store_true', help='Validate target artifacts/units without changing deployment')
     parser.add_argument('--base-url', default='http://127.0.0.1:4000', help='Smoke-test gateway URL, without /v1')
     args = parser.parse_args()
-    profiles = yaml.safe_load((ROOT / 'config/coder-profiles.yaml').read_text())['profiles']
     current_text = (ROOT / MODEL).read_text()
     current = yaml.safe_load(current_text)['models']['coder']
     if args.status:
@@ -168,7 +178,7 @@ def main():
         print(f"Running: {props['total_slots']} slots; {props['model_path']}; matches selection: {matches}")
         return 0 if matches else 1
     if not args.profile:
-        parser.error('Choose capacity or precision, or use --status')
+        parser.error('Choose a profile, or use --status')
     state = pathlib.Path.home() / '.local/share/ai-station'
     lock = (state / 'tune-concurrency.lock').open('a')
     try:
@@ -194,7 +204,8 @@ def main():
             print(run(sys.executable, str(stage / 'scripts/preflight')), end='', flush=True)
             run('bash', str(stage / 'scripts/validate-quadlets'))
         except RuntimeError as error:
-            preparation = ('make download-precision' if args.profile == 'precision' else 'scripts/download-capacity-model')
+            preparation = {'precision': 'make download-precision', 'capacity': 'scripts/download-capacity-model',
+                           'ornith': 'make download-ornith'}[args.profile]
             raise RuntimeError(f'{error}\nNo deployment changes made. Missing artifacts can be prepared with: {preparation}') from error
     print('Staged Quadlet generator validation: PASS', flush=True)
     if args.check:
