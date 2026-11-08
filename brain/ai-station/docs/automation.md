@@ -71,13 +71,22 @@ services. Individual steps remain available:
 | `client-smoke` | A real OpenCode off-profile request, with JSON streaming events |
 | `verify-concurrency` | Concurrent streaming through the actual LiteLLM gateway |
 | `client-concurrency` | Three independent native OpenCode read-only tool sessions |
-| `profile-capacity` | Persistent global switch to three 256K slots with Q3 weights |
-| `profile-precision` | Persistent global switch to two 256K slots with Q4 weights |
-| `profile-ornith` | Experimental Ornith Q4_K_M, two 256K slots; not the selected default |
+| `profile-qwen38-q3` | Qwen3.8-27B UD-Q3_K_XL, b11960, three 256K slots (internal ID `capacity`) |
+| `profile-qwen38-q4` | Qwen3.8-27B UD-Q4_K_XL, b11960, two 256K slots (internal ID `precision`) |
+| `profile-ornith-q4` | Experimental Ornith Q4_K_M, b11960, two 256K slots (internal ID `ornith`) |
+| `profile-ornith-q5` | Current Ornith Q5_K_M selection, b12182 engine, two 256K slots and GPU vision |
 | `profile-status` | Show selected and actual running profile |
 | `download-precision` | Prepare Q4 weights/projector before offline precision switching |
 | `download-ornith` | Prepare pinned Ornith weights/projector and history-fixed template |
+| `download-ornith-q5` | Prepare the selected Q5 weights/projector and history-fixed template |
 | `validate-home` | Validate the two separate offline Downloads copies |
+
+The model-specific `profile-*` targets are the canonical selection commands.
+The earlier targets have been removed: replace `profile-capacity` with
+`profile-qwen38-q3`, `profile-precision` with `profile-qwen38-q4`, and
+`profile-ornith` with `profile-ornith-q4`.
+The internal profile IDs in existing model records stay `capacity`, `precision`
+and `ornith`, so historical selections and direct script commands remain valid.
 
 Gateway tests default to `http://brain.local:4000`. Override it without `/v1`:
 
@@ -164,7 +173,7 @@ The user subsequently authorized updating Brain's active config:
 ~/.config/opencode/opencode.jsonc
 ```
 
-Brain runs **OpenCode 1.19.5**, checked locally on 2026-11-05. Its config contains no external
+Brain runs **OpenCode 1.19.5**, checked locally on 2026-11-08. Its config contains no external
 plugins and no OmO settings. No packages were installed or updated. The
 existing `@opencode-ai/plugin` package dependency is an SDK dependency, not an
 OmO configuration.
@@ -191,6 +200,8 @@ assistant history. `reasoning_options: []` suppresses OpenCode's automatically
 generated effort variants; select the actual LiteLLM model aliases instead.
 Both fields were originally checked against the **1.19.4 source and installed runtime**;
 the native client checks also passed on 1.19.5 during the 2026-11-05 trial.
+The 2026-11-08 Ornith Q5 backend selection keeps the same client configuration;
+see [OpenCode guidance](opencode.md) and the [post-deployment findings](deployments/20261108-ornith-q5/README.md).
 The current published editor schema may lag these runtime-supported fields.
 
 The original config was backed up before editing:

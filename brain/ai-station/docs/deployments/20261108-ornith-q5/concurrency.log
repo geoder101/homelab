@@ -1,0 +1,10 @@
+{"name": "runtime", "passed": true, "slots": 2, "n_ctx_slot": 262144}
+{"name": "single_0", "passed": true, "ttft_seconds": 0.048, "decode_tps": 229.56}
+{"name": "pair_0", "passed": true, "aggregate_tps": 297.71, "max_active_slots": 2, "stream_overlap_seconds": 2.381}
+{"name": "single_1", "passed": true, "ttft_seconds": 0.058, "decode_tps": 226.37}
+{"name": "pair_1", "passed": true, "aggregate_tps": 314.03, "max_active_slots": 2, "stream_overlap_seconds": 2.378}
+{"name": "single_2", "passed": true, "ttft_seconds": 0.0557, "decode_tps": 228.1}
+{"name": "pair_2", "passed": true, "aggregate_tps": 316.9, "max_active_slots": 2, "stream_overlap_seconds": 2.359}
+{"name": "reasoning_tool_history", "passed": true}
+{"name": "complete", "passed": true}
+Deployed LiteLLM concurrency: PASS

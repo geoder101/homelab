@@ -11,7 +11,8 @@ API_URL := $(patsubst %/,%,$(BASE_URL))/v1
 .PHONY: help secrets pull download download-template preflight validate install reload \
         start restart status logs smoke verify verify-stress verify-budgets \
         verify-history verify-concurrency audit validate-home client-check client-smoke client-concurrency backup-webui deploy bootstrap \
-        profile-capacity profile-precision profile-ornith profile-status download-precision download-ornith
+        profile-qwen38-q3 profile-qwen38-q4 profile-ornith-q4 profile-ornith-q5 profile-status \
+        download-precision download-ornith download-ornith-q5 benchmark-status
 
 help:
 	@printf '%s\n' \
@@ -20,12 +21,15 @@ help:
 	  '  make deploy            Back up UI, pull/download, install/reload, restart, smoke' \
 	  '  make pull / download   Fetch pinned images / model + template' \
 	  '  make download-template Fetch only the pinned, checksum-verified template' \
-	  '  make profile-capacity  Switch globally to three 256K agents, Q3 weights' \
-	  '  make profile-precision Switch globally to two 256K agents, Q4 weights' \
-	  '  make profile-ornith    Experimental Ornith Q4_K_M, two 256K agents' \
+	  '  make profile-qwen38-q3 Select Qwen3.8-27B UD-Q3_K_XL, b11960, three 256K agents' \
+	  '  make profile-qwen38-q4 Select Qwen3.8-27B UD-Q4_K_XL, b11960, two 256K agents' \
+	  '  make profile-ornith-q4 Experimental Ornith 1.5-35B-A3B Q4_K_M, b11960, two 256K agents' \
+	  '  make profile-ornith-q5 Select Ornith 1.5-35B-A3B Q5_K_M, b12182, two 256K agents' \
 	  '  make profile-status    Show selected and running profile' \
 	  '  make download-precision Prepare Q4 weights/projector for offline switching' \
 	  '  make download-ornith   Prepare pinned Ornith Q4_K_M weights/projector' \
+	  '  make download-ornith-q5 Prepare pinned Ornith Q5_K_M weights/projector/template' \
+	  '  make benchmark-status Refresh the live model/configuration scorecard (JSON)' \
 	  '  make preflight         Verify artifact hashes, image presence, secret files' \
 	  '  make validate          Run Fedora Quadlet generator dry-run' \
 	  '  make install / reload  Checked Quadlet installation / systemd reload' \
@@ -57,14 +61,20 @@ download-precision:
 	$(HOST) "$(ROOT)/scripts/download-chat-template" qwen_fixed
 download-ornith:
 	$(HOST) bash "$(ROOT)/scripts/download-ornith-candidate"
-profile-capacity:
+download-ornith-q5:
+	$(HOST) bash "$(ROOT)/scripts/download-ornith-candidate" q5
+profile-qwen38-q3:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" capacity --base-url "$(BASE_URL)"
-profile-precision:
+profile-qwen38-q4:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" precision --base-url "$(BASE_URL)"
-profile-ornith:
+profile-ornith-q4:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" ornith --base-url "$(BASE_URL)"
+profile-ornith-q5:
+	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" ornith-q5 --base-url "$(BASE_URL)"
 profile-status:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" --status
+benchmark-status:
+	$(HOST) python3 "$(ROOT)/scripts/summarize-moe-benchmarks"
 preflight:
 	$(HOST) python3 "$(ROOT)/scripts/preflight"
 validate:

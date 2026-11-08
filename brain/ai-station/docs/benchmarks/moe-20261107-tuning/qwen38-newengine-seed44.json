@@ -1,0 +1,286 @@
+{
+  "label": "qwen38-newengine",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.096,
+      "elapsed_seconds": 7.246,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.096,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.6,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline & Environment Setup\n\n### 1.1 Establish a Clean Baseline\n\n```bash\n# Record initial system state\nfree -h > /tmp/mem_baseline.txt\ncat /proc/meminfo | head -5 >> /tmp/mem_baseline.txt\n\n# Record initial process count and file descriptors\nps aux --sort=-%mem | head -20 > /tmp/proc_baseline.txt\nls /proc/self/fd | wc -l >> /tmp/proc_baseline.txt\n\n# If using Docker, record container memory\ndocker stats --no-stream <container_id> > /tmp/docker_mem_baseline.txt\n```\n\n### 1.2 Verify Test Isolation\n\n- [ ] Confirm each test run starts with a **fresh Python process** (no lingering workers from previous runs)\n- [ ] Verify no shared state persists between tests (global variables, module-level caches)\n- [ ] Ensure the server is started/stopped cleanly in `setUp`/`tearDown` or fixtures\n\n```python\n# Example: Proper fixture cleanup (pytest)\nimport pytest\nimport subprocess\nimport time\nimport psutil\n\n@pytest.fixture(scope=\"session\")\ndef http_server():\n    \"\"\"Start HTTP server and ensure it's fully terminated.\"\"\"\n    proc = subprocess.Popen(\n        [\"python\", \"app.py\"],\n        stdout=subprocess.PIPE,\n        stderr=subprocess.PIPE\n    )\n    # Wait for server to be ready\n    time.sleep(2)\n\n    yield proc  # Server available during tests\n\n    # Teardown: ensure clean shutdown\n    proc.terminate()\n    try:\n        proc.wait(timeout=10)\n    except subprocess.TimeoutExpired:\n        proc.kill()\n        proc.wait()\n\n    # Verify process is gone\n    assert not psutil.pid_exists(proc.pid), \"Server process still alive after teardown\"\n```\n\n### 1.3 Check for External Resource Accumulation\n\n- [ ] Database connections closed properly?\n- [ ] File handles closed?\n- [ ] Sockets closed?\n- [ ] Thread pools shut down?\n\n---\n\n## 2. Memory Profiling During Test Execution\n\n### 2.1 Real-Time Memory Monitoring\n\n```bash\n# Monitor memory usage of the server process in real-time\nPID=$(pgrep -f \"python app.py\")\nwatch -n 1 \"ps"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.076,
+      "elapsed_seconds": 7.228,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.076,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.59,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline & Environment Setup\n\n### 1.1 Establish a Clean Baseline\n\n```bash\n# Record initial system state\nfree -h > /tmp/mem_baseline.txt\ncat /proc/meminfo | head -5 >> /tmp/mem_baseline.txt\n\n# Record initial process count and file descriptors\nps aux --sort=-%mem | head -20 > /tmp/proc_baseline.txt\nls /proc/self/fd | wc -l >> /tmp/proc_baseline.txt\n\n# If using Docker, record container memory\ndocker stats --no-stream <container_id> > /tmp/docker_mem_baseline.txt\n```\n\n### 1.2 Verify Test Isolation\n\n- [ ] Confirm each test run starts with a **fresh Python process** (no lingering workers from previous runs)\n- [ ] Verify no shared state persists between tests (global variables, module-level caches)\n- [ ] Ensure the server is started/stopped cleanly in `setUp`/`tearDown` or fixtures\n\n```python\n# Example: Proper fixture cleanup (pytest)\nimport pytest\nimport subprocess\nimport time\nimport psutil\n\n@pytest.fixture(scope=\"session\")\ndef http_server():\n    \"\"\"Start HTTP server and ensure it's fully terminated.\"\"\"\n    proc = subprocess.Popen(\n        [\"python\", \"app.py\"],\n        stdout=subprocess.PIPE,\n        stderr=subprocess.PIPE\n    )\n    # Wait for server to be ready\n    time.sleep(2)\n\n    yield proc  # Server available during tests\n\n    # Teardown: ensure clean shutdown\n    proc.terminate()\n    try:\n        proc.wait(timeout=10)\n    except subprocess.TimeoutExpired:\n        proc.kill()\n        proc.wait()\n\n    # Verify process is gone\n    assert not psutil.pid_exists(proc.pid), \"Server process still alive after teardown\"\n```\n\n### 1.3 Check for External Resource Accumulation\n\n- [ ] Database connections closed properly?\n- [ ] File handles closed?\n- [ ] Sockets closed?\n- [ ] Thread pools shut down?\n\n---\n\n## 2. Memory Profiling During Test Execution\n\n### 2.1 Real-Time Memory Monitoring\n\n```bash\n# Monitor memory usage of the server process in real-time\nPID=$(pgrep -f \"python app.py\")\nwatch -n 1 \"ps"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.052,
+      "elapsed_seconds": 7.201,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.052,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.62,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline & Environment Setup\n\n### 1.1 Establish a Clean Baseline\n\n```bash\n# Record initial system state\nfree -h > /tmp/mem_baseline.txt\ncat /proc/meminfo | head -5 >> /tmp/mem_baseline.txt\n\n# Record initial process count and file descriptors\nps aux --sort=-%mem | head -20 > /tmp/proc_baseline.txt\nls /proc/self/fd | wc -l >> /tmp/proc_baseline.txt\n\n# If using Docker, record container memory\ndocker stats --no-stream <container_id> > /tmp/docker_mem_baseline.txt\n```\n\n### 1.2 Verify Test Isolation\n\n- [ ] Confirm each test run starts with a **fresh Python process** (no lingering workers from previous runs)\n- [ ] Verify no shared state persists between tests (global variables, module-level caches)\n- [ ] Ensure the server is started/stopped cleanly in `setUp`/`tearDown` or fixtures\n\n```python\n# Example: Proper fixture cleanup (pytest)\nimport pytest\nimport subprocess\nimport time\nimport psutil\n\n@pytest.fixture(scope=\"session\")\ndef http_server():\n    \"\"\"Start HTTP server and ensure it's fully terminated.\"\"\"\n    proc = subprocess.Popen(\n        [\"python\", \"app.py\"],\n        stdout=subprocess.PIPE,\n        stderr=subprocess.PIPE\n    )\n    # Wait for server to be ready\n    time.sleep(2)\n\n    yield proc  # Server available during tests\n\n    # Teardown: ensure clean shutdown\n    proc.terminate()\n    try:\n        proc.wait(timeout=10)\n    except subprocess.TimeoutExpired:\n        proc.kill()\n        proc.wait()\n\n    # Verify process is gone\n    assert not psutil.pid_exists(proc.pid), \"Server process still alive after teardown\"\n```\n\n### 1.3 Check for External Resource Accumulation\n\n- [ ] Database connections closed properly?\n- [ ] File handles closed?\n- [ ] Sockets closed?\n- [ ] Thread pools shut down?\n\n---\n\n## 2. Memory Profiling During Test Execution\n\n### 2.1 Real-Time Memory Monitoring\n\n```bash\n# Monitor memory usage of the server process in real-time\nPID=$(pgrep -f \"python app.py\")\nwatch -n 1 \"ps"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 12.188,
+      "usage": {
+        "completion_tokens": 900,
+        "prompt_tokens": 98,
+        "total_tokens": 998,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n\n    merged = [list(sorted_intervals[0])]\n\n    for i in range(1, len(sorted_intervals)):\n        start, end = sorted_intervals[i]\n        last_start, last_end = merged[-1]\n\n        if start <= last_end:\n            merged[-1][1] = max(last_end, end)\n        else:\n            merged.append([start, end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 16.207,
+      "usage": {
+        "completion_tokens": 1197,
+        "prompt_tokens": 131,
+        "total_tokens": 1328,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\nfrom collections import defaultdict\n\n\ndef toposort(nodes, edges):\n    adj = defaultdict(set)\n    in_degree = {node: 0 for node in nodes}\n\n    for src, dst in edges:\n        if dst not in adj[src]:\n            adj[src].add(dst)\n            in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected in graph\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 8.822,
+      "usage": {
+        "completion_tokens": 651,
+        "prompt_tokens": 260,
+        "total_tokens": 911,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    if not items:\n        return []\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n    batches = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if current_sum + weight > limit:\n            batches.append(current)\n            current = []\n            current_sum = 0\n        current.append(name)\n        current_sum += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 17.22,
+      "usage": {
+        "completion_tokens": 1272,
+        "prompt_tokens": 138,
+        "total_tokens": 1410,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    _KEY_RE = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    env = {}\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (missing '='): {line!r}\")\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if not _KEY_RE.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n        env[key] = value\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 25.315,
+      "usage": {
+        "completion_tokens": 1874,
+        "prompt_tokens": 148,
+        "total_tokens": 2022,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b''.join(chunks)\n    text = raw.decode('utf-8')\n    normalized = text.replace('\\r\\n', '\\n')\n    lines = normalized.split('\\n')\n\n    events = []\n    data_lines = []\n\n    for line in lines:\n        if line == '':\n            if data_lines:\n                data = '\\n'.join(data_lines)\n                if data == '[DONE]':\n                    break\n                events.append(data)\n            data_lines = []\n        elif line.startswith(':'):\n            pass\n        elif ':' in line:\n            field, _, value = line.partition(':')\n            if field == 'data':\n                if value.startswith(' '):\n                    value = value[1:]\n                data_lines.append(value)\n        # lines without a colon are ignored\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 43.165,
+      "usage": {
+        "completion_tokens": 3198,
+        "prompt_tokens": 106,
+        "total_tokens": 3304,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    \"\"\"Return min(cap, base * 2**attempt) as a float.\n\n    Handles extremely large attempt values (e.g. 10**9) without\n    constructing a huge integer or overflowing.\n    \"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"attempt, base, and cap must be nonnegative\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # Determine whether base * 2**attempt >= cap using logarithms,\n    # avoiding any large-integer or float-overflow construction.\n    log_result = math.log(base) + attempt * math.log(2.0)\n    log_cap = math.log(cap)\n\n    if log_result >= log_cap:\n        return float(cap)\n\n    # The product is strictly less than cap (a finite float), so it is\n    # representable.  math.ldexp computes base * 2**attempt directly\n    # in the exponent domain without materialising 2**attempt.\n    return math.ldexp(base, attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 13.451,
+      "usage": {
+        "completion_tokens": 992,
+        "prompt_tokens": 133,
+        "total_tokens": 1125,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for r in queued:\n        if r > budget:\n            raise ValueError(f\"Reservation {r} exceeds budget {budget}\")\n\n    remaining_slots = slots - len(active)\n    remaining_tokens = budget - sum(active)\n\n    admitted = []\n    remaining = []\n\n    for i, r in enumerate(queued):\n        if len(admitted) < remaining_slots and r <= remaining_tokens:\n            admitted.append(r)\n            remaining_tokens -= r\n        else:\n            remaining = list(queued[i:])\n            break\n\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 3.664,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully with the following result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nSince `dry_run` was set to `true`, no actual file system changes were made \u2014 the operations (creating `src/a.py` and deleting `obsolete.txt`) were validated and reported as planned, but nothing was persisted."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.161,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n  1. **Created** `src/a.py` with content `print(42)\\n`\n  2. **Deleted** `obsolete.txt`\n- **Metadata:** `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\nSince `dry_run` was set to `true`, no actual file system changes were made \u2014 the operation was simulated and validated only."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.661,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nSince `dry_run` was set to `true`, the operation was validated but no actual changes were made to the filesystem. The dry run confirmed that the two operations (creating `src/a.py` and deleting `obsolete.txt`) would be valid."
+    }
+  ]
+}

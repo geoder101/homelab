@@ -1,0 +1,286 @@
+{
+  "label": "qwen38-q8-128k",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.268,
+      "elapsed_seconds": 7.102,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.268,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 74.92,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline Setup\n\n### 1.1 Install Required Tools\n```bash\npip install memory_profiler objgraph tracemalloc psutil guppy3 pympler\n# For CPython-level inspection:\nsudo apt-get install gdb valgrind   # Linux only; for native extensions\n```\n\n### 1.2 Create a Baseline Script\n```python\n# baseline_snapshot.py\nimport sys\nimport gc\nimport tracemalloc\nimport psutil\nimport os\nfrom collections import Counter\n\ndef take_snapshot(label: str):\n    \"\"\"Capture a detailed memory snapshot.\"\"\"\n    process = psutil.Process(os.getpid())\n    mem_info = process.memory_info()\n\n    # Force garbage collection to get stable numbers\n    gc.collect()\n\n    # Get object counts by type\n    obj_counts = Counter(type(obj).__name__ for obj in gc.get_objects())\n\n    # tracemalloc top allocations (if enabled)\n    if tracemalloc.is_tracing():\n        top_stats = tracemalloc.take_snapshot().statistics('lineno')\n    else:\n        top_stats = []\n\n    print(f\"\\n{'='*60}\")\n    print(f\"SNAPSHOT: {label}\")\n    print(f\"{'='*60}\")\n    print(f\"RSS Memory:      {mem_info.rss / 1024 / 1024:.2f} MB\")\n    print(f\"VSZ Memory:      {mem_info.vsize / 1024 / 1024:.2f} MB\")\n    print(f\"Open File Descriptors: {process.num_fds()}\")\n    print(f\"Total GC Objects: {sum(obj_counts.values())}\")\n\n    # Top 20 most common object types\n    print(\"\\nTop 20 Object Types:\")\n    for obj_type, count in obj_counts.most_common(20):\n        print(f\"  {obj_type:<30} {count:>10,}\")\n\n    if top_stats:\n        print(\"\\nTop 10 Memory Allocations (tracemalloc):\")\n        for stat in top_stats[:10]:\n            print(f\"  {stat.size / 1024:.2f} KiB @ {stat.traceback.format_first()[:80]}"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.12,
+      "elapsed_seconds": 6.959,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.12,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 74.87,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline Setup\n\n### 1.1 Install Required Tools\n```bash\npip install memory_profiler objgraph tracemalloc psutil guppy3 pympler\n# For CPython-level inspection:\nsudo apt-get install gdb valgrind   # Linux only; for native extensions\n```\n\n### 1.2 Create a Baseline Script\n```python\n# baseline_snapshot.py\nimport sys\nimport gc\nimport tracemalloc\nimport psutil\nimport os\nfrom collections import Counter\n\ndef take_snapshot(label: str):\n    \"\"\"Capture a detailed memory snapshot.\"\"\"\n    process = psutil.Process(os.getpid())\n    mem_info = process.memory_info()\n\n    # Force garbage collection to get stable numbers\n    gc.collect()\n\n    # Get object counts by type\n    obj_counts = Counter(type(obj).__name__ for obj in gc.get_objects())\n\n    # tracemalloc top allocations (if enabled)\n    if tracemalloc.is_tracing():\n        top_stats = tracemalloc.take_snapshot().statistics('lineno')\n    else:\n        top_stats = []\n\n    print(f\"\\n{'='*60}\")\n    print(f\"SNAPSHOT: {label}\")\n    print(f\"{'='*60}\")\n    print(f\"RSS Memory:      {mem_info.rss / 1024 / 1024:.2f} MB\")\n    print(f\"VSZ Memory:      {mem_info.vsize / 1024 / 1024:.2f} MB\")\n    print(f\"Open File Descriptors: {process.num_fds()}\")\n    print(f\"Total GC Objects: {sum(obj_counts.values())}\")\n\n    # Top 20 most common object types\n    print(\"\\nTop 20 Object Types:\")\n    for obj_type, count in obj_counts.most_common(20):\n        print(f\"  {obj_type:<30} {count:>10,}\")\n\n    if top_stats:\n        print(\"\\nTop 10 Memory Allocations (tracemalloc):\")\n        for stat in top_stats[:10]:\n            print(f\"  {stat.size / 1024:.2f} KiB @ {stat.traceback.format_first()[:80]}"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.066,
+      "elapsed_seconds": 6.912,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.066,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 74.78,
+      "answer": "# Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\n## 1. Pre-Test Baseline Setup\n\n### 1.1 Install Required Tools\n```bash\npip install memory_profiler objgraph tracemalloc psutil guppy3 pympler\n# For CPython-level inspection:\nsudo apt-get install gdb valgrind   # Linux only; for native extensions\n```\n\n### 1.2 Create a Baseline Script\n```python\n# baseline_snapshot.py\nimport sys\nimport gc\nimport tracemalloc\nimport psutil\nimport os\nfrom collections import Counter\n\ndef take_snapshot(label: str):\n    \"\"\"Capture a detailed memory snapshot.\"\"\"\n    process = psutil.Process(os.getpid())\n    mem_info = process.memory_info()\n\n    # Force garbage collection to get stable numbers\n    gc.collect()\n\n    # Get object counts by type\n    obj_counts = Counter(type(obj).__name__ for obj in gc.get_objects())\n\n    # tracemalloc top allocations (if enabled)\n    if tracemalloc.is_tracing():\n        top_stats = tracemalloc.take_snapshot().statistics('lineno')\n    else:\n        top_stats = []\n\n    print(f\"\\n{'='*60}\")\n    print(f\"SNAPSHOT: {label}\")\n    print(f\"{'='*60}\")\n    print(f\"RSS Memory:      {mem_info.rss / 1024 / 1024:.2f} MB\")\n    print(f\"VSZ Memory:      {mem_info.vsize / 1024 / 1024:.2f} MB\")\n    print(f\"Open File Descriptors: {process.num_fds()}\")\n    print(f\"Total GC Objects: {sum(obj_counts.values())}\")\n\n    # Top 20 most common object types\n    print(\"\\nTop 20 Object Types:\")\n    for obj_type, count in obj_counts.most_common(20):\n        print(f\"  {obj_type:<30} {count:>10,}\")\n\n    if top_stats:\n        print(\"\\nTop 10 Memory Allocations (tracemalloc):\")\n        for stat in top_stats[:10]:\n            print(f\"  {stat.size / 1024:.2f} KiB @ {stat.traceback.format_first()[:80]}"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 10.252,
+      "usage": {
+        "completion_tokens": 790,
+        "prompt_tokens": 98,
+        "total_tokens": 888,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n\n    merged = [list(sorted_intervals[0])]\n\n    for current in sorted_intervals[1:]:\n        last = merged[-1]\n        if current[0] <= last[1]:\n            last[1] = max(last[1], current[1])\n        else:\n            merged.append(list(current))\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 13.846,
+      "usage": {
+        "completion_tokens": 1064,
+        "prompt_tokens": 131,
+        "total_tokens": 1195,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {node: [] for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    seen = set()\n    for src, dst in edges:\n        if (src, dst) not in seen:\n            seen.add((src, dst))\n            adj[src].append(dst)\n            in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 7.894,
+      "usage": {
+        "completion_tokens": 603,
+        "prompt_tokens": 260,
+        "total_tokens": 863,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    batches = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n        if current_sum + weight > limit:\n            batches.append(current)\n            current = []\n            current_sum = 0\n        current.append(name)\n        current_sum += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 18.099,
+      "usage": {
+        "completion_tokens": 1396,
+        "prompt_tokens": 138,
+        "total_tokens": 1534,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    result = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (no '='): {line!r}\")\n\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n\n        if not key_re.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n            value = value[1:-1]\n\n        result[key] = value\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 30.489,
+      "usage": {
+        "completion_tokens": 2353,
+        "prompt_tokens": 148,
+        "total_tokens": 2501,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b''.join(chunks)\n    text = raw.decode('utf-8')\n    text = text.replace('\\r\\n', '\\n')\n    lines = text.split('\\n')\n\n    results = []\n    data_lines = []\n\n    for line in lines:\n        if line == '':\n            if data_lines:\n                data = '\\n'.join(data_lines)\n                data_lines = []\n                if data == '[DONE]':\n                    break\n                results.append(data)\n            else:\n                data_lines = []\n        elif line.startswith(':'):\n            continue\n        else:\n            if ':' in line:\n                field_name, field_value = line.split(':', 1)\n                if field_value.startswith(' '):\n                    field_value = field_value[1:]\n            else:\n                field_name = line\n                field_value = ''\n            if field_name == 'data':\n                data_lines.append(field_value)\n\n    return results\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 82.97,
+      "usage": {
+        "completion_tokens": 6405,
+        "prompt_tokens": 106,
+        "total_tokens": 6511,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    \"\"\"Return min(cap, base * 2**attempt) as a float.\n\n    Handles arbitrarily large attempt without constructing 2**attempt.\n    Raises ValueError for any negative argument.\n    \"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n\n    base = float(base)\n    cap = float(cap)\n\n    if base == 0.0 or cap == 0.0:\n        return 0.0\n\n    # Both base and cap are strictly positive.\n    # Compare log2(base * 2**attempt) = log2(base) + attempt  vs  log2(cap).\n    # This avoids ever materialising 2**attempt.\n    if math.log2(base) + attempt >= math.log2(cap):\n        return cap\n\n    # The product is strictly less than cap (a finite float), so it is\n    # representable.  math.ldexp computes base * 2**attempt by adjusting\n    # the exponent directly, with no intermediate overflow.\n    return math.ldexp(base, attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 11.666,
+      "usage": {
+        "completion_tokens": 891,
+        "prompt_tokens": 133,
+        "total_tokens": 1024,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for q in queued:\n        if q > budget:\n            raise ValueError(\"Queued reservation exceeds the whole budget\")\n\n    remaining_budget = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    remaining = []\n    blocked = False\n\n    for q in queued:\n        if blocked:\n            remaining.append(q)\n        elif remaining_slots > 0 and remaining_budget >= q:\n            admitted.append(q)\n            remaining_slots -= 1\n            remaining_budget -= q\n        else:\n            blocked = True\n            remaining.append(q)\n\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 3.459,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 the operation was simulated (no actual files were modified).\n- **Changed files:** `2` (src/a.py created, obsolete.txt deleted).\n\nSince `dry_run` was set to `true`, no changes were actually written to disk."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 3.98,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nIn dry-run mode, the tool validated the requested operations without actually modifying the filesystem:\n1. **Create** `src/a.py` with content `print(42)\\n`\n2. **Delete** `obsolete.txt`\n\nBoth changes were accepted with labels `[\"coding\", \"test\"]`. No actual files were created or removed since `dry_run` was set to `true`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.781,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nThe dry run confirmed that the following operations would succeed:\n1. **Create** `src/a.py` with content `print(42)\\n`\n2. **Delete** `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual file system changes were made. The metadata labels `[\"coding\", \"test\"]` were applied as requested."
+    }
+  ]
+}

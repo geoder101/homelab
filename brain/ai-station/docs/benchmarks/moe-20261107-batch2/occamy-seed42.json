@@ -1,0 +1,355 @@
+{
+  "label": "occamy",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.629,
+      "elapsed_seconds": 6.566,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 4.629,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 264.38,
+      "answer": "# Checklist: Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is organized by diagnosis phase. It assumes the server is served via a WSGI/ASGI server (e.g., Gunicorn, uvicorn) or a custom `http.server`-based process, and that leak symptoms appear only after hours of integration test traffic.\n\n---\n\n## Phase 1: Baseline & Reproduction\n\n**Goal:** Establish a reproducible leak signal and rule out measurement artifacts.\n\n- [ ] **Define the leak signature**\n  - Confirm metric: RSS (resident set size) vs. VMS vs. heap-allocated objects.\n  - Tool: `psutil.Process(pid).memory_info()` or `top`/`ps` sampling.\n  - Command to sample RSS every 30s during a test run:\n    ```bash\n    while true; do\n      pstat=$(ps -o pid,ppid,etime,rss,vsz -p <PID> 2>/dev/null)\n      ts=$(date +%s)\n      echo \"$ts $pstat\" >> /tmp/mem.log\n      sleep 30\n    done\n    ```\n- [ ] **Create a controlled load profile**\n  - Reproduce the exact request mix (endpoint, payload size, concurrency) that triggers growth.\n  - Hold load constant; avoid bursts that cause transient GC behavior.\n- [ ] **Run a control (clean) case**\n  - Same load on a freshly restarted server known to be stable.\n  - Compare growth rate (MB/hour) between suspect and control.\n- [ ] **Confirm leak is monotonic and persistent**\n  - True leaks grow across restarts or plateau at a new high after GC; transient spikes decay.\n  - Restart server mid-run: if RSS drops sharply, the \"leak\" may be GC-deferred memory, not a true leak.\n\n---\n\n## Phase 2: Profiling \u2014 Object-Level Leaks (Python)\n\n**Goal:** Identify *which objects* accumulate and where they are referenced.\n\n- [ ] **Enable tracemalloc for allocation tracking**\n  - For Python 3.4+:\n    ```python\n    import tracemalloc\n    tracemalloc.start(25)  # track 25 frames\n    # at shutdown or periodically:\n    snapshot = tracemalloc.take_snapshot()\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.029,
+      "elapsed_seconds": 1.922,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.029,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 270.43,
+      "answer": "# Checklist: Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is organized by diagnosis phase. It assumes the server is served via a WSGI/ASGI server (e.g., Gunicorn, uvicorn) or a custom `http.server`-based process, and that leak symptoms appear only after hours of integration test traffic.\n\n---\n\n## Phase 1: Baseline & Reproduction\n\n**Goal:** Establish a reproducible leak signal and rule out measurement artifacts.\n\n- [ ] **Define the leak signature**\n  - Confirm metric: RSS (resident set size) vs. VMS vs. heap-allocated objects.\n  - Tool: `psutil.Process(pid).memory_info()` or `top`/`ps` sampling.\n  - Command to sample RSS every 30s during a test run:\n    ```bash\n    while true; do\n      pstat=$(ps -o pid,ppid,etime,rss,vsz -p <PID> 2>/dev/null)\n      ts=$(date +%s)\n      echo \"$ts $pstat\" >> /tmp/mem.log\n      sleep 30\n    done\n    ```\n- [ ] **Create a controlled load profile**\n  - Reproduce the exact request mix (endpoint, payload size, concurrency) that triggers growth.\n  - Hold load constant; avoid bursts that cause transient GC behavior.\n- [ ] **Run a control (clean) case**\n  - Same load on a freshly restarted server known to be stable.\n  - Compare growth rate (MB/hour) between suspect and control.\n- [ ] **Confirm leak is monotonic and persistent**\n  - True leaks grow across restarts or plateau at a new high after GC; transient spikes decay.\n  - Restart server mid-run: if RSS drops sharply, the \"leak\" may be GC-deferred memory, not a true leak.\n\n---\n\n## Phase 2: Profiling \u2014 Object-Level Leaks (Python)\n\n**Goal:** Identify *which objects* accumulate and where they are referenced.\n\n- [ ] **Enable tracemalloc for allocation tracking**\n  - For Python 3.4+:\n    ```python\n    import tracemalloc\n    tracemalloc.start(25)  # track 25 frames\n    # at shutdown or periodically:\n    snapshot = tracemalloc.take_snapshot()\n"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.021,
+      "elapsed_seconds": 1.917,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.021,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 270.14,
+      "answer": "# Checklist: Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\nThis checklist is organized by diagnosis phase. It assumes the server is served via a WSGI/ASGI server (e.g., Gunicorn, uvicorn) or a custom `http.server`-based process, and that leak symptoms appear only after hours of integration test traffic.\n\n---\n\n## Phase 1: Baseline & Reproduction\n\n**Goal:** Establish a reproducible leak signal and rule out measurement artifacts.\n\n- [ ] **Define the leak signature**\n  - Confirm metric: RSS (resident set size) vs. VMS vs. heap-allocated objects.\n  - Tool: `psutil.Process(pid).memory_info()` or `top`/`ps` sampling.\n  - Command to sample RSS every 30s during a test run:\n    ```bash\n    while true; do\n      pstat=$(ps -o pid,ppid,etime,rss,vsz -p <PID> 2>/dev/null)\n      ts=$(date +%s)\n      echo \"$ts $pstat\" >> /tmp/mem.log\n      sleep 30\n    done\n    ```\n- [ ] **Create a controlled load profile**\n  - Reproduce the exact request mix (endpoint, payload size, concurrency) that triggers growth.\n  - Hold load constant; avoid bursts that cause transient GC behavior.\n- [ ] **Run a control (clean) case**\n  - Same load on a freshly restarted server known to be stable.\n  - Compare growth rate (MB/hour) between suspect and control.\n- [ ] **Confirm leak is monotonic and persistent**\n  - True leaks grow across restarts or plateau at a new high after GC; transient spikes decay.\n  - Restart server mid-run: if RSS drops sharply, the \"leak\" may be GC-deferred memory, not a true leak.\n\n---\n\n## Phase 2: Profiling \u2014 Object-Level Leaks (Python)\n\n**Goal:** Identify *which objects* accumulate and where they are referenced.\n\n- [ ] **Enable tracemalloc for allocation tracking**\n  - For Python 3.4+:\n    ```python\n    import tracemalloc\n    tracemalloc.start(25)  # track 25 frames\n    # at shutdown or periodically:\n    snapshot = tracemalloc.take_snapshot()\n"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 6.535,
+      "usage": {
+        "completion_tokens": 1741,
+        "prompt_tokens": 98,
+        "total_tokens": 1839,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    # Sort by start endpoint using a new list to avoid mutating the input.\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    \n    merged = [[sorted_intervals[0][0], sorted_intervals[0][1]]]\n    \n    for current in sorted_intervals[1:]:\n        prev = merged[-1]\n        # Merge intervals if the current start is less than or equal to the previous end.\n        # This handles touching intervals, overlaps, and nesting.\n        if current[0] <= prev[1]:\n            prev[1] = max(prev[1], current[1])\n        else:\n            merged.append([current[0], current[1]])\n            \n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 7.219,
+      "usage": {
+        "completion_tokens": 1930,
+        "prompt_tokens": 131,
+        "total_tokens": 2061,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n    seen = set()\n    for src, dst in edges:\n        if (src, dst) in seen:\n            continue\n        seen.add((src, dst))\n        adj[src].add(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 6.65,
+      "usage": {
+        "completion_tokens": 1770,
+        "prompt_tokens": 260,
+        "total_tokens": 2030,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be a positive integer\")\n    batches = []\n    current = []\n    total = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"weight must be a positive integer <= limit\")\n        if total + weight > limit:\n            batches.append(current)\n            current = []\n            total = 0\n        current.append(name)\n        total += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 3.143,
+      "usage": {
+        "completion_tokens": 832,
+        "prompt_tokens": 138,
+        "total_tokens": 970,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n_ENV_KEY_RE = re.compile(r'\\A[A-Za-z_][A-Za-z0-9_]*\\Z')\n\n\ndef parse_env(text):\n    \"\"\"Parse environment assignments from text into a dict.\"\"\"\n    result = {}\n    for raw in text.splitlines():\n        line = raw.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(\n                f\"Invalid environment assignment (no '='): {line!r}\"\n            )\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not _ENV_KEY_RE.match(key):\n            raise ValueError(f\"Invalid environment key: {key!r}\")\n        if (\n            (value.startswith('\"') and value.endswith('\"') and len(value) >= 2)\n            or (value.startswith(\"'\") and value.endswith(\"'\") and len(value) >= 2)\n        ):\n            value = value[1:-1]\n        result[key] = value\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 11.329,
+      "usage": {
+        "completion_tokens": 3033,
+        "prompt_tokens": 148,
+        "total_tokens": 3181,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buf = b''.join(chunks)\n    events = []\n    current_data = []\n    i = 0\n    n = len(buf)\n\n    while i < n:\n        line_start = i\n        while i < n and buf[i] != 0x0A:  # LF\n            i += 1\n        line = buf[line_start:i]\n        i += 1  # consume LF\n\n        if line and line[-1] == 0x0D:  # strip CR from CRLF\n            line = line[:-1]\n\n        if not line:  # blank line -> dispatch event\n            if current_data:\n                data = '\\n'.join(current_data)\n                if data == '[DONE]':\n                    return events\n                events.append(data)\n            current_data = []\n        else:\n            colon_pos = line.find(b':')\n            if colon_pos == -1:\n                continue\n            field = line[:colon_pos]\n            value = line[colon_pos + 1:]\n            if field == b'data':\n                if value and value[0] == 0x20:  # remove at most one space after colon\n                    value = value[1:]\n                current_data.append(value.decode('utf-8'))\n\n    # unterminated final event (no trailing blank line) is ignored\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 24.749,
+      "usage": {
+        "completion_tokens": 6532,
+        "prompt_tokens": 106,
+        "total_tokens": 6638,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"negative arguments not allowed\")\n    if base == 0 or cap == 0:\n        return 0.0\n    # Determine whether base * 2**attempt >= cap without constructing\n    # a huge integer or overflowing: compare attempt with log2(cap) - log2(base).\n    diff = math.log2(cap) - math.log2(base)\n    if attempt >= diff:\n        return float(cap)\n    # Here base * 2**attempt < cap (mathematically), so it is bounded by\n    # cap and cannot overflow. Clamp to handle boundary rounding.\n    return min(float(cap), base * 2**attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": false,
+      "elapsed_seconds": 15.772,
+      "usage": {
+        "completion_tokens": 4223,
+        "prompt_tokens": 133,
+        "total_tokens": 4356,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for q in queued:\n        if q > budget:\n            raise ValueError(\"queued reservation exceeds the whole budget\")\n    admitted = []\n    remaining = []\n    used_tokens = sum(active)\n    used_slots = len(active)\n    blocked = False\n    for q in queued:\n        if blocked or q > budget - used_tokens or used_slots >= slots:\n            remaining.append(q)\n        else:\n            admitted.append(q)\n            used_tokens += q\n            used_slots += 1\n    return admitted, remaining\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 25, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.277,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully with the following result:\n\n- **Status**: `dry-run-ok` (since `dry_run` was set to `true`, no actual file changes were made \u2014 this was a dry run)\n- **Changed files**: 2\n  - `src/a.py` \u2014 create (content: `print(42)\\n`)\n  - `obsolete.txt` \u2014 delete\n\nThe operation was performed as a dry run, so no files were actually modified on disk. The labels `[\"coding\", \"test\"]` were attached to the operation."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.047,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result has been reported:\n\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nThe dry run completed successfully, showing that 2 files were affected (1 created: `src/a.py`, 1 deleted: `obsolete.txt`). Since `dry_run` was set to `true`, no actual changes were made to the filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.111,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Tool result: `{\"status\":\"dry-run-ok\",\"changed_files\":2}`\n\nThe apply_changes operation completed successfully as a dry run. It reported 2 changed files:\n- Created `src/a.py` with content `print(42)\\n`\n- Deleted `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual file changes were made to the filesystem."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 2.985,
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 31880,
+        "total_tokens": 31934,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.125,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31957,
+        "total_tokens": 31965,
+        "prompt_tokens_details": {
+          "cached_tokens": 31933
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 15.363,
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 121881,
+        "total_tokens": 121935,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.27,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121958,
+        "total_tokens": 121966,
+        "prompt_tokens_details": {
+          "cached_tokens": 121934
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 46.266,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 252881,
+        "total_tokens": 252930,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.49,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 252953,
+        "total_tokens": 252961,
+        "prompt_tokens_details": {
+          "cached_tokens": 252929
+        }
+      }
+    }
+  ]
+}

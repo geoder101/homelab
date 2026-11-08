@@ -1,0 +1,286 @@
+{
+  "label": "gptoss",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "gptoss",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.081,
+      "elapsed_seconds": 3.997,
+      "usage": {
+        "completion_tokens": 1024,
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "prompt_tokens_details": {
+          "cached_tokens": 60
+        }
+      },
+      "first_generated_token_seconds": 0.081,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 261.46,
+      "answer": "**Checklist \u2013 Python HTTP Server Leak Detection (Long\u2011Run Integration Tests)**  \n\nUse the checklist in order.  Keep a dedicated \u201cleak\u2011debug\u201d branch or spin\u2011up a clean environment before starting.  The goal is to pinpoint where memory keeping increases in your tests, identify the root cause, and confirm the fix.\n\n---\n\n## 0.  Preparation & Reproducibility  \n\n| # | Task | Command / Action | FAQ |\n|---|-------|--------------------|-----|\n|0.1|**Isolate the test environment.** |```shell\ndocker run --rm -v $(pwd):/app -w /app -p 8000:8000 python:3.12-slim-bullseye bash\n```|Use Docker/venv/poetry; guarantees same libs/versions.|\n|0.2|**Create a baseline snapshot.** |```shell\nmpstat -P ALL 1 5 > baseline.txt\n```|Baseline CPU/Memory before running tests.|\n|0.3|**Wire in Python tracing.** |```shell\nexport PYTHONTRACETHREAD=1  # Enable trace thread events\n```|Useful when your server uses many internal threads.|\n|0.3|**Collect a baseline event trace.** |```python -m pycodestyle .```|Not a leak thing \u2013 just to be sure setup is clean.|\n\n---\n\n## 1.  Profiling & Memory Snapshot  \n\n| # | Tool | What to check | Typical command | Output to parse |\n|---|------|--------------|------------------|-----------------|\n|1.1|**tracemalloc**|Memory allocation stats, line\u2011by\u2011line. |```python -m tracemalloc run.py```; then inspect with `tracemalloc.get_traced_memory()` |`current, peak` |\n|1.2|**gc.get_count()**|Number of objects in each generation |```python | python - <<'PY'\nimport gc, sys\nprint(gc.get_count())\nPY\n```|Prints `(adult, strategic, major, ...)`|\n|1.3|**objgraph**|Total object count, top typ|```python -m objgraph \n   analyze -O 1 -o objects.png \n   show -n 10\n```|Grab `objects.png`; view in viewer.|\n|1.4|**memory_profiler**|Per\u2011liner memory usage during test run.|```python -m memory_profiler run.py```|`% Memory` line numbers|\n|1.4|**psutil**|Process mem stats over time.|```python -c \"import psutil, os; \n        p=psutil.Process(os.getpid()); \n        print(p.memory_info() )\"\n```|Print `rss`, `vms`, etc.|\n\n### Quick Steps  \n\n```bash\n# Start the server (headless)\npython -m your.server & SERVER_PID=$!\n# Hold onto PID for bookkeeping\n# Run integration tests\npython -m pytest tests/integration/ --maxfail=1 | tee test.log\n\n# Dump memory snapshots every 5s\ncnfig=5\nwhile kill -0 $SERVER_PID 2>/dev/null; do\n    RES=$(ps -o rss= -p $SERVER_PID)\n    echo \"$(date +%s), $RES\" >> mem_snap.csv\n    sleep $cnfig\ndone\n```\n\n---\n\n## 2.  Resource & Clean\u2011Up Verification  \n\n### 2.1 Close Connections?  \n\n| Task | Check | Command |\n|-------|-------|---------|\n|2.1.1| Socket table has the right number of fds |```ss -tan | grep -c \"LISTEN\"```|\n|2.1.2| Server's backend (threads, pool) was shut down |`threading.active_count()`  |\n|2.1.3| `http.client` connections released |Add sentinel: `client.close()`  |\n\n### 2.2  File I/O & Temp Files | `find . -maxdepth 1 -type f -name 'tmp*' -delete`|\n\n### 2.3  Memory\u2011Mapped Files, Buffers  \n\n| Task | Command | Output |\n|------|----------|--------|\n|Check `mmap` usage|`lsof -p $SERVER_PID | grep mmap`|Confirm no persistent mmap.|\n|Check `libuv` or `asyncio` buffer pools|`uv_loop = uv.loop.get_current(); print(uv_loop._buffer)`|Should be empty after close.|\n\n---\n\n## 3.  Integration\u2011Test Controlled Runs  \n\n| # | Task | Example | Notes |\n|---|------|----------|--------|\n|3.1|Disable caching.|Endpoint with `Cache-Control: no-store`.|Avoid stale memory.|\n|3.2"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.05,
+      "elapsed_seconds": 3.965,
+      "usage": {
+        "completion_tokens": 1024,
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "prompt_tokens_details": {
+          "cached_tokens": 95
+        }
+      },
+      "first_generated_token_seconds": 0.05,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 261.58,
+      "answer": "## Comprehensive Checklist for Diagnosing a Memory\u2011Leak in a Long\u2011Running Python HTTP Server\n\n> **Goal** \u2013 Pinpoint, isolate, and confirm the presence of a memory leak in a Python HTTP server that is only evident during integration\u2011testing or production runs.\n\nThe checklist is organized into three phases:\n\n| Phase | Purpose | Typical Actions |\n|------|-----------|------------------|\n| **1. Baseline Setup** | Know the normal memory profile before tests start. |  |\n| **2. Reproduction & Baseline Capture** | Run a controlled test harness and capture baseline. |  |\n| **3. Targeted Profiling** | Use automated tools to generate metrics, traces, and heap snapshots. |  |\n| **4. Resource Cleanup & Instrumentation** | Add or verify finalizers / context\u2011manager cleanup for external resources. |  |\n| **5. Verification & Regression** | Run repeated long\u2011running tests and confirm the leak has disappeared. |  |\n\n> **Tip** \u2013 Keep the server process isolated in a Docker or VM if possible. Use version\u2011controlled logging and instrumentation so you can reproduce the same heap snapshots.\n\n---\n\n### 1. Baseline Setup \u2013 Nothing Should Leak\n\n1. **Isolate the test environment**  \n   ```bash\n   docker run --rm -it -v $(pwd):/app -w /app \\\n     python:3.12-slim bash\n   ```\n\n2. **Create a minimal test harness**  \n   ```python\n   # server.py\n   from http.server import HTTPServer, BaseHTTPRequestHandler\n   class Handler(BaseHTTPRequestHandler):\n       def do_GET(self):\n           self.send_response(200)\n           self.end_headers()\n           self.wfile.write(b\"OK\")\n   ```\n\n   ```bash\n   uvicorn server:app --port 8000 --workers 1\n   ```\n\n3. **Enable sentinel metrics** \u2013 e.g. expose `/metrics` with `prometheus_client`.\n\n---\n\n### 2. Reproduction & Baseline Capture\n\n| Step | Command/Action | Why |\n|------|------------------|-----|\n| **2.1 Generate load** | `wrk -t4 -c200 -d5m http://localhost:8000/` | 5\u202fmin continuous traffic |\n| **2.2 Capture baseline memory** | `pid=$(pgrep uvicorn); ps -o pid,ppid,%mem,rss,command -p $pid` | Establish *normal* heap size |\n| **2.3 Start trace collection on the server** | `ubertrace -p $pid -o trace.json` |  |\n| **2.4 Capture a heap snapshot** | `python - <<'PY'\\nimport tracemalloc, time, psutil, json, re, sys\\nps = psutil.Process(os.getpid())\\nprint({\\\"rss_mb\\\": ps.memory_info().rss/1024/1024})\\ntracemalloc.start()\\nfor _ in range(10):\\n    time.sleep(1)\\n    TOKEN=tracemalloc.get_traced_memory()\\n    print({\\\"snap\\\": TOKEN[0], \\\"peak\\\": TOKEN[1]})\\nPY` | Baseline of *no* snapshot |\n| **2.4** | `opentelemetry-collector-config.yaml` + `docker run otel-collector` \u2013 optional if distributed. |  |\n\n**NOTE** \u2013 Your baseline should show **constant memory** (\u00b12\u202f%) over repeated runs.\n\n---\n\n### 3. Targeted Profiling\n\n#### 3.1 Heap Profilers\n\n| Tool | Command | Notes |\n|------|--------|------|\n| `memory_profiler` | `pip install memory_profiler`; run via `mprof run python -m http.server 8000` then `mprof plot` | line\u2011level detail |\n| `tracemalloc` | `python -m tracemalloc --dump` | built\u2011in, uses `tracemalloc` |\n| `objgraph` | `python - <<'PY'\\nimport objgraph, sys\\nobjgraph.show_growth();\\nPY` | after triangulating objects | \n| `guppy3` (Heapy) | `guppy3 -m` and `h.setrelheap()` | interactive interpreter |\n| `pympler` | `from pympler import muppy, Summary\\nprint(muppy.get_objects())` | bulk counts |\n\n#### 3.2 CPU and System Trace\n\n| Tool | Command | Why |\n|------|--------|-----|\n| `py-spy` | `py-spy -o profile.svg --pid $pid` | identify repeated Python frame patterns |\n| `syscalls` | `strace -f -c -p $pid` |System\u2011level calls that may allocate. |\n\n#### 3.3 Distributed Tracing"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.052,
+      "elapsed_seconds": 3.97,
+      "usage": {
+        "completion_tokens": 1024,
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "prompt_tokens_details": {
+          "cached_tokens": 95
+        }
+      },
+      "first_generated_token_seconds": 0.052,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 261.3,
+      "answer": "## Comprehensive Checklist for Diagnosing a Memory\u2011Leak in a Long\u2011Running Python HTTP Server\n\n> **Goal** \u2013 Pinpoint, isolate, and confirm the presence of a memory leak in a Python HTTP server that is only evident during integration\u2011testing or production runs.\n\nThe checklist is organized into three phases:\n\n| Phase | Purpose | Typical Actions |\n|------|-----------|------------------|\n| **1. Baseline Setup** | Know the normal memory profile before tests start. |  |\n| **2. Reproduction & Baseline Capture** | Run a controlled test harness and capture baseline. |  |\n| **3. Targeted Profiling** | Use automated tools to generate metrics, traces, and heap snapshots. |  |\n| **4. Resource Cleanup & Instrumentation** | Add or verify finalizers / context\u2011manager cleanup for external resources. |  |\n| **5. Verification & Regression** | Run repeated long\u2011running tests and confirm the leak has disappeared. |  |\n\n> **Tip** \u2013 Keep the server process isolated in a Docker or VM if possible. Use version\u2011controlled logging and instrumentation so you can reproduce the same heap snapshots.\n\n---\n\n### 1. Baseline Setup \u2013 Nothing Should Leak\n\n1. **Isolate the test environment**  \n   ```bash\n   docker run --rm -it -v $(pwd):/app -w /app \\\n     python:3.12-slim bash\n   ```\n\n2. **Create a minimal test harness**  \n   ```python\n   # server.py\n   from http.server import HTTPServer, BaseHTTPRequestHandler\n   class Handler(BaseHTTPRequestHandler):\n       def do_GET(self):\n           self.send_response(200)\n           self.end_headers()\n           self.wfile.write(b\"OK\")\n   ```\n\n   ```bash\n   uvicorn server:app --port 8000 --workers 1\n   ```\n\n3. **Enable sentinel metrics** \u2013 e.g. expose `/metrics` with `prometheus_client`.\n\n---\n\n### 2. Reproduction & Baseline Capture\n\n| Step | Command/Action | Why |\n|------|------------------|-----|\n| **2.1 Generate load** | `wrk -t4 -c200 -d5m http://localhost:8000/` | 5\u202fmin continuous traffic |\n| **2.2 Capture baseline memory** | `pid=$(pgrep uvicorn); ps -o pid,ppid,%mem,rss,command -p $pid` | Establish *normal* heap size |\n| **2.3 Start trace collection on the server** | `ubertrace -p $pid -o trace.json` |  |\n| **2.4 Capture a heap snapshot** | `python - <<'PY'\\nimport tracemalloc, time, psutil, json, re, sys\\nps = psutil.Process(os.getpid())\\nprint({\\\"rss_mb\\\": ps.memory_info().rss/1024/1024})\\ntracemalloc.start()\\nfor _ in range(10):\\n    time.sleep(1)\\n    TOKEN=tracemalloc.get_traced_memory()\\n    print({\\\"snap\\\": TOKEN[0], \\\"peak\\\": TOKEN[1]})\\nPY` | Baseline of *no* snapshot |\n| **2.4** | `opentelemetry-collector-config.yaml` + `docker run otel-collector` \u2013 optional if distributed. |  |\n\n**NOTE** \u2013 Your baseline should show **constant memory** (\u00b12\u202f%) over repeated runs.\n\n---\n\n### 3. Targeted Profiling\n\n#### 3.1 Heap Profilers\n\n| Tool | Command | Notes |\n|------|--------|------|\n| `memory_profiler` | `pip install memory_profiler`; run via `mprof run python -m http.server 8000` then `mprof plot` | line\u2011level detail |\n| `tracemalloc` | `python -m tracemalloc --dump` | built\u2011in, uses `tracemalloc` |\n| `objgraph` | `python - <<'PY'\\nimport objgraph, sys\\nobjgraph.show_growth();\\nPY` | after triangulating objects | \n| `guppy3` (Heapy) | `guppy3 -m` and `h.setrelheap()` | interactive interpreter |\n| `pympler` | `from pympler import muppy, Summary\\nprint(muppy.get_objects())` | bulk counts |\n\n#### 3.2 CPU and System Trace\n\n| Tool | Command | Why |\n|------|--------|-----|\n| `py-spy` | `py-spy -o profile.svg --pid $pid` | identify repeated Python frame patterns |\n| `syscalls` | `strace -f -c -p $pid` |System\u2011level calls that may allocate. |\n\n#### 3.3 Distributed Tracing"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 8.452,
+      "usage": {
+        "completion_tokens": 2133,
+        "prompt_tokens": 154,
+        "total_tokens": 2287,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_ints = sorted((tuple(i) for i in intervals), key=lambda x: (x[0], x[1]))\n    merged = []\n    cur_start, cur_end = sorted_ints[0]\n    for start, end in sorted_ints[1:]:\n        if start <= cur_end:            # overlapping or touching\n            if end > cur_end:\n                cur_end = end\n        else:\n            merged.append([cur_start, cur_end])\n            cur_start, cur_end = start, end\n    merged.append([cur_start, cur_end])\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 4.374,
+      "usage": {
+        "completion_tokens": 1120,
+        "prompt_tokens": 187,
+        "total_tokens": 1307,
+        "prompt_tokens_details": {
+          "cached_tokens": 79
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\nfrom typing import List, Tuple, Dict, Set\n\ndef toposort(nodes: List[str], edges: List[Tuple[str, str]]) -> List[str]:\n    # Build in-degree map and adjacency list, ignoring duplicate edges\n    in_degree: Dict[str, int] = {node: 0 for node in nodes}\n    adjacency: Dict[str, Set[str]] = {node: set() for node in nodes}\n    seen_edges: Set[Tuple[str, str]] = set()\n\n    for src, dst in edges:\n        if src == dst:\n            raise ValueError(\"Self-loop detected\")\n        edge = (src, dst)\n        if edge in seen_edges:\n            continue  # ignore duplicate\n        seen_edges.add(edge)\n        adjacency[src].add(dst)\n        in_degree[dst] += 1\n\n    # Initialize min-heap with nodes having zero in-degree\n    zero_nodes: List[str] = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(zero_nodes)\n\n    result: List[str] = []\n    while zero_nodes:\n        node = heapq.heappop(zero_nodes)\n        result.append(node)\n        for neighbor in adjacency[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(zero_nodes, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 3.687,
+      "usage": {
+        "completion_tokens": 947,
+        "prompt_tokens": 312,
+        "total_tokens": 1259,
+        "prompt_tokens_details": {
+          "cached_tokens": 307
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if not isinstance(limit, int) or limit <= 0:\n        raise ValueError\n    result = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if not isinstance(weight, int) or weight <= 0 or weight > limit:\n            raise ValueError\n        if current_sum + weight > limit:\n            if current:\n                result.append(current)\n            current = [name]\n            current_sum = weight\n        else:\n            current.append(name)\n            current_sum += weight\n    if current:\n        result.append(current)\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 5.116,
+      "usage": {
+        "completion_tokens": 1306,
+        "prompt_tokens": 193,
+        "total_tokens": 1499,
+        "prompt_tokens_details": {
+          "cached_tokens": 79
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text: str) -> dict:\n    \"\"\"Parse environment assignments from *text*.\n\n    Returns a dict mapping keys to values.\n    \"\"\"\n    env = {}\n    key_pattern = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n\n    for raw_line in text.splitlines():\n        line = raw_line.strip()\n        if not line or line.startswith('#'):\n            continue\n\n        eq_pos = line.find('=')\n        if eq_pos == -1:\n            raise ValueError(f\"Invalid line (missing '='): {raw_line!r}\")\n\n        key = line[:eq_pos].strip()\n        value = line[eq_pos + 1 :].strip()\n\n        if not key_pattern.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n\n        if len(value) >= 2 and value[0] == value[-1] in (\"'\", '\"'):\n            value = value[1:-1]\n\n        env[key] = value\n\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 16.558,
+      "usage": {
+        "completion_tokens": 4061,
+        "prompt_tokens": 206,
+        "total_tokens": 4267,
+        "prompt_tokens_details": {
+          "cached_tokens": 79
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks: list[bytes]) -> list[str]:\n    \"\"\"\n    Parse Server Sent Events (SSE) from a list of byte chunks.\n    \n    Parameters\n    ----------\n    chunks : list[bytes]\n        The raw SSE data, potentially split in arbitrary places.\n    \n    Returns\n    -------\n    list[str]\n        A list of data payloads (one per dispatched event).  Events\n        without any `data:` field or containing the sentinel\n        `[DONE]` are ignored.\n    \"\"\"\n    # Join all chunks and decode the entire stream.\n    # `errors='replace'` guarantees a string is produced even on bad input.\n    stream = b''.join(chunks).decode(\"utf-8\", \"replace\")\n\n    result: list[str] = []\n    current: list[str] = []\n\n    for raw_line in stream.split(\"\\n\"):\n        # Remove a trailing carriage-return \u2013 `\\r\\n` is considered a line break.\n        line = raw_line.rstrip(\"\\r\")\n\n        # Blank line \u2013 event boundary.\n        if line == \"\":\n            if current:\n                payload = \"\\n\".join(current)\n                if payload == \"[DONE]\":\n                    # Stop processing once the DONE event is dispatched.\n                    return result\n                result.append(payload)\n            current = []                   # reset for the next event\n            continue\n\n        # Ignore comment lines.\n        if line.startswith(\":\"):\n            continue\n\n        # Handle `data:` fields. All other fields are ignored.\n        if line.startswith(\"data:\"):\n            data = line[5:]  # part after the colon\n            if data.startswith(\" \"):  # strip *at most* one leading space\n                data = data[1:]\n            # An empty data line is appended literally.\n            current.append(data)\n\n    # If the last event was never terminated by a blank line, discard it.\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 28.051,
+      "usage": {
+        "completion_tokens": 6664,
+        "prompt_tokens": 164,
+        "total_tokens": 6828,
+        "prompt_tokens_details": {
+          "cached_tokens": 79
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt: int, base: float, cap: float) -> float:\n    \"\"\"\n    Compute the exponential back\u2011off delay.\n\n    Parameters\n    ----------\n    attempt : int\n        Non\u2011negative integer representing the retry attempt index.\n    base : float\n        Finite non\u2011negative base delay.\n    cap : float\n        Finite non\u2011negative maximum delay.\n\n    Returns\n    -------\n    float\n        `min(cap, base * 2**attempt)`\n\n    Raises\n    ------\n    ValueError\n        If any argument is negative.\n\n    Notes\n    -----\n    The implementation never constructs huge integers or\n    overflows on floating\u2011point arithmetic, even for\n    extremely large *attempt* values (e.g. 10**9).\n    \"\"\"\n    # Validate input types and raise for negative values\n    if not isinstance(attempt, int) or attempt < 0:\n        raise ValueError(\"attempt must be a non\u2011negative integer\")\n    if not isinstance(base, (int, float)) or base < 0:\n        raise ValueError(\"base must be a non\u2011negative number\")\n    if not isinstance(cap, (int, float)) or cap < 0:\n        raise ValueError(\"cap must be a non\u2011negative number\")\n\n    # Trivial cases --------------------------------------------------------\n    # If either bound is zero, the result is zero.\n    if cap == 0.0 or base == 0.0:\n        return 0.0\n\n    # If base exceeds cap, the product will always be larger than cap,\n    # therefore the min will always be cap.\n    if base > cap:\n        return round(float(cap), 12)\n\n    # Compute logarithms in base\u20112 to avoid large intermediate numbers\n    log_base = math.log2(base)   # base > 0\n    log_cap = math.log2(cap)      # cap > 0\n\n    # The maximum *attempt* for which the product does not exceed cap\n    max_attempt_before_overflow = log_cap - log_base\n\n    # If the desired exponent is too large, the cap bounds the result\n    if attempt > max_attempt_before_overflow:\n        return round(float(cap), 12)\n\n    # Otherwise the product is within float range; compute it\n    exponent = log_base + attempt   # This is \u2264 log_cap\n    product = math.pow(2.0, exponent)\n    return product\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 6.437,
+      "usage": {
+        "completion_tokens": 1633,
+        "prompt_tokens": 188,
+        "total_tokens": 1821,
+        "prompt_tokens_details": {
+          "cached_tokens": 79
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(q > budget for q in queued):\n        raise ValueError(\"Queued reservation exceeds total budget\")\n    \n    budget_left = budget - sum(active)\n    slots_left = slots - len(active)\n    \n    admitted = []\n    idx = 0\n    while idx < len(queued):\n        r = queued[idx]\n        if budget_left >= r and slots_left > 0:\n            admitted.append(r)\n            budget_left -= r\n            slots_left -= 1\n            idx += 1\n        else:\n            break\n    \n    remaining = queued[idx:] if idx < len(queued) else []\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.857,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "**Function call result**\n\n```\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nThe tool reports that, as requested, the changes were performed in dry\u2011run mode. Two operations were prepared: creation of `src/a.py` with the specified content, and deletion of `obsolete.txt`. No actual filesystem modifications were made, and the labels applied are `\"coding\"` and `\"test\"`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.915,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n"
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.522,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "**Apply Changes Result**\n\n- `src/a.py` **created** with the content:\n  ```python\n  print(42)\n  ```\n\n- `obsolete.txt` **deleted**.\n\nAll operations were performed as a dry\u2011run with the labels `[\"coding\", \"test\"]`."
+    }
+  ]
+}

@@ -21,12 +21,52 @@ parser.add_argument("--preserve-thinking", action="store_true")
 parser.add_argument("--thinking-budget", type=int, default=8192)
 parser.add_argument("--max-tokens", type=int, default=8192)
 parser.add_argument("--seed", type=int, default=42)
+parser.add_argument("--temperature", type=float, help="Explicit sampling-temperature experiment")
+parser.add_argument("--sampling-profile", choices=["qwen", "qwen3-coder", "glm47", "gemma4", "general", "devstral2", "gptoss"], default="qwen")
 parser.add_argument("--extended", action="store_true", help="Additional deployment/streaming contract tasks")
 args = parser.parse_args()
+if args.sampling_profile in ('gemma4', 'qwen3-coder', 'devstral2'):
+    args.preserve_thinking = False
+if args.sampling_profile in ('qwen3-coder', 'devstral2'):
+    args.thinking_budget = 0
 results = {"label": args.label, "backend": args.backend,
-           "settings": {"reasoning_effort": "medium", "preserve_thinking": args.preserve_thinking,
-                         "thinking_max_tokens": args.thinking_budget,
-                         "max_tokens": args.max_tokens, "seed": args.seed, "mtp": False}, "tests": []}
+            "settings": {"reasoning_effort": "medium" if args.thinking_budget else None, "preserve_thinking": args.preserve_thinking,
+                          "thinking_max_tokens": args.thinking_budget if args.backend == 'llama' else None,
+                          "reasoning_budget_parameter_sent": args.backend == 'llama',
+                          "max_tokens": args.max_tokens, "seed": args.seed,
+                          "sampling_profile": args.sampling_profile, "mtp": False}, "tests": []}
+results['settings']['temperature_override'] = args.temperature
+
+
+def sampling(thinking, tools=False):
+    values = {'temperature': 1.0 if thinking else .7, 'top_p': .95 if thinking else .8,
+              'top_k': 20, 'min_p': 0.0, 'presence_penalty': 0.0 if thinking else 1.5,
+              'repeat_penalty': 1.0}
+    if args.sampling_profile == 'qwen3-coder':
+        values.update(temperature=.7, top_p=.8, presence_penalty=0.0, repeat_penalty=1.05)
+    elif args.sampling_profile == 'glm47':
+        values.update(temperature=.7 if tools or not thinking else 1.0,
+                      top_p=1.0 if tools or not thinking else .95,
+                      top_k=0, min_p=.01, presence_penalty=0.0)
+    elif args.sampling_profile == 'gemma4':
+        values.update(temperature=1.0, top_p=.95, top_k=64, presence_penalty=0.0)
+    elif args.sampling_profile == 'devstral2':
+        values.update(temperature=.15, top_p=1.0, top_k=0, presence_penalty=0.0)
+    elif args.sampling_profile == 'gptoss':
+        values.update(temperature=1.0, top_p=1.0, top_k=0, presence_penalty=0.0)
+    elif args.sampling_profile == 'general':
+        values.update(temperature=1.0, top_p=.95, top_k=20, presence_penalty=0.0)
+    if args.temperature is not None:
+        values['temperature'] = args.temperature
+    if args.backend != 'llama':
+        values['repetition_penalty'] = values.pop('repeat_penalty')
+        if values['top_k'] == 0:
+            values['top_k'] = -1
+    return values
+
+
+results['settings']['sampling'] = {mode: sampling(thinking, tools) for mode, thinking, tools in
+                                  [('coding', True, False), ('tools', True, True), ('streaming', False, False)]}
 
 
 def post(path, body, timeout=600):
@@ -41,6 +81,7 @@ def post(path, body, timeout=600):
 
 
 def request_chat(messages, *, thinking=True, max_tokens=None, **extra):
+    thinking = thinking and args.sampling_profile not in ('qwen3-coder', 'devstral2')
     body = {
         "model": "coder", "messages": messages, "seed": args.seed,
         "temperature": 1.0 if thinking else 0.7,
@@ -57,6 +98,11 @@ def request_chat(messages, *, thinking=True, max_tokens=None, **extra):
     }
     if args.backend == 'llama':
         body['reasoning_budget_tokens'] = args.thinking_budget if thinking else 0
+        body.pop('repetition_penalty', None)
+    body.update(sampling(thinking, bool(extra.get('tools'))))
+    if args.sampling_profile == 'gptoss':
+        body['reasoning_effort'] = 'medium' if thinking else 'low'
+        body['chat_template_kwargs']['reasoning_effort'] = body['reasoning_effort']
     start = time.monotonic()
     with post("/v1/chat/completions", body) as response:
         value = json.load(response)
@@ -79,7 +125,7 @@ def streaming_speed():
     body = {
         "model": "coder", "stream": True, "stream_options": {"include_usage": True},
         "seed": args.seed, "temperature": 0.7, "top_p": 0.8, "top_k": 20,
-        "presence_penalty": 1.5, "max_tokens": 512,
+        "presence_penalty": 1.5, "max_tokens": 1024 if args.sampling_profile == 'gptoss' else 512,
         "chat_template_kwargs": {"enable_thinking": False},
         "messages": [{"role": "user", "content": (
             "Write a detailed checklist for diagnosing a Python HTTP server that leaks "
@@ -87,8 +133,15 @@ def streaming_speed():
             "commands, covering profiling, resource cleanup and verification."
         )}],
     }
+    body.update(sampling(False))
+    if args.backend == 'llama':
+        body['reasoning_budget_tokens'] = 0
+    if args.sampling_profile == 'gptoss':
+        body['reasoning_effort'] = 'low'
+        body['chat_template_kwargs']['reasoning_effort'] = 'low'
     start = time.monotonic()
     first = None
+    first_generated = None
     usage = {}
     pieces = []
     with post("/v1/chat/completions", body) as response:
@@ -98,7 +151,10 @@ def streaming_speed():
             event = json.loads(raw[6:])
             usage = event.get("usage") or usage
             for choice in event.get("choices", []):
-                text = choice.get("delta", {}).get("content")
+                delta = choice.get('delta', {})
+                text = delta.get("content")
+                if (text or delta.get('reasoning_content') or delta.get('reasoning')) and first_generated is None:
+                    first_generated = time.monotonic()
                 if text:
                     if first is None:
                         first = time.monotonic()
@@ -106,8 +162,10 @@ def streaming_speed():
     finish = time.monotonic()
     assert first is not None, "No streamed text"
     return {"ttft_seconds": round(first - start, 3),
-            "elapsed_seconds": round(finish - start, 3), "usage": usage,
-            "decode_tokens_per_second": round(usage["completion_tokens"] / (finish - first), 2),
+             "elapsed_seconds": round(finish - start, 3), "usage": usage,
+             "first_generated_token_seconds": round(first_generated - start, 3),
+             "max_tokens": body['max_tokens'],
+             "decode_tokens_per_second": round(usage["completion_tokens"] / (finish - first_generated), 2),
             "answer": "".join(pieces)}
 
 
@@ -314,14 +372,16 @@ def long_context(target):
             + "END_KEY=cedar-9167\n"
             "Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.")
     messages = [{"role": "user", "content": text}]
-    response, elapsed = request_chat(messages, thinking=False, max_tokens=256)
+    response, elapsed = request_chat(messages, thinking=False,
+                                    max_tokens=2048 if args.sampling_profile == 'gptoss' else 256)
     text = response["choices"][0]["message"].get("content") or ""
     for expected in ["amber-7429", "birch-5831", "cedar-9167"]:
         assert expected in text, text
     assert response["usage"]["prompt_tokens"] >= target - 500, response["usage"]
     messages += [{"role": "assistant", "content": text},
                  {"role": "user", "content": "Now return only the value of MIDDLE_KEY."}]
-    followup, followup_elapsed = request_chat(messages, thinking=False, max_tokens=128)
+    followup, followup_elapsed = request_chat(messages, thinking=False,
+        max_tokens=1024 if args.sampling_profile == 'gptoss' else 128)
     followup_text = followup["choices"][0]["message"].get("content") or ""
     assert "birch-5831" in followup_text, followup_text
     return {"elapsed_seconds": elapsed, "usage": response["usage"], "answer": text,

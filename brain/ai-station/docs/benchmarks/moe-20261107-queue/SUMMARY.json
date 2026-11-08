@@ -1,0 +1,1179 @@
+{
+  "updated_utc": "2026-11-08T06:08:28.919508+00:00",
+  "queue": {
+    "created_utc": "2026-11-07T22:36:25.090343+00:00",
+    "control": "Qwen3.8-27B UD-Q4_K_XL precision",
+    "state": "complete",
+    "stages": {
+      "second": {
+        "state": "complete",
+        "models": [
+          "flint",
+          "nemotron35",
+          "devstral2",
+          "occamy",
+          "muse",
+          "gptoss"
+        ],
+        "output": "docs/benchmarks/moe-20261107-batch2",
+        "started_utc": "2026-11-08T00:14:06.764351+00:00",
+        "returncode": 0,
+        "restored": true,
+        "finished_utc": "2026-11-08T02:54:51.136213+00:00"
+      },
+      "tuning": {
+        "state": "complete",
+        "models": [
+          "qwen38-q3",
+          "qwen38-q4-128k",
+          "qwen38-q8-128k",
+          "qwen38-newengine",
+          "qwen38-nvfp4",
+          "ornith-q5",
+          "qwen3-coder-q4",
+          "gptoss-vllm"
+        ],
+        "output": "docs/benchmarks/moe-20261107-tuning",
+        "started_utc": "2026-11-08T02:54:51.136595+00:00",
+        "returncode": 0,
+        "restored": true,
+        "finished_utc": "2026-11-08T06:08:08.902869+00:00"
+      }
+    },
+    "finished_utc": "2026-11-08T06:08:08.903218+00:00"
+  },
+  "configurations": [
+    {
+      "batch": "moe-20261107",
+      "model": "baseline",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 71.66,
+      "coding_total_seconds": 462.46,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107",
+      "model": "qwen3-coder",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 1,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 243.6,
+      "coding_total_seconds": 17.78,
+      "coding": {
+        "passed": 11,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 3,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 1,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107",
+      "model": "glm47",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 202752,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 235.66,
+      "coding_total_seconds": 412.5,
+      "coding": {
+        "passed": 15,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 4,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 2,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 1,
+        "full": 1,
+        "limit": 1,
+        "agent": 1,
+        "native1": 1,
+        "native2": 1
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107",
+      "model": "gemma4",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 178.41,
+      "coding_total_seconds": 376.83,
+      "coding": {
+        "passed": 19,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 0,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107",
+      "model": "qwen36",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 214.88,
+      "coding_total_seconds": 431.32,
+      "coding": {
+        "passed": 20,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107",
+      "model": "ornith",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 231.3,
+      "coding_total_seconds": 225.17,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 4,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 1,
+        "native2": 1,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "baseline",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 71.67,
+      "coding_total_seconds": 462.43,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "flint",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 194.75,
+      "coding_total_seconds": 407.37,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 5,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 1,
+        "full": 1,
+        "limit": 1,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "nemotron35",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 333.31,
+      "coding_total_seconds": 246.58,
+      "coding": {
+        "passed": 20,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 5,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 0,
+        "screen": 1,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "devstral2",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 131072,
+      "slots": 1,
+      "kv": "q8_0",
+      "warm_tokens_per_second": 72.23,
+      "coding_total_seconds": 57.13,
+      "coding": {
+        "passed": 12,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 3,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "occamy",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 269.89,
+      "coding_total_seconds": 222.47,
+      "coding": {
+        "passed": 18,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 5,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 5,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 1,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "muse",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 131072,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 65.69,
+      "coding_total_seconds": 351.28,
+      "coding": {
+        "passed": 19,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 1,
+        "limit": 1,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-batch2",
+      "model": "gptoss",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 131072,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 261.37,
+      "coding_total_seconds": 221.23,
+      "coding": {
+        "passed": 15,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 7,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 4,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 0,
+        "screen": 1,
+        "full": 1,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "baseline",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 71.65,
+      "coding_total_seconds": 462.46,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen38-q3",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 84.81,
+      "coding_total_seconds": 454.62,
+      "coding": {
+        "passed": 19,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen38-q4-128k",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 131072,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 71.68,
+      "coding_total_seconds": 462.47,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen38-q8-128k",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 131072,
+      "slots": 2,
+      "kv": "q8_0",
+      "warm_tokens_per_second": 74.72,
+      "coding_total_seconds": 524.29,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen38-newengine",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 71.96,
+      "coding_total_seconds": 442.69,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen38-nvfp4",
+      "phase": "complete",
+      "backend": "vllm",
+      "build": null,
+      "context_per_request": 163840,
+      "slots": 1,
+      "kv": "fp8_e4m3",
+      "warm_tokens_per_second": 68.69,
+      "coding_total_seconds": 747.67,
+      "coding": {
+        "passed": 20,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "ornith-q5",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b12182-fd27b2034",
+      "context_per_request": 262144,
+      "slots": 2,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 261.3,
+      "coding_total_seconds": 231.39,
+      "coding": {
+        "passed": 21,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "check_returncodes": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": true
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "qwen3-coder-q4",
+      "phase": "complete",
+      "backend": "llama",
+      "build": "b11960-8642541b2",
+      "context_per_request": 262144,
+      "slots": 1,
+      "kv": "q4_0",
+      "warm_tokens_per_second": 252.6,
+      "coding_total_seconds": 18.28,
+      "coding": {
+        "passed": 13,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 9,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 4,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 6,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 1,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    },
+    {
+      "batch": "moe-20261107-tuning",
+      "model": "gptoss-vllm",
+      "phase": "complete",
+      "backend": "vllm",
+      "build": null,
+      "context_per_request": 131072,
+      "slots": 2,
+      "kv": "auto",
+      "warm_tokens_per_second": 293.5,
+      "coding_total_seconds": 101.83,
+      "coding": {
+        "passed": 18,
+        "seen": 21,
+        "expected": 21
+      },
+      "nested_tools": {
+        "passed": 8,
+        "seen": 9,
+        "expected": 9
+      },
+      "repair_agents": {
+        "passed": 3,
+        "seen": 6,
+        "expected": 6
+      },
+      "native": {
+        "passed": 5,
+        "seen": 6,
+        "expected": 6
+      },
+      "vision": null,
+      "check_returncodes": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 1
+      },
+      "error": null,
+      "batch_restored": true,
+      "restore_smoke": 0,
+      "all_recorded_checks_passed": false
+    }
+  ],
+  "note": "Partial counts are shown against full expected totals. Passing these small tests is not automatic promotion."
+}

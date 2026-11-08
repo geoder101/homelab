@@ -1,0 +1,285 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "sampling_profile": "gemma4",
+  "backend": "llama",
+  "reasoning_budget_parameter_sent": true,
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 29.345,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        return base + '/' + path.lstrip('/')\n    else:\n        return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 35.32,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    for w in waiting:\n        if w > budget:\n            raise ValueError(\"Reservation exceeds budget\")\n            \n    admitted = []\n    current_budget_used = sum(active)\n    current_slots_used = len(active)\n    \n    stop_index = len(waiting)\n    for i, w in enumerate(waiting):\n        if current_budget_used + w <= budget and current_slots_used + 1 <= slots:\n            admitted.append(w)\n            current_budget_used += w\n            current_slots_used += 1\n        else:\n            stop_index = i\n            break\n            \n    remaining = waiting[stop_index:]\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 62.028,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base_url = base_url.rstrip('/')\n    if base_url.endswith('/v1'):\n        return base_url + '/' + path.lstrip('/')\n    return base_url + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 31.653,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    for w in waiting:\n        if w > budget:\n            raise ValueError(\"Reservation exceeds total budget\")\n    \n    current_budget = sum(active)\n    current_slots = len(active)\n    \n    i = 0\n    while i < len(waiting):\n        w = waiting[i]\n        if current_budget + w <= budget and current_slots + 1 <= slots:\n            current_budget += w\n            current_slots += 1\n            i += 1\n        else:\n            break\n            \n    return waiting[:i], waiting[i:]\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 30.52,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        return base + '/' + path.lstrip('/')\n    else:\n        return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 36.125,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    for w in waiting:\n        if w > budget:\n            raise ValueError(\"A waiting reservation exceeds the total budget.\")\n    \n    admitted = []\n    current_sum = sum(active)\n    current_count = len(active)\n    \n    stop_index = len(waiting)\n    for i, w in enumerate(waiting):\n        if current_sum + w <= budget and current_count + 1 <= slots:\n            admitted.append(w)\n            current_sum += w\n            current_count += 1\n        else:\n            stop_index = i\n            break\n            \n    remaining = waiting[stop_index:]\n    return admitted, remaining\n"
+    }
+  ]
+}

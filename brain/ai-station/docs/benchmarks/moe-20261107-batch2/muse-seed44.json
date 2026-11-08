@@ -1,0 +1,286 @@
+{
+  "label": "muse",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 5.283,
+      "elapsed_seconds": 7.926,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 36
+        }
+      },
+      "first_generated_token_seconds": 0.131,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.68,
+      "answer": "A memory leak in a long-running Python HTTP server is almost always: objects that should die per-request are being kept alive by global state, caches, connection pools, or unclosed resources.\n\nHere is a practical diagnostic checklist you can run in order.\n\n### 1. Reproduce and Baseline Memory\n\n**Goal:** Confirm leak and get a stable metric.\n\n* [ ] Isolate one worker process and run the integration test loop for N iterations.\n  ```bash\n  # Run server in foreground with logging\n  python server.py --host 127.0.0.1 --port 8000 > server.log 2>&1 &\n  SERVER_PID=$!\n  ```\n* [ ] Track RSS over time\n  ```bash\n  watch -n 5 'ps -o pid,rss,vsz,cmd -p $SERVER_PID'\n  #"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 5.216,
+      "elapsed_seconds": 7.889,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 84
+        }
+      },
+      "first_generated_token_seconds": 0.095,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.69,
+      "answer": "Diagnosing a memory leak in a long-running Python HTTP server is about proving *what* grows, *where* it grows, and *why* it is not released. Use this checklist during integration tests.\n\n### 1. Reproduce and Baseline\n\n**[ ] Isolate the leak to the server process**\n* Run the server in a reproducible mode with a fixed test suite:\n```bash\npython -m http.server 0.0.0.0:8000 &\nSERVER_PID=$!\n```\n* Capture baseline RSS immediately after startup:\n```bash\nps -p $SERVER_PID -o rss,vsz,cmd\n# or\npython -c \"import psutil, sys; p=psutil.Process(int(sys.argv[1])); print(p.memory_info().rss/1024/1024, 'MB') \" $SERVER_PID\n```\n\n**"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 5.215,
+      "elapsed_seconds": 7.889,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 84
+        }
+      },
+      "first_generated_token_seconds": 0.095,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.7,
+      "answer": "Diagnosing a memory leak in a long-running Python HTTP server is about proving *what* grows, *where* it grows, and *why* it is not released. Use this checklist during integration tests.\n\n### 1. Reproduce and Baseline\n\n**[ ] Isolate the leak to the server process**\n* Run the server in a reproducible mode with a fixed test suite:\n```bash\npython -m http.server 0.0.0.0:8000 &\nSERVER_PID=$!\n```\n* Capture baseline RSS immediately after startup:\n```bash\nps -p $SERVER_PID -o rss,vsz,cmd\n# or\npython -c \"import psutil, sys; p=psutil.Process(int(sys.argv[1])); print(p.memory_info().rss/1024/1024, 'MB') \" $SERVER_PID\n```\n\n**"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 14.272,
+      "usage": {
+        "completion_tokens": 925,
+        "prompt_tokens": 107,
+        "total_tokens": 1032,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = [list(iv) for iv in intervals]\n    sorted_intervals.sort(key=lambda x: x[0])\n    merged = []\n    for start, end in sorted_intervals:\n        if not merged or start > merged[-1][1]:\n            merged.append([start, end])\n        else:\n            if end > merged[-1][1]:\n                merged[-1][1] = end\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 11.468,
+      "usage": {
+        "completion_tokens": 742,
+        "prompt_tokens": 139,
+        "total_tokens": 881,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    nodes = list(nodes)\n    edges = list(edges)\n    indegree = {n: 0 for n in nodes}\n    adj = {n: set() for n in nodes}\n\n    for src, dst in edges:\n        if src == dst:\n            raise ValueError(\"self loop detected\")\n        if dst not in adj[src]:\n            adj[src].add(dst)\n            indegree[dst] += 1\n\n    heap = [n for n in nodes if indegree[n] == 0]\n    heapq.heapify(heap)\n    result = []\n\n    while heap:\n        n = heapq.heappop(heap)\n        result.append(n)\n        for nb in adj[n]:\n            indegree[nb] -= 1\n            if indegree[nb] == 0:\n                heapq.heappush(heap, nb)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"cycle detected\")\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 11.645,
+      "usage": {
+        "completion_tokens": 755,
+        "prompt_tokens": 255,
+        "total_tokens": 1010,
+        "prompt_tokens_details": {
+          "cached_tokens": 250
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    batches = []\n    cur = []\n    cur_sum = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n        if cur_sum + weight > limit:\n            batches.append(cur)\n            cur = [name]\n            cur_sum = weight\n        else:\n            cur.append(name)\n            cur_sum += weight\n    if cur:\n        batches.append(cur)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 15.97,
+      "usage": {
+        "completion_tokens": 1034,
+        "prompt_tokens": 145,
+        "total_tokens": 1179,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n_key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n\ndef parse_env(text):\n    env = {}\n    for raw in text.splitlines():\n        line = raw.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid line: {raw!r}\")\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if not _key_re.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n        env[key] = value\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 27.972,
+      "usage": {
+        "completion_tokens": 1784,
+        "prompt_tokens": 158,
+        "total_tokens": 1942,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b\"\".join(chunks)\n    try:\n        text = raw.decode(\"utf-8\")\n    except UnicodeDecodeError:\n        text = raw.decode(\"utf-8\", errors=\"replace\")\n\n    events = []\n    parts = []\n    for line in text.splitlines():\n        if line == \"\":\n            if parts:\n                data = \"\\n\".join(parts)\n                if data == \"[DONE]\":\n                    break\n                if data:\n                    events.append(data)\n                parts = []\n            continue\n\n        if line.startswith(\":\"):\n            continue\n        if line.startswith(\"data:\"):\n            rest = line[5:]\n            if rest.startswith(\" \"):\n                rest = rest[1:]\n            parts.append(rest)\n        # other fields ignored\n\n    return events\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 37, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 26.372,
+      "usage": {
+        "completion_tokens": 1687,
+        "prompt_tokens": 117,
+        "total_tokens": 1804,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be non-negative\")\n    if base == 0:\n        return 0.0\n    if cap == 0:\n        return 0.0\n    if base >= cap:\n        return float(cap)\n\n    import math\n    # avoid building 2**attempt for huge attempt\n    # base * 2**attempt > cap  <=>  attempt > log2(cap/base)\n    # log2 is safe for finite positive numbers\n    try:\n        ratio = cap / base\n    except ZeroDivisionError:\n        return 0.0\n\n    # if attempt is already beyond the range where a double can represent,\n    # 2**attempt will certainly exceed any finite cap/base\n    if attempt > 1024:\n        return float(cap)\n\n    if attempt > math.log2(ratio):\n        return float(cap)\n\n    # now attempt is small enough that the power is representable\n    return float(base * (2 ** attempt))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 12.669,
+      "usage": {
+        "completion_tokens": 820,
+        "prompt_tokens": 141,
+        "total_tokens": 961,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(r > budget for r in queued):\n        raise ValueError(\"queued reservation exceeds budget\")\n    \n    used_tokens = sum(active)\n    used_slots = len(active)\n    remaining_tokens = budget - used_tokens\n    remaining_slots = slots - used_slots\n\n    admitted = []\n    for r in queued:\n        if remaining_slots <= 0 or r > remaining_tokens:\n            break\n        admitted.append(r)\n        remaining_tokens -= r\n        remaining_slots -= 1\n\n    remaining = queued[len(admitted):]\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 5.477,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed in dry-run mode with labels `[\"coding\", \"test\"]`.\n\n**Tool result:**\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nChanges that would have been applied:\n* `create` \u2192 `src/a.py` with content `print(42)\\n`\n* `delete` \u2192 `obsolete.txt`\n\nNo files were actually modified because `metadata.dry_run` is `true`.\n"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 5.166,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed with dry-run enabled.\n\n**Request summary**\n- Create `src/a.py` with content `print(42)\\n`\n- Delete `obsolete.txt`\n- Metadata: `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\n**Tool result**\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nDry run completed successfully; no files were actually modified."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 5.597,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed with dry-run enabled.\n\n**Request**\n- Create `src/a.py` with content `print(42)\\n`\n- Delete `obsolete.txt`\n- Metadata: `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\n**Tool result**\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nDry run succeeded; 2 files would be affected \u2014 `src/a.py` created and `obsolete.txt` deleted \u2014 with no actual changes applied.\n"
+    }
+  ]
+}

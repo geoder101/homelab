@@ -21,6 +21,9 @@ def main():
     parser.add_argument('--repeats', type=int, default=1)
     parser.add_argument('--slots', type=int, default=2)
     parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
+    parser.add_argument('--context-a', type=int, default=253000, help='First full-mode probe size')
+    parser.add_argument('--context-b', type=int, default=253000, help='Second full-mode probe size')
+    parser.add_argument('--mandatory-reasoning', action='store_true', help='Allow low-effort analysis before visible answers')
     parser.add_argument('--gateway', help='Optional LiteLLM URL; key comes only from container environment')
     parser.add_argument('--model', default='coder')
     args = parser.parse_args()
@@ -62,6 +65,8 @@ def main():
         'n_ctx_slot': props['default_generation_settings']['n_ctx']}), flush=True)
 
     def chat(messages, *, stream=False, max_tokens=384, **kwargs):
+        if args.mandatory_reasoning:
+            max_tokens = max(1024, max_tokens)
         body = {
             'model': args.model, 'messages': messages, 'stream': stream,
             **({'stream_options': {'include_usage': True}} if stream else {}),
@@ -70,6 +75,9 @@ def main():
             'max_tokens': max_tokens,
             'chat_template_kwargs': {'enable_thinking': False, 'preserve_thinking': True},
             **kwargs}
+        if args.mandatory_reasoning:
+            body['reasoning_effort'] = 'low'
+            body['chat_template_kwargs']['reasoning_effort'] = 'low'
         if args.backend == 'llama':
             body['cache_prompt'] = True
         else:
@@ -80,7 +88,9 @@ def main():
     def stream(messages, marker=None, max_tokens=384):
         start = time.monotonic()
         first = None
+        first_generated = None
         last_content = None
+        last_generated = None
         pieces, usage = [], {}
         timings = {}
         with chat(messages, stream=True, max_tokens=max_tokens) as response:
@@ -94,6 +104,10 @@ def main():
                 timings = event.get('timings') or timings
                 for choice in event.get('choices', []):
                     text = choice.get('delta', {}).get('content')
+                    reason = choice.get('delta', {}).get('reasoning_content') or choice.get('delta', {}).get('reasoning')
+                    if text or reason:
+                        first_generated = first_generated or time.monotonic()
+                        last_generated = time.monotonic()
                     if text:
                         first = first or time.monotonic()
                         last_content = time.monotonic()
@@ -104,7 +118,8 @@ def main():
         if marker:
             assert marker in answer, answer
         return {'ttft_seconds': round(first-start, 4), 'elapsed_seconds': round(end-start, 4),
-            'decode_tps': round(max(0, usage['completion_tokens']-1) / max(0.001, last_content-first), 2),
+            'decode_tps': round(max(0, usage['completion_tokens']-1) / max(0.001, last_generated-first_generated), 2),
+            'first_generated_token_seconds': round(first_generated-start, 4),
             'usage': usage, 'timings': timings, 'answer': answer,
             'started_monotonic': start, 'first_monotonic': first, 'finished_monotonic': end}
 
@@ -209,7 +224,7 @@ def main():
         checks.append(emit('recovery', lambda: stream([{'role': 'user', 'content': 'Reply exactly READY.'}], 'READY', 16)))
     else:
         sizes = {'long': [(160000, 16000), (250000, 6000)],
-                 'full': [(253000, 253000)], 'boundary': [(200000, 100000)]}[args.mode]
+                 'full': [(args.context_a, args.context_b)], 'boundary': [(200000, 100000)]}[args.mode]
         for a, b in sizes:
             def workload(a=a, b=b):
                 first, va = archive(a, f'a{a}')

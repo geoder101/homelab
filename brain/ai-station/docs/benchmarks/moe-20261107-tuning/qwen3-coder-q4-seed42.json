@@ -1,0 +1,355 @@
+{
+  "label": "qwen3-coder-q4",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": null,
+    "preserve_thinking": false,
+    "thinking_max_tokens": 0,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "qwen3-coder",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      },
+      "tools": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.224,
+      "elapsed_seconds": 6.288,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 4.224,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 248.15,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## 1. Environment Setup and Initial Assessment\n\n### \u2705 System Resources Monitoring\n```bash\n# Monitor system resources during test execution\nwatch -n 1 'free -h && echo \"---\" && ps aux | grep python | head -10'\n\n# Check available memory\ncat /proc/meminfo | grep -E \"(MemTotal|MemAvailable|MemFree)\"\n\n# Monitor disk I/O if file-based caching is involved\niostat -x 1 5\n```\n\n### \u2705 Python Environment Verification\n```bash\n# Verify Python version and installed packages\npython --version\npip list | grep -E \"(flask|django|aiohttp|requests|urllib3)\"\n\n# Check for memory-related environment variables\nenv | grep -i mem\n```\n\n## 2. Baseline Memory Measurement\n\n### \u2705 Establish Baseline Memory Usage\n```bash\n# Run a short test to establish baseline\npython -m pytest integration_test.py::test_short_run -v --tb=short\n\n# Monitor memory usage with psutil\npython -c \"\nimport psutil\nimport os\nprocess = psutil.Process(os.getpid())\nprint(f'Baseline RSS: {process.memory_info().rss / 1024 / 1024:.2f} MB')\n\"\n\n# Record baseline with timestamp\ndate +%s && python -c 'import psutil; print(psutil.Process().memory_info().rss)'\n```\n\n### \u2705 Memory Profiling Setup\n```bash\n# Install profiling tools\npip install memory_profiler psutil guppy3\n\n# Create memory monitoring script\ncat > memory_monitor.py << 'EOF'\nimport psutil\nimport time\nimport sys\n\ndef monitor_memory(duration=60, interval=5):\n    process = psutil.Process()\n    print(f\"Monitoring PID {process.pid} for {duration}s...\")\n    \n    for i in range(0, duration, interval):\n        mem_info = process.memory_info()\n        print(f\"{i}s: RSS={mem_info.rss/1024/1024:.2f}MB, VMS={mem_info.vms/1024/1024:.2f}MB\")\n        time.sleep(interval)\n\nif __name__ == \"__main__\":\n    duration = int(sys.argv[1]) if len(sys.argv) > 1 else 60\n    monitor_memory(duration)\nEOF\n```\n\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.01,
+      "elapsed_seconds": 2.032,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 41
+        }
+      },
+      "first_generated_token_seconds": 0.01,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 253.25,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## Pre-Test Preparation\n\n### 1. Environment Setup\n- [ ] **Verify Python version compatibility**:\n  ```bash\n  python --version\n  pip list | grep -E \"(flask|django|fastapi|aiohttp)\"\n  ```\n\n- [ ] **Install profiling tools**:\n  ```bash\n  pip install memory_profiler psutil guppy3\n  ```\n\n- [ ] **Set up logging configuration**:\n  ```python\n  import logging\n  logging.basicConfig(level=logging.DEBUG, \n                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')\n  ```\n\n### 2. Test Environment Configuration\n- [ ] **Configure test duration** (minimum 30 minutes):\n  ```bash\n  export TEST_DURATION=1800  # 30 minutes\n  ```\n\n- [ ] **Set up monitoring scripts**:\n  ```bash\n  # Create memory monitoring script\n  cat > monitor_memory.sh << 'EOF'\n  while true; do\n    ps -o pid,ppid,cmd,%mem,rss,vsz -C python3\n    sleep 10\n  done\n  EOF\n  chmod +x monitor_memory.sh\n  ```\n\n## Initial Baseline Measurements\n\n### 3. System Resource Monitoring\n- [ ] **Check initial system memory**:\n  ```bash\n  free -h\n  ps aux | grep python\n  ```\n\n- [ ] **Monitor server process before test**:\n  ```bash\n  # Get PID of your server process\n  ps aux | grep your_server_process\n  ```\n\n### 4. Server Startup Verification\n- [ ] **Verify server starts without errors**:\n  ```bash\n  python your_server.py > server.log 2>&1 &\n  tail -f server.log\n  ```\n\n## During Test Execution\n\n### 5. Real-time Memory Monitoring\n- [ ] **Run memory monitoring in background**:\n  ```bash\n  ./monitor_memory.sh > memory_report.txt 2>&1 &\n  MONITOR_PID=$!\n  ```\n\n- [ ] **Execute integration tests with load**:\n  ```bash\n  # Example using locust or custom test script\n  python integration_tests.py --duration 1800 --concurrent-users 50\n  ```\n\n### 6. Memory Profiling Tools\n- [ ] **Run memory profiler on server"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.01,
+      "elapsed_seconds": 2.037,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 41
+        }
+      },
+      "first_generated_token_seconds": 0.01,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 252.61,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## Pre-Test Preparation\n\n### 1. Environment Setup\n- [ ] **Verify Python version compatibility**:\n  ```bash\n  python --version\n  pip list | grep -E \"(flask|django|fastapi|aiohttp)\"\n  ```\n\n- [ ] **Install profiling tools**:\n  ```bash\n  pip install memory_profiler psutil guppy3\n  ```\n\n- [ ] **Set up logging configuration**:\n  ```python\n  import logging\n  logging.basicConfig(level=logging.DEBUG, \n                         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')\n  ```\n\n### 2. Test Environment Configuration\n- [ ] **Configure test duration** (minimum 30 minutes):\n  ```bash\n  export TEST_DURATION=1800  # 30 minutes\n  ```\n\n- [ ] **Set up monitoring scripts**:\n  ```bash\n  # Create memory monitoring script\n  cat > monitor_memory.sh << 'EOF'\n  while true; do\n    ps -o pid,ppid,cmd,%mem,rss,vsz -C python3\n    sleep 10\n  done\n  EOF\n  chmod +x monitor_memory.sh\n  ```\n\n## Initial Baseline Measurements\n\n### 3. System Resource Monitoring\n- [ ] **Check initial system memory**:\n  ```bash\n  free -h\n  ps aux | grep python\n  ```\n\n- [ ] **Monitor server process before test**:\n  ```bash\n  # Get PID of your server process\n  ps aux | grep your_server_process\n  ```\n\n### 4. Server Startup Verification\n- [ ] **Verify server starts without errors**:\n  ```bash\n  python your_server.py > server.log 2>&1 &\n  tail -f server.log\n  ```\n\n## During Test Execution\n\n### 5. Real-time Memory Monitoring\n- [ ] **Run memory monitoring in background**:\n  ```bash\n  ./monitor_memory.sh > memory_report.txt 2>&1 &\n  MONITOR_PID=$!\n  ```\n\n- [ ] **Execute integration tests with load**:\n  ```bash\n  # Example using locust or custom test script\n  python integration_tests.py --duration 1800 --concurrent-users 50\n  ```\n\n### 6. Memory Profiling Tools\n- [ ] **Run memory profiler on server"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 0.564,
+      "usage": {
+        "completion_tokens": 137,
+        "prompt_tokens": 92,
+        "total_tokens": 229,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    # Sort intervals by start time\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    \n    merged = [sorted_intervals[0]]\n    \n    for current_start, current_end in sorted_intervals[1:]:\n        last_start, last_end = merged[-1]\n        \n        if current_start <= last_end:\n            # Merge intervals\n            merged[-1] = [last_start, max(last_end, current_end)]\n        else:\n            # No overlap, add new interval\n            merged.append([current_start, current_end])\n    \n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 1.258,
+      "usage": {
+        "completion_tokens": 312,
+        "prompt_tokens": 125,
+        "total_tokens": 437,
+        "prompt_tokens_details": {
+          "cached_tokens": 23
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def toposort(nodes, edges):\n    # Build adjacency list and in-degree count\n    graph = {node: [] for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n    \n    # Process edges to build graph and count in-degrees\n    edge_set = set()  # To handle duplicate edges\n    for source, dest in edges:\n        if source == dest:\n            raise ValueError(\"Cycle detected (self loop)\")\n        if (source, dest) not in edge_set:\n            graph[source].append(dest)\n            in_degree[dest] += 1\n            edge_set.add((source, dest))\n    \n    # Initialize queue with nodes having zero in-degree\n    queue = []\n    for node in nodes:\n        if in_degree[node] == 0:\n            queue.append(node)\n    \n    # Sort to ensure lexicographically smallest order\n    queue.sort()\n    \n    result = []\n    \n    while queue:\n        # Choose the lexicographically smallest node\n        current = queue.pop(0)\n        result.append(current)\n        \n        # Process neighbors\n        for neighbor in graph[current]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                queue.append(neighbor)\n                queue.sort()  # Keep sorted for lexicographic choice\n    \n    # Check if all nodes were included (cycle detection)\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n    \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 0.591,
+      "usage": {
+        "completion_tokens": 139,
+        "prompt_tokens": 460,
+        "total_tokens": 599,
+        "prompt_tokens_details": {
+          "cached_tokens": 20
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"Limit must be positive\")\n    \n    result = []\n    current_batch = []\n    current_weight = 0\n    \n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"Weights must be positive and not exceed the limit\")\n        \n        if current_weight + weight > limit:\n            if current_batch:\n                result.append(current_batch)\n            current_batch = []\n            current_weight = 0\n        \n        current_batch.append(name)\n        current_weight += weight\n    \n    if current_batch:\n        result.append(current_batch)\n    \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 0.742,
+      "usage": {
+        "completion_tokens": 180,
+        "prompt_tokens": 131,
+        "total_tokens": 311,
+        "prompt_tokens_details": {
+          "cached_tokens": 20
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    result = {}\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(\"Invalid line: {}\".format(line))\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        \n        # Validate key\n        if not re.match(r'^[A-Za-z_][A-Za-z0-9_]*$', key):\n            raise ValueError(\"Invalid key: {}\".format(key))\n            \n        # Strip enclosing quotes\n        if (value.startswith('\"') and value.endswith('\"')) or \\\n           (value.startswith(\"'\") and value.endswith(\"'\")):\n            value = value[1:-1]\n            \n        result[key] = value\n        \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 1.328,
+      "usage": {
+        "completion_tokens": 330,
+        "prompt_tokens": 144,
+        "total_tokens": 474,
+        "prompt_tokens_details": {
+          "cached_tokens": 24
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buffer = \"\"\n    events = []\n    current_event = {}\n    \n    for chunk in chunks:\n        buffer += chunk.decode('utf-8')\n        \n        while '\\n' in buffer:\n            line_end = buffer.find('\\n')\n            line = buffer[:line_end]\n            buffer = buffer[line_end + 1:]\n            \n            # Handle CRLF\n            if line.endswith('\\r'):\n                line = line[:-1]\n            \n            if not line:\n                # Blank line - dispatch event\n                if 'data' in current_event:\n                    events.append(current_event['data'])\n                current_event = {}\n                continue\n            \n            if line.startswith(':'):\n                # Comment - ignore\n                continue\n            \n            # Parse field\n            if ':' in line:\n                field, value = line.split(':', 1)\n                if value and value[0] == ' ':\n                    value = value[1:]\n            else:\n                field = line\n                value = \"\"\n            \n            if field == 'data':\n                if 'data' not in current_event:\n                    current_event['data'] = value\n                else:\n                    current_event['data'] += '\\n' + value\n    \n    # Handle final event if it's complete and not [DONE]\n    if 'data' in current_event and current_event['data'] != '[DONE]':\n        events.append(current_event['data'])\n    \n    # Remove unterminated final event\n    if len(events) > 0:\n        if events[-1] == '[DONE]':\n            return events[:-1]\n    \n    return events\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 56, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 1.335,
+      "usage": {
+        "completion_tokens": 332,
+        "prompt_tokens": 103,
+        "total_tokens": 435,
+        "prompt_tokens_details": {
+          "cached_tokens": 23
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"All arguments must be nonnegative\")\n    \n    if attempt >= 30:  # 2^30 is already very large, prevents overflow\n        if base == 0:\n            return float(0.0)\n        else:\n            return cap\n    \n    # Calculate base * 2**attempt without constructing huge integers\n    # We'll use the fact that 2**30 is about 1 billion, so we can safely compute up to 2^30\n    if attempt >= 30:\n        result = base * (2 ** 30)  # This will be a very large number\n        # But since we're comparing with cap, and cap could be finite, let's handle it carefully\n        for i in range(30, attempt):\n            if result > float('inf') or result > cap:\n                return cap\n            result *= 2\n        return min(cap, result)\n    \n    # For smaller attempts, compute directly\n    # Handle case where base = 0\n    if base == 0:\n        return float(0.0)\n    \n    # Use the built-in pow function to avoid integer overflow issues\n    try:\n        # This handles the computation safely\n        delay = base * (2 ** attempt)\n        return min(cap, delay)\n    except OverflowError:\n        # If we get an overflow, return cap since it's already too large\n        return cap\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": false,
+      "elapsed_seconds": 0.678,
+      "usage": {
+        "completion_tokens": 165,
+        "prompt_tokens": 127,
+        "total_tokens": 292,
+        "prompt_tokens_details": {
+          "cached_tokens": 23
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    # Check if any queued reservation exceeds the whole budget\n    for reservation in queued:\n        if reservation > budget:\n            raise ValueError(\"Queued reservation exceeds budget\")\n    \n    # Initialize result lists\n    admitted = []\n    remaining = []\n    \n    # Track current usage\n    active_tokens = sum(active)\n    active_slots = len(active)\n    \n    # Process queued requests in FIFO order\n    for request in queued:\n        if active_slots < slots and active_tokens + request <= budget:\n            # Admit the request\n            admitted.append(request)\n            active_tokens += request\n            active_slots += 1\n        else:\n            # Reject the request\n            remaining.append(request)\n    \n    return (admitted, remaining)\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 0.759,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result indicates that the dry run was successful. Two files were marked for changes: \n\n1. **src/a.py** - This file is scheduled to be created with the content `print(42)`.\n2. **obsolete.txt** - This file is scheduled to be deleted.\n\nThe metadata labels applied are \"coding\" and \"test\", and the dry run mode confirmed that these operations would be executed without actually performing them."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.052,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result indicates that the dry run was successful. It shows that 2 files would be changed: \n\n1. `src/a.py` would be created with the content `print(42)`.\n2. `obsolete.txt` would be deleted.\n\nThe metadata labels used were \"coding\" and \"test\", and the dry run mode was enabled. No actual changes were made to the file system since it's a simulation."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.723,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result indicates that the dry run was successful. It shows that 2 files would be changed: \n\n1. **src/a.py** - This file would be created with the content `print(42)`.\n2. **obsolete.txt** - This file would be deleted.\n\nThe metadata labels used were [\"coding\", \"test\"], and the dry run was set to true, confirming that no actual changes were made, only simulated."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 4.435,
+      "usage": {
+        "completion_tokens": 45,
+        "prompt_tokens": 31875,
+        "total_tokens": 31920,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.169,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31939,
+        "total_tokens": 31947,
+        "prompt_tokens_details": {
+          "cached_tokens": 31919
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 46.067,
+      "usage": {
+        "completion_tokens": 45,
+        "prompt_tokens": 121876,
+        "total_tokens": 121921,
+        "prompt_tokens_details": {
+          "cached_tokens": 7
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.526,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121940,
+        "total_tokens": 121948,
+        "prompt_tokens_details": {
+          "cached_tokens": 121920
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 227.303,
+      "usage": {
+        "completion_tokens": 45,
+        "prompt_tokens": 252876,
+        "total_tokens": 252921,
+        "prompt_tokens_details": {
+          "cached_tokens": 7
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 1.042,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 252940,
+        "total_tokens": 252948,
+        "prompt_tokens_details": {
+          "cached_tokens": 252920
+        }
+      }
+    }
+  ]
+}

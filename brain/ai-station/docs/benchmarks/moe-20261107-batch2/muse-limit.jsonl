@@ -1,0 +1,4 @@
+{"name": "runtime", "passed": true, "slots": 2, "build": "b12182-fd27b2034", "n_ctx_slot": 131072}
+{"name": "reject_oversized_context", "passed": true, "rejected": true, "error": "HTTP 400: {\"error\":{\"code\":400,\"message\":\"request (264888 tokens) exceeds the available context size (131072 tokens), try increasing it\",\"type\":\"exceed_context_size_error\",\"n_prompt_tokens\":264888,\"n_ctx\":131072}}", "wall_seconds": 0.927}
+{"name": "recovery", "passed": false, "error": "", "wall_seconds": 0.284}
+{"name": "complete", "passed": false}

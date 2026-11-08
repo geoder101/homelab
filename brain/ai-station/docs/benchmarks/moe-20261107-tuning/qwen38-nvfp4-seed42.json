@@ -1,0 +1,368 @@
+{
+  "label": "qwen38-nvfp4",
+  "backend": "vllm",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": null,
+    "reasoning_budget_parameter_sent": false,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repetition_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repetition_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repetition_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.231,
+      "elapsed_seconds": 9.676,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 2.231,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 68.76,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist assumes a long-running integration test (e.g., 10k+ requests) where RSS memory grows monotonically and never plateaus. Work through sections in order; stop early if you find the root cause.\n\n---\n\n## Phase 1: Confirm the Leak Is Real (Baseline & Reproduction)\n\n### 1.1 Establish a Baseline\n- [ ] Run the server with **zero traffic** for the same duration as the failing test. Record RSS over time.\n  ```bash\n  # Start server, then sample RSS every 5s for 30 min\n  python -c \"\n  import psutil, time, os\n  pid = <SERVER_PID>\n  proc = psutil.Process(pid)\n  while True:\n      print(time.strftime('%H:%M:%S'), f'{proc.memory_info().rss / 1024**2:.1f} MB')\n      time.sleep(5)\n  \" > baseline_rss.log\n  ```\n- [ ] If idle RSS is stable \u2192 leak is **traffic-driven**. If it grows even when idle \u2192 check background threads/tasks.\n\n### 1.2 Reproduce Minimally\n- [ ] Write a minimal reproduction script that sends a fixed number of requests and measures RSS before/after:\n  ```python\n  # repro.py\n  import subprocess, time, psutil, requests, sys\n\n  def get_rss_mb(pid):\n      return psutil.Process(pid).memory_info().rss / 1024**2\n\n  # Start server in a subprocess\n  server_proc = subprocess.Popen(\n      [\"python\", \"server.py\"],\n      stdout=subprocess.PIPE, stderr=subprocess.PIPE\n  )\n  time.sleep(3)  # wait for startup\n  pid = server_proc.pid\n\n  N_REQUESTS = int(sys.argv[1]) if len(sys.argv) > 1 else 1000\n  URL = \"http://localhost:8000/test-endpoint\"\n\n  rss_before = get_rss_mb(pid)\n  for i in range(N_REQUESTS):\n      r = requests.get(URL, timeout=5)\n      assert r.status_code == 200\n  rss_after = get_rss_mb(pid)\n\n  delta_mb = rss_after - rss_before\n  per_request_kb = (delta_mb * 1024)"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.037,
+      "elapsed_seconds": 7.483,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.037,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 68.76,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist assumes a long-running integration test (e.g., 10k+ requests) where RSS memory grows monotonically and never plateaus. Work through sections in order; stop early if you find the root cause.\n\n---\n\n## Phase 1: Confirm the Leak Is Real (Baseline & Reproduction)\n\n### 1.1 Establish a Baseline\n- [ ] Run the server with **zero traffic** for the same duration as the failing test. Record RSS over time.\n  ```bash\n  # Start server, then sample RSS every 5s for 30 min\n  python -c \"\n  import psutil, time, os\n  pid = <SERVER_PID>\n  proc = psutil.Process(pid)\n  while True:\n      print(time.strftime('%H:%M:%S'), f'{proc.memory_info().rss / 1024**2:.1f} MB')\n      time.sleep(5)\n  \" > baseline_rss.log\n  ```\n- [ ] If idle RSS is stable \u2192 leak is **traffic-driven**. If it grows even when idle \u2192 check background threads/tasks.\n\n### 1.2 Reproduce Minimally\n- [ ] Write a minimal reproduction script that sends a fixed number of requests and measures RSS before/after:\n  ```python\n  # repro.py\n  import subprocess, time, psutil, requests, sys\n\n  def get_rss_mb(pid):\n      return psutil.Process(pid).memory_info().rss / 1024**2\n\n  # Start server in a subprocess\n  server_proc = subprocess.Popen(\n      [\"python\", \"server.py\"],\n      stdout=subprocess.PIPE, stderr=subprocess.PIPE\n  )\n  time.sleep(3)  # wait for startup\n  pid = server_proc.pid\n\n  N_REQUESTS = int(sys.argv[1]) if len(sys.argv) > 1 else 1000\n  URL = \"http://localhost:8000/test-endpoint\"\n\n  rss_before = get_rss_mb(pid)\n  for i in range(N_REQUESTS):\n      r = requests.get(URL, timeout=5)\n      assert r.status_code == 200\n  rss_after = get_rss_mb(pid)\n\n  delta_mb = rss_after - rss_before\n  per_request_kb = (delta_mb * 1024)"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.036,
+      "elapsed_seconds": 7.482,
+      "usage": {
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "completion_tokens": 512,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.036,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 68.76,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist assumes a long-running integration test (e.g., 10k+ requests) where RSS memory grows monotonically and never plateaus. Work through sections in order; stop early if you find the root cause.\n\n---\n\n## Phase 1: Confirm the Leak Is Real (Baseline & Reproduction)\n\n### 1.1 Establish a Baseline\n- [ ] Run the server with **zero traffic** for the same duration as the failing test. Record RSS over time.\n  ```bash\n  # Start server, then sample RSS every 5s for 30 min\n  python -c \"\n  import psutil, time, os\n  pid = <SERVER_PID>\n  proc = psutil.Process(pid)\n  while True:\n      print(time.strftime('%H:%M:%S'), f'{proc.memory_info().rss / 1024**2:.1f} MB')\n      time.sleep(5)\n  \" > baseline_rss.log\n  ```\n- [ ] If idle RSS is stable \u2192 leak is **traffic-driven**. If it grows even when idle \u2192 check background threads/tasks.\n\n### 1.2 Reproduce Minimally\n- [ ] Write a minimal reproduction script that sends a fixed number of requests and measures RSS before/after:\n  ```python\n  # repro.py\n  import subprocess, time, psutil, requests, sys\n\n  def get_rss_mb(pid):\n      return psutil.Process(pid).memory_info().rss / 1024**2\n\n  # Start server in a subprocess\n  server_proc = subprocess.Popen(\n      [\"python\", \"server.py\"],\n      stdout=subprocess.PIPE, stderr=subprocess.PIPE\n  )\n  time.sleep(3)  # wait for startup\n  pid = server_proc.pid\n\n  N_REQUESTS = int(sys.argv[1]) if len(sys.argv) > 1 else 1000\n  URL = \"http://localhost:8000/test-endpoint\"\n\n  rss_before = get_rss_mb(pid)\n  for i in range(N_REQUESTS):\n      r = requests.get(URL, timeout=5)\n      assert r.status_code == 200\n  rss_after = get_rss_mb(pid)\n\n  delta_mb = rss_after - rss_before\n  per_request_kb = (delta_mb * 1024)"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 13.336,
+      "usage": {
+        "prompt_tokens": 98,
+        "total_tokens": 1011,
+        "completion_tokens": 913,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 782
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    sorted_intervals = sorted([[s, e] for s, e in intervals], key=lambda x: (x[0], x[1]))\n    \n    merged = [list(sorted_intervals[0])]\n    \n    for current in sorted_intervals[1:]:\n        if current[0] <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], current[1])\n        else:\n            merged.append(list(current))\n    \n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 14.309,
+      "usage": {
+        "prompt_tokens": 131,
+        "total_tokens": 1105,
+        "completion_tokens": 974,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 776
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    unique_edges = set(edges)\n\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for src, dst in unique_edges:\n        adj[src].add(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 10.738,
+      "usage": {
+        "prompt_tokens": 260,
+        "total_tokens": 994,
+        "completion_tokens": 734,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 599
+        }
+      },
+      "finish_reason": "stop",
+      "code": "\n\ndef stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    if not items:\n        return []\n    for _, w in items:\n        if w <= 0 or w > limit:\n            raise ValueError\n    batches = []\n    current = []\n    total = 0\n    for name, w in items:\n        if current and total + w > limit:\n            batches.append(current)\n            current = []\n            total = 0\n        current.append(name)\n        total += w\n    if current:\n        batches.append(current)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 19.79,
+      "usage": {
+        "prompt_tokens": 138,
+        "total_tokens": 1493,
+        "completion_tokens": 1355,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1140
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    result = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n\n    for line in text.splitlines():\n        line = line.strip()\n\n        if not line or line.startswith('#'):\n            continue\n\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (no '='): {line!r}\")\n\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n\n        if not key_re.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n\n        if len(value) >= 2:\n            if (value[0] == '\"' and value[-1] == '\"') or (value[0] == \"'\" and value[-1] == \"'\"):\n                value = value[1:-1]\n\n        result[key] = value\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 66.889,
+      "usage": {
+        "prompt_tokens": 148,
+        "total_tokens": 4730,
+        "completion_tokens": 4582,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 4369
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b''.join(chunks)\n    text = raw.decode('utf-8')\n\n    lines = text.split('\\n')\n    lines = [line[:-1] if line.endswith('\\r') else line for line in lines]\n\n    if text.endswith('\\n'):\n        lines = lines[:-1]\n\n    events = []\n    current_data = []\n\n    for line in lines:\n        if line == '':\n            if current_data:\n                data = '\\n'.join(current_data)\n                if data == '[DONE]':\n                    break\n                events.append(data)\n            current_data = []\n        elif line.startswith(':'):\n            continue\n        elif ':' in line:\n            field, value = line.split(':', 1)\n            if field == 'data':\n                if value.startswith(' '):\n                    value = value[1:]\n                current_data.append(value)\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 77.328,
+      "usage": {
+        "prompt_tokens": 106,
+        "total_tokens": 5401,
+        "completion_tokens": 5295,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 5025
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    \"\"\"Return float(min(cap, base * 2**attempt)) safely.\"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # At this point base > 0 and cap > 0.\n    # If base already >= cap, the product is certainly >= cap for any attempt >= 0.\n    if base >= cap:\n        return float(cap)\n\n    # base < cap, so cap / base > 1.\n    # Check whether base * 2**attempt >= cap  <=>  attempt >= log2(cap / base).\n    # This avoids ever computing 2**attempt for huge attempt values.\n    threshold = math.log2(cap / base)\n    if attempt >= threshold:\n        return float(cap)\n\n    # Here attempt < log2(cap / base), which bounds attempt to a small integer\n    # (at most ~1096 for finite floats), so ldexp is safe and exact.\n    return float(math.ldexp(base, attempt))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 14.018,
+      "usage": {
+        "prompt_tokens": 133,
+        "total_tokens": 1092,
+        "completion_tokens": 959,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 801
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for r in queued:\n        if r > budget:\n            raise ValueError(f\"queued reservation {r} exceeds budget {budget}\")\n\n    remaining_budget = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    remaining = []\n\n    for i, r in enumerate(queued):\n        if remaining_slots > 0 and r <= remaining_budget:\n            admitted.append(r)\n            remaining_budget -= r\n            remaining_slots -= 1\n        else:\n            remaining = list(queued[i:])\n            break\n    else:\n        remaining = []\n\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 4.266,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\nThe tool executed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 both operations were validated in dry-run mode (no actual file changes were made on disk).\n- **Changed files:** 2\n\nSpecifically, the dry run confirmed:\n1. **Create** `src/a.py` with content `print(42)\\n`\n2. **Delete** `obsolete.txt`\n\nSince `dry_run` was set to `true`, these changes were simulated but not persisted."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.085,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\n**Tool result:**\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nThe dry run completed successfully:\n- **Status:** `dry-run-ok`\n- **Changed files:** 2 (created `src/a.py`, deleted `obsolete.txt`)\n- No actual filesystem modifications were made since `dry_run` was set to `true`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 4.363,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "\n\n**Tool result:**\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nThe dry run completed successfully. Two files were identified for change:\n\n1. **`src/a.py`** \u2014 created with content `print(42)\\n`\n2. **`obsolete.txt`** \u2014 deleted\n\nSince `dry_run` was set to `true`, no actual filesystem modifications were made. The operation is labeled `[\"coding\", \"test\"]`."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 5.014,
+      "usage": {
+        "prompt_tokens": 31880,
+        "total_tokens": 31934,
+        "completion_tokens": 54,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.27,
+      "followup_usage": {
+        "prompt_tokens": 31957,
+        "total_tokens": 31965,
+        "completion_tokens": 8,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 31.369,
+      "usage": {
+        "prompt_tokens": 121881,
+        "total_tokens": 121935,
+        "completion_tokens": 54,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.731,
+      "followup_usage": {
+        "prompt_tokens": 121958,
+        "total_tokens": 121966,
+        "completion_tokens": 8,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      }
+    },
+    {
+      "name": "context_154840",
+      "passed": true,
+      "elapsed_seconds": 46.373,
+      "usage": {
+        "prompt_tokens": 154721,
+        "total_tokens": 154775,
+        "completion_tokens": 54,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.863,
+      "followup_usage": {
+        "prompt_tokens": 154798,
+        "total_tokens": 154806,
+        "completion_tokens": 8,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      }
+    }
+  ]
+}

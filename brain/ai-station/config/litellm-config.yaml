@@ -1,8 +1,8 @@
 # LiteLLM is the only client-facing model router. The backend stays on the
 # ai-station Podman network and has no host-published port.
 # Budgets are per-alias hard thinking ceilings; max_tokens bounds thinking + answer.
-# Effort additionally steers templates that support it (Qwen froggeric, not Ornith's
-# embedded template). Clients may override defaults.
+# Effort additionally steers templates that support it (Qwen froggeric, not the
+# selected Ornith-based history-fixed template). Clients may override defaults.
 model_list:
   - model_name: coder
     litellm_params:

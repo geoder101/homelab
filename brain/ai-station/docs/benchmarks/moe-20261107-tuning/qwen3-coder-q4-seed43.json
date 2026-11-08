@@ -1,0 +1,286 @@
+{
+  "label": "qwen3-coder-q4",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": null,
+    "preserve_thinking": false,
+    "thinking_max_tokens": 0,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "qwen3-coder",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      },
+      "tools": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.05
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 1.305,
+      "elapsed_seconds": 3.327,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 3
+        }
+      },
+      "first_generated_token_seconds": 1.305,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 253.21,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## 1. Initial Setup and Environment Verification\n\n### \u2705 System Resources Monitoring\n```bash\n# Monitor system resources during test run\nwatch -n 1 'free -h && echo \"---\" && ps aux | grep python | head -10'\n\n# Check available memory and swap\ncat /proc/meminfo | grep -E \"(MemTotal|MemAvailable|SwapTotal|SwapFree)\"\n```\n\n### \u2705 Python Environment Verification\n```bash\n# Verify Python version and environment\npython --version\npip list | grep -E \"(flask|django|fastapi|aiohttp)\"\n\n# Check for memory-related packages\npip show psutil pympler memory_profiler\n```\n\n## 2. Memory Profiling Setup\n\n### \u2705 Install Required Profiling Tools\n```bash\npip install psutil pympler memory_profiler tracemalloc\n```\n\n### \u2705 Basic Memory Usage Monitoring Script\n```python\n# memory_monitor.py\nimport psutil\nimport os\nimport time\nfrom datetime import datetime\n\ndef get_memory_usage():\n    process = psutil.Process(os.getpid())\n    mem_info = process.memory_info()\n    return {\n        'rss_mb': mem_info.rss / 1024 / 1024,\n        'vms_mb': mem_info.vms / 1024 / 1024,\n        'percent': process.memory_percent()\n    }\n\ndef monitor_memory(interval=5):\n    print(\"Starting memory monitoring...\")\n    while True:\n        try:\n            mem = get_memory_usage()\n            timestamp = datetime.now().strftime(\"%H:%M:%S\")\n            print(f\"[{timestamp}] RSS: {mem['rss_mb']:.2f} MB, \"\n                    f\"VMS: {mem['vms_mb']:.2f} MB, Percent: {mem['percent']:.2f}%\")\n            time.sleep(interval)\n        except KeyboardInterrupt:\n            break\n```\n\n## 3. Integration Test Memory Profiling\n\n### \u2705 Instrument Your HTTP Server with Memory Tracking\n```python\n# Add to your server code for tracking\nimport tracemalloc\nimport gc\nfrom memory_profiler import profile\n\ndef start_memory_profiling():\n    tracemalloc.start()\n\ndef get_top_memory_consumers(limit=10):\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    \n    print(\"Top memory consumers:\")\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.01,
+      "elapsed_seconds": 2.038,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 41
+        }
+      },
+      "first_generated_token_seconds": 0.01,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 252.42,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## 1. Initial Setup and Environment Verification\n\n### \u2705 System Resources Monitoring\n```bash\n# Monitor system memory usage\nwatch -n 1 'free -h'\n\n# Check process memory usage\nps aux | grep python\ntop -p <PID>\n\n# Monitor file descriptors\nlsof -p <PID> | wc -l\nulimit -a\n```\n\n### \u2705 Test Environment Setup\n```bash\n# Verify Python version and installed packages\npython --version\npip list | grep -E \"(flask|django|requests|httpx)\"\n\n# Check system limits\ncat /proc/sys/vm/swappiness\nulimit -a\n```\n\n## 2. Process-Level Memory Monitoring\n\n### \u2705 Memory Usage Tracking\n```bash\n# Monitor memory usage during test execution\npython -m memory_profiler your_test_script.py\n\n# Use psutil for continuous monitoring\npython -c \"\nimport psutil\nimport time\nprocess = psutil.Process()\nwhile True:\n    mem_info = process.memory_info()\n    print(f'RSS: {mem_info.rss/1024/1024:.2f} MB, VMS: {mem_info.vms/1024/1024:.2f} MB')\n    time.sleep(5)\n\"\n\n# Monitor with htop or top\nhtop -p <PID>\n```\n\n### \u2705 Memory Snapshots\n```bash\n# Take memory snapshots at different intervals\npython -m guppy -c \"from your_app import *; print('Initial state')\" 2>/dev/null\n\n# Use tracemalloc for Python-specific memory tracking\npython -X dev -m trace --trace your_test_script.py\n```\n\n## 3. HTTP Server Specific Profiling\n\n### \u2705 HTTP Request/Response Analysis\n```bash\n# Add request logging to server\n# In Flask example:\nfrom flask import Flask, request, g\nimport time\n\napp = Flask(__name__)\n@app.before_request\ndef log_request_info():\n    g.start_time = time.time()\n    print(f\"Request: {request.method} {request.url}\")\n\n# Monitor active connections\nnetstat -an | grep :8000 | wc -l\nss -s  # Check socket statistics\n\n# Check for connection leaks\nlsof -p <PID> | grep -E \"(ESTABLISHED|CLOSE_WAIT)\"\n```\n\n### \u2705"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.01,
+      "elapsed_seconds": 2.04,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 42,
+        "total_tokens": 554,
+        "prompt_tokens_details": {
+          "cached_tokens": 41
+        }
+      },
+      "first_generated_token_seconds": 0.01,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 252.23,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\n## 1. Initial Setup and Environment Verification\n\n### \u2705 System Resources Monitoring\n```bash\n# Monitor system memory usage\nwatch -n 1 'free -h'\n\n# Check process memory usage\nps aux | grep python\ntop -p <PID>\n\n# Monitor file descriptors\nlsof -p <PID> | wc -l\nulimit -a\n```\n\n### \u2705 Test Environment Setup\n```bash\n# Verify Python version and installed packages\npython --version\npip list | grep -E \"(flask|django|requests|httpx)\"\n\n# Check system limits\ncat /proc/sys/vm/swappiness\nulimit -a\n```\n\n## 2. Process-Level Memory Monitoring\n\n### \u2705 Memory Usage Tracking\n```bash\n# Monitor memory usage during test execution\npython -m memory_profiler your_test_script.py\n\n# Use psutil for continuous monitoring\npython -c \"\nimport psutil\nimport time\nprocess = psutil.Process()\nwhile True:\n    mem_info = process.memory_info()\n    print(f'RSS: {mem_info.rss/1024/1024:.2f} MB, VMS: {mem_info.vms/1024/1024:.2f} MB')\n    time.sleep(5)\n\"\n\n# Monitor with htop or top\nhtop -p <PID>\n```\n\n### \u2705 Memory Snapshots\n```bash\n# Take memory snapshots at different intervals\npython -m guppy -c \"from your_app import *; print('Initial state')\" 2>/dev/null\n\n# Use tracemalloc for Python-specific memory tracking\npython -X dev -m trace --trace your_test_script.py\n```\n\n## 3. HTTP Server Specific Profiling\n\n### \u2705 HTTP Request/Response Analysis\n```bash\n# Add request logging to server\n# In Flask example:\nfrom flask import Flask, request, g\nimport time\n\napp = Flask(__name__)\n@app.before_request\ndef log_request_info():\n    g.start_time = time.time()\n    print(f\"Request: {request.method} {request.url}\")\n\n# Monitor active connections\nnetstat -an | grep :8000 | wc -l\nss -s  # Check socket statistics\n\n# Check for connection leaks\nlsof -p <PID> | grep -E \"(ESTABLISHED|CLOSE_WAIT)\"\n```\n\n### \u2705"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 0.584,
+      "usage": {
+        "completion_tokens": 147,
+        "prompt_tokens": 92,
+        "total_tokens": 239,
+        "prompt_tokens_details": {
+          "cached_tokens": 91
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    # Sort intervals by start time\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    \n    merged = [sorted_intervals[0]]\n    \n    for current_start, current_end in sorted_intervals[1:]:\n        last_start, last_end = merged[-1]\n        \n        if current_start <= last_end:\n            # Overlapping or touching intervals - merge them\n            merged[-1] = [last_start, max(last_end, current_end)]\n        else:\n            # Non-overlapping interval - add it to merged list\n            merged.append([current_start, current_end])\n    \n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": false,
+      "elapsed_seconds": 1.093,
+      "usage": {
+        "completion_tokens": 275,
+        "prompt_tokens": 125,
+        "total_tokens": 400,
+        "prompt_tokens_details": {
+          "cached_tokens": 124
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def toposort(nodes, edges):\n    # Build adjacency list and in-degree count\n    graph = {node: [] for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n    \n    # Process edges to build graph and count in-degrees\n    for source, dest in edges:\n        if source == dest:\n            raise ValueError(\"Cycle detected\")\n        graph[source].append(dest)\n        in_degree[dest] += 1\n    \n    # Find all nodes with zero in-degree\n    zero_in_degree = []\n    for node in nodes:\n        if in_degree[node] == 0:\n            zero_in_degree.append(node)\n    \n    # Sort to ensure lexicographic order\n    zero_in_degree.sort()\n    \n    result = []\n    \n    while zero_in_degree:\n        # Choose the smallest node\n        current = zero_in_degree.pop(0)\n        result.append(current)\n        \n        # Remove current node and update in-degrees\n        for neighbor in graph[current]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                zero_in_degree.append(neighbor)\n    \n    # Check if all nodes were processed (no cycles)\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n    \n    return result\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 48, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 0.555,
+      "usage": {
+        "completion_tokens": 139,
+        "prompt_tokens": 460,
+        "total_tokens": 599,
+        "prompt_tokens_details": {
+          "cached_tokens": 459
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"Limit must be positive\")\n    \n    result = []\n    current_batch = []\n    current_weight = 0\n    \n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"Weights must be positive and not exceed the limit\")\n        \n        if current_weight + weight > limit:\n            if current_batch:\n                result.append(current_batch)\n            current_batch = []\n            current_weight = 0\n        \n        current_batch.append(name)\n        current_weight += weight\n    \n    if current_batch:\n        result.append(current_batch)\n    \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 0.655,
+      "usage": {
+        "completion_tokens": 163,
+        "prompt_tokens": 131,
+        "total_tokens": 294,
+        "prompt_tokens_details": {
+          "cached_tokens": 130
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    result = {}\n    line_pattern = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.*)$')\n    \n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n            \n        match = line_pattern.match(line)\n        if not match:\n            raise ValueError(\"Invalid line format\")\n            \n        key, value = match.groups()\n        \n        # Strip enclosing quotes if present\n        if value and ((value.startswith('\"') and value.endswith('\"')) or \n                    (value.startswith(\"'\") and value.endswith(\"'\"))):\n            value = value[1:-1]\n            \n        result[key] = value\n        \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 1.708,
+      "usage": {
+        "completion_tokens": 430,
+        "prompt_tokens": 144,
+        "total_tokens": 574,
+        "prompt_tokens_details": {
+          "cached_tokens": 143
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buffer = b\"\"\n    events = []\n    current_event = {}\n    \n    def process_line(line):\n        if not line.startswith(b'data:'):\n            return\n        if b':' in line:\n            key, value = line.split(b':', 1)\n            value = value.lstrip()\n        else:\n            key, value = line, b\"\"\n        if key == b'data':\n            current_event.setdefault(key, []).append(value)\n    \n    def process_buffer():\n        lines = buffer.split(b'\\n')\n        for i, line in enumerate(lines):\n            if i == len(lines) - 1 and not buffer.endswith(b'\\n'):\n                # Last line is incomplete\n                return line\n            if line.startswith(b'\\r\\n') or line == b'':\n                # End of event\n                if current_event.get(b'data'):\n                    data_lines = current_event.get(b'data', [])\n                    data = b'\\n'.join(data_lines)\n                    if data == b'[DONE]':\n                        return None  # Stop processing\n                    events.append(data.decode('utf-8'))\n                current_event.clear()\n            else:\n                process_line(line)\n        return b\"\"\n    \n    for chunk in chunks:\n        buffer += chunk\n        result = process_buffer()\n        if result is None:\n            break\n        buffer = result\n    \n    # Process remaining buffer\n    if buffer:\n        lines = buffer.split(b'\\n')\n        for i, line in enumerate(lines):\n            if i == len(lines) - 1 and not buffer.endswith(b'\\n'):\n                # Incomplete final line, ignore\n                pass\n            elif line.startswith(b'\\r\\n') or line == b'':\n                if current_event.get(b'data'):\n                    data_lines = current_event.get(b'data', [])\n                    data = b'\\n'.join(data_lines)\n                    if data == b'[DONE]':\n                        break\n                    events.append(data.decode('utf-8'))\n                current_event.clear()\n            else:\n                process_line(line)\n    \n    return events\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 64, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": false,
+      "elapsed_seconds": 0.882,
+      "usage": {
+        "completion_tokens": 218,
+        "prompt_tokens": 103,
+        "total_tokens": 321,
+        "prompt_tokens_details": {
+          "cached_tokens": 23
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"All arguments must be nonnegative\")\n    \n    if attempt >= 30:  # 2^30 is already very large\n        if base == 0:\n            return cap if cap > 0 else 0.0\n        else:\n            # Handle overflow by checking if the result would exceed cap\n            # For large exponents, we can't compute 2**attempt directly\n            # but we know that for attempt >= 30, base * 2**attempt will be huge\n            # unless base is 0 (which we already handled above)\n            return cap\n    \n    # For reasonable values, compute the result directly\n    if base == 0:\n        return 0.0\n    elif cap == 0:\n        return 0.0\n    else:\n        result = base * (2 ** attempt)\n        return min(cap, result)\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 28, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 0.789,
+      "usage": {
+        "completion_tokens": 198,
+        "prompt_tokens": 127,
+        "total_tokens": 325,
+        "prompt_tokens_details": {
+          "cached_tokens": 126
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    # Check if any queued reservation exceeds the whole budget\n    for reservation in queued:\n        if reservation > budget:\n            raise ValueError(\"Queued reservation exceeds budget\")\n    \n    # Initialize result lists\n    admitted = []\n    remaining = []\n    \n    # Track current usage\n    active_tokens = sum(active)\n    active_slots = len(active)\n    \n    # Process queued requests in FIFO order\n    for request in queued:\n        if (active_tokens + request <= budget and \n            active_slots + 1 <= slots):\n            # Admit the request\n            admitted.append(request)\n            active_tokens += request\n            active_slots += 1\n        else:\n            # Skip this request and all subsequent ones\n            # because we can't admit it due to either token or slot limit\n            remaining = queued[queued.index(request):]\n            break\n    \n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.056,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result indicates that the dry run was successful. It shows that 2 files would be changed: \n\n1. `src/a.py` would be created with the content `print(42)`.\n2. `obsolete.txt` would be deleted.\n\nThe metadata labels used were \"coding\" and \"test\", and the dry run mode was enabled. No actual changes were made to the file system since it's a simulation."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 0.725,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result indicates that the dry run was successful. It shows that 2 files would be changed: \n\n1. **src/a.py** - This file would be created with the content `print(42)`.\n2. **obsolete.txt** - This file would be deleted.\n\nThe metadata labels used were [\"coding\", \"test\"], and the dry run was set to true, confirming that no actual changes were made, only simulated."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.974,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result shows that the dry run was successful. It indicates that 2 files would be changed: one file created (`src/a.py`) and one file deleted (`obsolete.txt`). The metadata labels `[\"coding\", \"test\"]` were also correctly applied. No actual changes were made since it was a dry run."
+    }
+  ]
+}

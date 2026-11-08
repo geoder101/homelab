@@ -1,0 +1,365 @@
+#!/usr/bin/env python3
+"""Measured MoE trials on Brain; restore production after every candidate."""
+import argparse
+import datetime
+import fcntl
+import hashlib
+import json
+import os
+import pathlib
+import signal
+import struct
+import subprocess
+import time
+import urllib.request
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+IMAGE = 'docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9'
+SPECS = {
+    'qwen3-coder': ('qwen3_coder_q5', 'qwen3-coder'),
+    'glm47': ('glm47_flash_q5', 'glm47'),
+    'gemma4': ('gemma4_26b_q5', 'gemma4'),
+    'qwen36': ('qwen36_35b_q4', 'qwen'),
+    'ornith': ('ornith15_35b_gguf', 'qwen'),
+}
+DEFAULT_MODELS = list(SPECS)
+QUEUE = yaml.safe_load((ROOT / 'config/benchmark-queue.yaml').read_text())
+SPECS.update({name: (variant['record'], variant['sampling_profile'])
+              for name, variant in QUEUE['variants'].items()})
+
+
+def command(*argv, **kwargs):
+    return subprocess.run(argv, text=True, **kwargs)
+
+
+def active(unit):
+    return command('systemctl', '--user', 'is-active', '--quiet', unit).returncode == 0
+
+
+def save(path, value):
+    temporary = path.with_suffix(path.suffix + '.tmp')
+    temporary.write_text(json.dumps(value, indent=2) + '\n')
+    temporary.replace(path)
+
+
+def gguf_metadata(path):
+    """Read only metadata, skipping tensor data and large tokenizer arrays."""
+    sizes = {0: 1, 1: 1, 2: 2, 3: 2, 4: 4, 5: 4, 6: 4, 7: 1, 10: 8, 11: 8, 12: 8}
+    formats = {0: 'B', 1: 'b', 2: 'H', 3: 'h', 4: 'I', 5: 'i', 6: 'f', 7: '?', 10: 'Q', 11: 'q', 12: 'd'}
+    with path.open('rb') as stream:
+        def number(fmt):
+            return struct.unpack('<' + fmt, stream.read(struct.calcsize(fmt)))[0]
+        def string(keep=True):
+            length = number('Q')
+            if keep:
+                return stream.read(length).decode('utf-8', errors='replace')
+            stream.seek(length, 1)
+        def value(kind, keep):
+            if kind == 8:
+                return string(keep)
+            if kind == 9:
+                subtype, count = number('I'), number('Q')
+                if subtype in sizes:
+                    stream.seek(sizes[subtype] * count, 1)
+                else:
+                    for _ in range(count):
+                        value(subtype, False)
+            elif kind in sizes:
+                if keep:
+                    return number(formats[kind])
+                stream.seek(sizes[kind], 1)
+            else:
+                raise ValueError(f'Unknown GGUF metadata type {kind}')
+        assert stream.read(4) == b'GGUF', path
+        version, tensors, fields = number('I'), number('Q'), number('Q')
+        result = {'version': version, 'tensor_count': tensors}
+        for _ in range(fields):
+            key, kind = string(), number('I')
+            keep = key == 'general.architecture' or key.endswith('.context_length')
+            item = value(kind, keep)
+            if keep:
+                result[key] = item
+        return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('models', nargs='*')
+    parser.add_argument('--output', type=pathlib.Path, default=ROOT / 'docs/benchmarks/moe-20261107')
+    parser.add_argument('--toolbox', default='dev')
+    parser.add_argument('--skip-baseline', action='store_true', help='Resume an interrupted batch with an existing baseline')
+    args = parser.parse_args()
+    models = args.models or DEFAULT_MODELS
+    if set(models) - set(SPECS):
+        parser.error('Unknown variants: ' + ', '.join(sorted(set(models) - set(SPECS))))
+    output = args.output.resolve()
+    output.mkdir(parents=True, exist_ok=True)
+    state = {'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+             'requested': models, 'results': {}, 'restored': False}
+    state_path = output / 'status.json'
+    lock = (pathlib.Path.home() / '.local/share/ai-station/tune-concurrency.lock').open('a')
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    if active('ai-station-moe-download') or any(command('podman', 'container', 'exists', name).returncode == 0
+            for name in ('ai-station-moe-download', 'ai-station-queue-download')):
+        raise RuntimeError('Finish downloads before GPU trials')
+    if command('podman', 'container', 'exists', 'ai-station-coder-candidate').returncode == 0:
+        raise RuntimeError('Another GPU candidate is running')
+    if not active('llama-coder') or active('vllm-coder') or not active('litellm'):
+        raise RuntimeError('Requires the active llama-coder/LiteLLM baseline and no alternative GPU backend')
+    command('toolbox', 'run', '--container', args.toolbox, 'opencode', '--version', check=True)
+    command('python3', str(ROOT / 'scripts/switch-coder-profile'), '--status', check=True)
+    records = yaml.safe_load((ROOT / 'config/candidates.lock.yaml').read_text())['candidates']
+    artifacts = {}
+    for name in models:
+        record = records[SPECS[name][0]]
+        directory = pathlib.Path.home() / '.local/share/ai-station/models' / record['directory']
+        if 'file' in record:
+            for filename, digest in [(record['file'], record['sha256'])] + (
+                    [(record['vision_file'], record['vision_sha256'])] if 'vision_file' in record else []):
+                with (directory / filename).open('rb') as stream:
+                    actual = hashlib.file_digest(stream, 'sha256').hexdigest()
+                if actual != digest:
+                    raise ValueError(f'Checksum mismatch: {directory / filename}')
+            artifacts[name] = {**record, 'gguf': gguf_metadata(directory / record['file'])}
+        else:
+            import runpy
+            verify = runpy.run_path(str(ROOT / 'scripts/download-benchmark-queue'))['matches']
+            manifest = json.loads((directory / '.ai-station-verified.json').read_text())
+            assert manifest['repository'] == record['repository'] and manifest['revision'] == record['revision']
+            assert all(verify(directory / item['file'], item) for item in manifest['files'])
+            artifacts[name] = {**record, 'bundle_manifest': manifest}
+        if name in QUEUE['variants']:
+            variant = QUEUE['variants'][name]
+            source = QUEUE['artifacts'][variant['artifact']]
+            assert all(source[key] == record[key] for key in ('repository', 'revision', 'directory'))
+            if 'file' in record:
+                assert source['file'] == record['file'] and source['sha256'] == record['sha256']
+            artifacts[name]['variant'] = variant
+    state['artifacts'] = artifacts
+    protected = [ROOT / p for p in ('config/models.lock.yaml', 'quadlets/llama-coder.container',
+                 'config/litellm-config.yaml', 'README.md', 'docs/model-profile.md', 'docs/operations.md')]
+    original = {str(p): hashlib.sha256(p.read_bytes()).hexdigest() for p in protected}
+    state['protected_sha256'] = original
+    harness = output / 'harness'
+    harness.mkdir(exist_ok=True)
+    state['harness_sha256'] = {}
+    for name in ('benchmark-coder', 'benchmark-concurrency', 'benchmark-agent-repair',
+                 'check-native-concurrency', 'benchmark-vision-contracts'):
+        source = (ROOT / 'scripts' / name).read_bytes()
+        target = harness / name
+        if target.exists() and target.read_bytes() != source:
+            raise RuntimeError('Existing harness snapshot differs; choose a fresh output directory')
+        target.write_bytes(source)
+        state['harness_sha256'][name] = hashlib.sha256(source).hexdigest()
+    state['images'] = yaml.safe_load((ROOT / 'config/images.lock.yaml').read_text())['images']
+    save(output / 'variant-inputs.json', QUEUE)
+    save(state_path, state)
+
+    def logged(argv, logfile, timeout=1800, env=None):
+        print('RUN', ' '.join(map(str, argv)), flush=True)
+        with (output / logfile).open('w') as log:
+            try:
+                result = command(*map(str, argv), stdout=log, stderr=subprocess.STDOUT,
+                                 timeout=timeout, env=env)
+                return result.returncode
+            except subprocess.TimeoutExpired:
+                command('podman', 'stop', '--ignore', 'ai-station-moe-client', stdout=subprocess.DEVNULL)
+                return 124
+
+    def client(script, parameters, logfile):
+        return logged(['podman', 'run', '--rm', '--pull', 'never', '--name', 'ai-station-moe-client',
+            '--network', 'ai-station', '--memory', '2g', '--cpus', '4',
+            '--security-opt', 'no-new-privileges', '--cap-drop', 'all',
+            '--volume', f'{harness / script}:/benchmark.py:ro,z',
+            '--volume', f'{output}:/results:z', '--entrypoint', 'python3', IMAGE,
+            '/benchmark.py', *parameters], logfile)
+
+    def props(container, name=None):
+        variant = QUEUE['variants'].get(name, {})
+        inspected = command('podman', 'inspect', '--format', '{{json .Config.Cmd}}', container,
+                            capture_output=True, check=True)
+        server_command = json.loads(inspected.stdout)
+        if variant.get('backend') == 'vllm':
+            result = command('podman', 'exec', container, 'curl', '--fail', '--silent', '--max-time', '5',
+                             'http://127.0.0.1:8000/v1/models', capture_output=True, check=True)
+            served = json.loads(result.stdout)
+            assert any(model['id'] == 'coder' for model in served['data'])
+            # vLLM has no /props. Record limits from the inspected, explicit server arguments.
+            return {'backend': 'vllm', 'model_path': artifacts[name]['directory'],
+                    'total_slots': int(server_command[server_command.index('--max-num-seqs') + 1]),
+                    'default_generation_settings': {'n_ctx': int(server_command[server_command.index('--max-model-len') + 1])},
+                    'server_command': server_command, 'served_models': served}
+        result = command('podman', 'exec', container, 'curl', '--fail', '--silent', '--max-time', '5',
+                         'http://127.0.0.1:8000/props', capture_output=True, check=True)
+        data = json.loads(result.stdout)
+        return {'backend': 'llama', 'server_command': server_command,
+                **{k: data.get(k) for k in ('model_path', 'total_slots', 'default_generation_settings',
+                                          'build_info', 'chat_template_caps')}}
+
+    def backend_ready(container, process=None, timeout=180):
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if process is not None and process.poll() is not None:
+                return False
+            result = command('podman', 'exec', container, 'curl', '--fail', '--silent', '--max-time', '2',
+                             'http://127.0.0.1:8000/health', capture_output=True)
+            if result.returncode == 0:
+                return True
+            time.sleep(2)
+        return False
+
+    def gateway_restart():
+        command('systemctl', '--user', 'restart', 'litellm', check=True)
+        opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        for _ in range(90):
+            try:
+                with opener.open('http://127.0.0.1:4000/health/liveliness', timeout=2) as response:
+                    if response.status == 200:
+                        return
+            except OSError:
+                time.sleep(1)
+        raise RuntimeError('Gateway did not become ready')
+
+    def restore():
+        command('podman', 'stop', '--ignore', 'ai-station-moe-client', 'ai-station-coder-candidate',
+                stdout=subprocess.DEVNULL)
+        exists = command('podman', 'container', 'exists', 'ai-station-coder-candidate').returncode
+        if exists == 0:
+            stopped = command('podman', 'inspect', '--format', '{{.State.Running}}',
+                              'ai-station-coder-candidate', capture_output=True, check=True)
+            if stopped.stdout.strip() != 'false':
+                raise RuntimeError('Candidate is still running; refusing to overlap GPU backends')
+        elif exists != 1:
+            raise RuntimeError('Could not verify that the GPU candidate stopped')
+        command('systemctl', '--user', 'start', 'llama-coder', check=True)
+        if not backend_ready('ai-station-llama-coder'):
+            raise RuntimeError('Production backend failed to recover')
+        gateway_restart()
+        for path, digest in original.items():
+            if hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest() != digest:
+                raise RuntimeError(f'Protected deployment/fixture file changed: {path}')
+
+    def suite(name, url, runtime, sampling):
+        backend = runtime['backend']
+        context = runtime['default_generation_settings']['n_ctx']
+        slots = runtime['total_slots']
+        long_size = min(253000, context - 9000)
+        contexts = sorted({32000, min(122000, long_size), long_size})
+        checks = {}
+        for seed in (42, 43, 44):
+            checks[f'seed{seed}'] = client('benchmark-coder', ['--url', url, '--backend', backend,
+                '--label', name, '--max-tokens', '16384', '--thinking-budget', '6144',
+                '--preserve-thinking', '--extended', '--sampling-profile', sampling, '--seed', str(seed),
+                '--contexts', ','.join(map(str, contexts)) if seed == 42 else '',
+                '--output', f'/results/{name}-seed{seed}.json'], f'{name}-seed{seed}.log')
+        for mode in ('screen', 'full', 'limit'):
+            checks[mode] = client('benchmark-concurrency', ['--url', url, '--mode', mode,
+                '--backend', backend,
+                '--slots', str(slots), '--repeats', '3', '--context-a', str(long_size),
+                '--context-b', str(long_size), *(['--mandatory-reasoning'] if sampling == 'gptoss' else [])],
+                f'{name}-{mode}.jsonl')
+        checks['agent'] = client('benchmark-agent-repair', ['--url', url, '--backend', backend, '--sampling-profile', sampling,
+            '--output', f'/results/{name}-agent.json'], f'{name}-agent.log')
+        for repeat in (1, 2):
+            checks[f'native{repeat}'] = logged(['toolbox', 'run', '--container', args.toolbox, 'python3',
+                str(harness / 'check-native-concurrency'), '--project-root', str(ROOT),
+                '--output', str(output / f'{name}-native{repeat}.json')],
+                f'{name}-native{repeat}.log', timeout=300)
+        variant = QUEUE['variants'].get(name, {})
+        has_vision = (name == 'baseline' or 'vision_file' in artifacts.get(name, {})
+                      or variant.get('vision_artifact') or variant.get('vision'))
+        if has_vision:
+            checks['vision'] = client('benchmark-vision-contracts', ['--url', url, '--backend', backend,
+                '--output', f'/results/{name}-vision.json'], f'{name}-vision.log')
+        return checks
+
+    def interrupted(signum, frame):
+        raise KeyboardInterrupt(f'Signal {signum}')
+    for signum in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(signum, interrupted)
+
+    try:
+        if not args.skip_baseline:
+            runtime = props('ai-station-llama-coder')
+            state['results']['baseline'] = {'runtime': runtime, 'phase': 'running'}
+            save(state_path, state)
+            state['results']['baseline']['checks'] = suite('baseline', 'http://llama-coder:8000', runtime, 'qwen')
+            state['results']['baseline']['phase'] = 'complete'
+            save(state_path, state)
+        for name in models:
+            entry = {'phase': 'starting', 'attempts': []}
+            state['results'][name] = entry
+            save(state_path, state)
+            variant = QUEUE['variants'].get(name, {})
+            native_context = variant.get('context', artifacts[name]['context'])
+            requested_kv = variant.get('kv', 'q4_0')
+            plan = [(native_context, variant.get('slots', 2), requested_kv), (native_context, 1, requested_kv),
+                    (native_context, 1, 'q8_0'), (min(native_context, 131072), 1, 'q8_0'),
+                    (min(native_context, 131072), 1, 'f16'), (65536, 1, 'f16')]
+            if variant.get('backend') == 'vllm':
+                plan = [(native_context, variant.get('slots', 2), variant.get('kv', 'auto')),
+                        (min(native_context, 131072), 1, variant.get('kv', 'auto')),
+                        (65536, 1, variant.get('kv', 'auto'))]
+            plan = list(dict.fromkeys(plan))
+            try:
+                command('systemctl', '--user', 'stop', 'llama-coder', check=True)
+                ready = False
+                for index, (context, slots, kv) in enumerate(plan, 1):
+                    env = {**os.environ, 'TRIAL_GATEWAY': '1', 'TRIAL_CONTEXT': str(context),
+                           'TRIAL_SLOTS': str(slots), 'TRIAL_KV': kv,
+                           'CONTEXT_TOKENS': str(context * slots), 'PARALLEL_SLOTS': str(slots)}
+                    log_path = output / f'{name}-startup{index}.log'
+                    with log_path.open('w') as log:
+                        process = subprocess.Popen(['bash', str(ROOT / 'scripts/run-coder-candidate'), name],
+                            stdout=log, stderr=subprocess.STDOUT, env=env)
+                        ready = backend_ready('ai-station-coder-candidate', process,
+                                              timeout=900 if variant.get('backend') == 'vllm' else 180)
+                    attempt = {'context': context, 'slots': slots, 'kv': kv, 'ready': ready,
+                               'log': log_path.name}
+                    if ready:
+                        observed = props('ai-station-coder-candidate', name)
+                        attempt['actual_context'] = observed['default_generation_settings']['n_ctx']
+                        attempt['actual_slots'] = observed['total_slots']
+                        ready = attempt['actual_context'] == context and attempt['actual_slots'] == slots
+                        attempt['ready'] = ready
+                        if not ready:
+                            attempt['error'] = 'Runtime silently changed the requested context/slot configuration'
+                    entry['attempts'].append(attempt)
+                    save(state_path, state)
+                    if ready:
+                        break
+                    command('podman', 'stop', '--ignore', 'ai-station-coder-candidate', stdout=subprocess.DEVNULL)
+                    process.wait(timeout=30)
+                    text = log_path.read_text(errors='replace').lower()
+                    if 'unknown model architecture' in text or 'unknown pre-tokenizer' in text:
+                        break
+                if not ready:
+                    entry.update(phase='unavailable', error='No supported configuration became ready; see startup logs')
+                    continue
+                runtime = props('ai-station-coder-candidate', name)
+                entry['runtime'] = runtime
+                entry['gpu'] = command('nvidia-smi', '--query-gpu=name,memory.total,memory.used',
+                                        '--format=csv', capture_output=True).stdout
+                gateway_restart()
+                entry['phase'] = 'running'
+                save(state_path, state)
+                entry['checks'] = suite(name, 'http://coder-candidate:8000', runtime, SPECS[name][1])
+                entry['phase'] = 'complete'
+            except Exception as error:
+                entry.update(phase='error', error=str(error))
+            finally:
+                restore()
+                save(state_path, state)
+    finally:
+        restore()
+        state['restored'] = True
+        state['finished_utc'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        state['restore_smoke_returncode'] = logged([str(ROOT / 'scripts/smoke-test'),
+            'http://127.0.0.1:4000'], 'restored-smoke.log', timeout=180)
+        save(state_path, state)
+
+
+if __name__ == '__main__':
+    main()

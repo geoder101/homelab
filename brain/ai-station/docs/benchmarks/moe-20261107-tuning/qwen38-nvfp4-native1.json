@@ -1,0 +1,35 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "\n\nALPHA AI Station",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  },
+  {
+    "agent": "BETA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "\n\nBETA Default coding-agent profile",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  },
+  {
+    "agent": "GAMMA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "\n\nGAMMA Operations",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  }
+]

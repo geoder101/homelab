@@ -1,0 +1,286 @@
+{
+  "label": "occamy",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.258,
+      "elapsed_seconds": 2.155,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.258,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 269.89,
+      "answer": "# Checklist for Diagnosing Memory Leaks in a Python HTTP Server (Long-Running Integration Tests)\n\n## 1. Baseline & Reproduction\n\n- [ ] **Confirm the leak is reproducible.** Run the integration test suite multiple cycles (e.g., 10\u201350 iterations) and plot RSS vs. iteration count. A true leak shows monotonic growth; noise fluctuates.\n- [ ] **Isolate server vs. test harness.** Ensure the server process (not the test client or pytest) is the one growing. Track each process's RSS separately.\n- [ ] **Record baseline RSS** at start of a fresh process before any requests.\n- [ ] **Vary load parameters** one at a time (request rate, payload size, connection count, keep-alive duration) to identify the triggering factor.\n- [ ] **Check for test-data growth** in temp dirs, logs, or caches that may mimic a server leak.\n\n## 2. Environment & Version Locking\n\n- [ ] Record Python version (`python --version`), OS, and glibc version.\n- [ ] Record exact package versions (`pip freeze > requirements.txt`). Note server framework (e.g., Flask/FastAPI + uvicorn/gunicorn, aiohttp, Django+Daphne, or stdlib `http.server`).\n- [ ] Set `PYTHONTRACEMALLOC=1` and `PYTHONMALLOC=malloc` (or `debugmalloc` in Python 3.11+) to force transparent tracking.\n- [ ] Disable optimizations that hide leaks: avoid `python -O` unless specifically testing it.\n\n## 3. Initial Process Monitoring (OS Level)\n\n- [ ] Monitor RSS/VSS over time with `ps`:\n  ```bash\n  watch -n 2 'ps -o pid,rss,vsz,cmd -p $(pgrep -f your_server)'\n  ```\n- [ ] Use `/proc/<pid>/stat` for precise resident set size:\n  ```bash\n  awk '{print $24}' /proc/<pid>/stat   # rss in pages; multiply by page size (4096)\n  ```\n- [ ] Check for file descriptor growth (a common correlate):\n  ```bash\n  ls /proc/<pid>/fd | wc -l\n  watch -n 2 'ls /proc/<pid>/fd | wc -l'\n  ```\n-"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.033,
+      "elapsed_seconds": 1.933,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.033,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 269.49,
+      "answer": "# Checklist for Diagnosing Memory Leaks in a Python HTTP Server (Long-Running Integration Tests)\n\n## 1. Baseline & Reproduction\n\n- [ ] **Confirm the leak is reproducible.** Run the integration test suite multiple cycles (e.g., 10\u201350 iterations) and plot RSS vs. iteration count. A true leak shows monotonic growth; noise fluctuates.\n- [ ] **Isolate server vs. test harness.** Ensure the server process (not the test client or pytest) is the one growing. Track each process's RSS separately.\n- [ ] **Record baseline RSS** at start of a fresh process before any requests.\n- [ ] **Vary load parameters** one at a time (request rate, payload size, connection count, keep-alive duration) to identify the triggering factor.\n- [ ] **Check for test-data growth** in temp dirs, logs, or caches that may mimic a server leak.\n\n## 2. Environment & Version Locking\n\n- [ ] Record Python version (`python --version`), OS, and glibc version.\n- [ ] Record exact package versions (`pip freeze > requirements.txt`). Note server framework (e.g., Flask/FastAPI + uvicorn/gunicorn, aiohttp, Django+Daphne, or stdlib `http.server`).\n- [ ] Set `PYTHONTRACEMALLOC=1` and `PYTHONMALLOC=malloc` (or `debugmalloc` in Python 3.11+) to force transparent tracking.\n- [ ] Disable optimizations that hide leaks: avoid `python -O` unless specifically testing it.\n\n## 3. Initial Process Monitoring (OS Level)\n\n- [ ] Monitor RSS/VSS over time with `ps`:\n  ```bash\n  watch -n 2 'ps -o pid,rss,vsz,cmd -p $(pgrep -f your_server)'\n  ```\n- [ ] Use `/proc/<pid>/stat` for precise resident set size:\n  ```bash\n  awk '{print $24}' /proc/<pid>/stat   # rss in pages; multiply by page size (4096)\n  ```\n- [ ] Check for file descriptor growth (a common correlate):\n  ```bash\n  ls /proc/<pid>/fd | wc -l\n  watch -n 2 'ls /proc/<pid>/fd | wc -l'\n  ```\n-"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.024,
+      "elapsed_seconds": 1.922,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.024,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 269.66,
+      "answer": "# Checklist for Diagnosing Memory Leaks in a Python HTTP Server (Long-Running Integration Tests)\n\n## 1. Baseline & Reproduction\n\n- [ ] **Confirm the leak is reproducible.** Run the integration test suite multiple cycles (e.g., 10\u201350 iterations) and plot RSS vs. iteration count. A true leak shows monotonic growth; noise fluctuates.\n- [ ] **Isolate server vs. test harness.** Ensure the server process (not the test client or pytest) is the one growing. Track each process's RSS separately.\n- [ ] **Record baseline RSS** at start of a fresh process before any requests.\n- [ ] **Vary load parameters** one at a time (request rate, payload size, connection count, keep-alive duration) to identify the triggering factor.\n- [ ] **Check for test-data growth** in temp dirs, logs, or caches that may mimic a server leak.\n\n## 2. Environment & Version Locking\n\n- [ ] Record Python version (`python --version`), OS, and glibc version.\n- [ ] Record exact package versions (`pip freeze > requirements.txt`). Note server framework (e.g., Flask/FastAPI + uvicorn/gunicorn, aiohttp, Django+Daphne, or stdlib `http.server`).\n- [ ] Set `PYTHONTRACEMALLOC=1` and `PYTHONMALLOC=malloc` (or `debugmalloc` in Python 3.11+) to force transparent tracking.\n- [ ] Disable optimizations that hide leaks: avoid `python -O` unless specifically testing it.\n\n## 3. Initial Process Monitoring (OS Level)\n\n- [ ] Monitor RSS/VSS over time with `ps`:\n  ```bash\n  watch -n 2 'ps -o pid,rss,vsz,cmd -p $(pgrep -f your_server)'\n  ```\n- [ ] Use `/proc/<pid>/stat` for precise resident set size:\n  ```bash\n  awk '{print $24}' /proc/<pid>/stat   # rss in pages; multiply by page size (4096)\n  ```\n- [ ] Check for file descriptor growth (a common correlate):\n  ```bash\n  ls /proc/<pid>/fd | wc -l\n  watch -n 2 'ls /proc/<pid>/fd | wc -l'\n  ```\n-"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 8.612,
+      "usage": {
+        "completion_tokens": 2293,
+        "prompt_tokens": 98,
+        "total_tokens": 2391,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n    merged = []\n    for interval in sorted_intervals:\n        if not merged or merged[-1][1] < interval[0]:\n            merged.append([interval[0], interval[1]])\n        else:\n            merged[-1][1] = max(merged[-1][1], interval[1])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 3.439,
+      "usage": {
+        "completion_tokens": 909,
+        "prompt_tokens": 131,
+        "total_tokens": 1040,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {n: set() for n in nodes}\n    in_degree = {n: 0 for n in nodes}\n    seen = set()\n    for src, dst in edges:\n        if (src, dst) in seen:\n            continue\n        seen.add((src, dst))\n        if src == dst:\n            raise ValueError(\"cycle detected\")\n        adj[src].add(dst)\n        in_degree[dst] += 1\n\n    heap = [n for n in nodes if in_degree[n] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 5.056,
+      "usage": {
+        "completion_tokens": 1341,
+        "prompt_tokens": 260,
+        "total_tokens": 1601,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if not isinstance(limit, int) or isinstance(limit, bool) or limit <= 0:\n        raise ValueError(\"limit must be a positive integer\")\n    for _, weight in items:\n        if not isinstance(weight, int) or isinstance(weight, bool) or weight <= 0 or weight > limit:\n            raise ValueError(\"invalid weight\")\n    batches = []\n    current_batch = []\n    current_weight = 0\n    for name, weight in items:\n        if current_weight + weight <= limit:\n            current_batch.append(name)\n            current_weight += weight\n        else:\n            batches.append(current_batch)\n            current_batch = [name]\n            current_weight = weight\n    if current_batch:\n        batches.append(current_batch)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 5.086,
+      "usage": {
+        "completion_tokens": 1352,
+        "prompt_tokens": 138,
+        "total_tokens": 1490,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    result = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid environment assignment: {line!r}\")\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not key_re.match(key):\n            raise ValueError(f\"Invalid environment key: {key!r}\")\n        if (value.startswith('\"') and value.endswith('\"')) or \\\n           (value.startswith(\"'\") and value.endswith(\"'\")):\n            value = value[1:-1]\n        result[key] = value\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 25.968,
+      "usage": {
+        "completion_tokens": 6824,
+        "prompt_tokens": 148,
+        "total_tokens": 6972,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buf = b''.join(chunks)\n    events = []\n    current_data = []\n    i = 0\n    n = len(buf)\n    while i < n:\n        # find the next LF\n        line_end = -1\n        j = i\n        while j < n:\n            if buf[j] == 0x0A:\n                line_end = j\n                break\n            j += 1\n        if line_end == -1:\n            # no LF: unterminated remainder (possibly split UTF-8 or partial line)\n            break\n        line = buf[i:line_end]\n        # strip trailing \\r for CRLF handling\n        if line.endswith(b'\\r'):\n            line = line[:-1]\n        if len(line) == 0:\n            # blank line -> dispatch current event\n            if current_data:\n                data = '\\n'.join(current_data)\n                if data == '[DONE]':\n                    # exclude [DONE] and all later events\n                    break\n                events.append(data)\n            current_data = []\n        else:\n            # only 'data:' fields contribute\n            if line.startswith(b'data:'):\n                value = line[5:]\n                # remove at most one space after the colon\n                if value and value[0] == 0x20:\n                    value = value[1:]\n                current_data.append(value.decode('utf-8'))\n        i = line_end + 1\n        # skip trailing \\r if CRLF\n        if i < n and buf[i] == 0x0D:\n            i += 1\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 24.646,
+      "usage": {
+        "completion_tokens": 6504,
+        "prompt_tokens": 106,
+        "total_tokens": 6610,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if isinstance(attempt, bool) or type(attempt) is not int:\n        raise ValueError(\"attempt must be an integer\")\n    if attempt < 0:\n        raise ValueError(\"attempt must be nonnegative\")\n    if isinstance(base, bool) or not isinstance(base, (int, float)):\n        raise ValueError(\"base must be a finite nonnegative number\")\n    if base < 0 or not math.isfinite(float(base)):\n        raise ValueError(\"base must be a finite nonnegative number\")\n    if isinstance(cap, bool) or not isinstance(cap, (int, float)):\n        raise ValueError(\"cap must be a finite nonnegative number\")\n    if cap < 0 or not math.isfinite(float(cap)):\n        raise ValueError(\"cap must be a finite nonnegative number\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    base_f = float(base)\n    cap_f = float(cap)\n\n    # Determine whether base_f * 2**attempt >= cap_f without overflow.\n    # base_f * 2**attempt >= cap_f  <==>  attempt >= log2(cap_f / base_f)\n    log2_ratio = math.log2(cap_f / base_f)\n    if attempt >= log2_ratio:\n        return cap_f\n\n    # In this branch attempt < log2(cap_f/base_f), so the true value is\n    # strictly less than cap_f (finite). math.ldexp then cannot overflow.\n    value = math.ldexp(base_f, attempt)\n    return min(cap_f, value)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": false,
+      "elapsed_seconds": 9.199,
+      "usage": {
+        "completion_tokens": 2458,
+        "prompt_tokens": 133,
+        "total_tokens": 2591,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for req in queued:\n        if req > budget:\n            raise ValueError(\"queued reservation exceeds the whole budget\")\n\n    occupied = 0\n    used = 0\n    for res in active:\n        occupied += res\n        used += 1\n\n    admitted = []\n    remaining = []\n    for req in queued:\n        if occupied + req <= budget and used + 1 <= slots:\n            admitted.append(req)\n            occupied += req\n            used += 1\n        else:\n            remaining.append(req)\n\n    return admitted, remaining\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 30, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.062,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result has been reported:\n\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nThe dry run completed successfully, showing that 2 files were affected (1 created: `src/a.py`, 1 deleted: `obsolete.txt`). Since `dry_run` was set to `true`, no actual changes were made to the filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.113,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Tool result: `{\"status\":\"dry-run-ok\",\"changed_files\":2}`\n\nThe apply_changes operation completed successfully as a dry run. It reported 2 changed files:\n- Created `src/a.py` with content `print(42)\\n`\n- Deleted `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual file changes were made to the filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.9,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result has been reported: **Status:** dry-run-ok, **Changed files:** 2."
+    }
+  ]
+}

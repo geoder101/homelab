@@ -1,8 +1,11 @@
 # Brain reasoning profiles and Home handoff — 2026-10-31
 
-**Current selection (2026-11-05):** the same Qwen aliases/template serve two
-fixed 256K slots using Q4 precision weights, Q4 cache and GPU vision. The
-three-slot Q3/CPU-vision alternative is recorded in
+**Current selection (2026-11-08):** Ornith Q5 on b12182 serves the same aliases
+and hard thinking ceilings, with two 256K slots, Q4 cache and GPU vision.
+Its pinned history-fixed template does not implement Qwen's soft effort
+steering. See [current configuration and selection history](model-profile.md).
+This report preserves the Qwen reasoning/template handoff. Its three-slot
+Q3/CPU-vision alternative is recorded in
 [local capacity tuning](concurrency.md). Measurements and one-slot/Q4/Q8
 descriptions below record the earlier reasoning-profile handoff.
 

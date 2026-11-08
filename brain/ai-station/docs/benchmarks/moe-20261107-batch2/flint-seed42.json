@@ -1,0 +1,319 @@
+{
+  "label": "flint",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.468,
+      "elapsed_seconds": 7.092,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 35,
+        "total_tokens": 547,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 4.468,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 195.16,
+      "answer": "We need to write a detailed checklist for diagnosing a Python HTTP server that leaks memory during long-running integration tests. The user wants a checklist covering profiling, resource cleanup, and verification, with concrete checks and commands.\n\nWe should structure it as a checklist, perhaps with steps, commands, expected outputs, etc.\n\nWe'll include:\n\n- Initial observations: check if leak is in server, test client, or elsewhere.\n- Monitoring memory usage over time (psutil, /proc, memory_profiler, tracemalloc).\n- Profiling with cProfile, py-spy, etc.\n- Check for unclosed sockets, connections, threads, file handles.\n- Check for reference cycles, global caches.\n- Check for generator leaks, iterators.\n- Check for thread-local storage.\n- Check for database connections, external resource pools.\n- Check for async tasks, background tasks.\n- Check for caches not being cleared.\n- Check for logging handlers holding references.\n- Check for monkey patching issues.\n- Use garbage collector: gc.collect() and see if memory freed.\n- Check object counts via gc.get_objects().\n- Use memory_profiler decorator on test functions or server handlers.\n- Use tracemalloc to snapshot and diff.\n- Check for unclosed response objects, requests sessions.\n- Check for threading: thread stack traces, thread locals.\n- Check for multiprocessing if used.\n- Check for event loop issues if using asyncio.\n- Check for unclosed client sessions in tests.\n- Check for leaked connections to external services.\n\nWe'll produce a comprehensive checklist with concrete commands like `ps aux`, `pmap`, `tracemalloc`, `py-spy dump`, `gc`, etc.\n\nWe should format as a checklist, maybe with checkboxes, or as a step-by-step guide.\n\nGiven it's for \"diagnosing a Python HTTP server that leaks memory during long-running integration tests\", we should focus on the server side, but also test client side might be relevant.\n\nLet's outline:\n\n1. Baseline memory usage and monitoring.\n2. Enable memory profiling.\n3. Analyze with garbage collection.\n4. Inspect active objects and references.\n5. Check for resource leaks (connections, files, threads).\n6. Check for caches and unbounded data structures.\n7. Check for async tasks and timers.\n8. Check for code patterns known to cause leaks.\n9. Verify fixes.\n\nWe'll provide concrete commands for Python, Linux, and tools.\n\nLet's write in a detailed, checklist style.</think># Checklist: Diagnosing Memory Leaks in Python HTTP Server During Long-Running Integration Tests\n\n## "
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.032,
+      "elapsed_seconds": 2.66,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 35,
+        "total_tokens": 547,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "first_generated_token_seconds": 0.032,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 194.82,
+      "answer": "We need to write a detailed checklist for diagnosing a Python HTTP server that leaks memory during long-running integration tests. The user wants a checklist with concrete checks and commands, covering profiling, resource cleanup, and verification.\n\nWe should structure it as a step-by-step guide or checklist. Include topics: initial observation, reproducing the leak, profiling memory usage, identifying leaks (using tools like tracemalloc, memory_profiler, objgraph, etc.), examining code for common leaks (caches, connections, threads, event loops, generators, temporary files, locks, etc.), checking resource cleanup, and verifying fixes. Provide concrete commands like `tracemalloc`, `memory_profiler`, `psutil`, `objdump`? Actually, for Python: `tracemalloc`, `memory_profiler`, `pytest` plugins, `gc`, `objgraph`, etc.\n\nWe need to write in a checklist format, perhaps with checkboxes or numbered steps, with sub-steps and commands.\n\nWe should also cover how to measure memory over time during tests, how to isolate whether it's the server or client, etc.\n\nLet's outline:\n\n1. Reproduce and capture baseline memory usage.\n2. Monitor memory during tests (using /proc, psutil, resource module).\n3. Enable memory profiling (tracemalloc, memory_profiler).\n4. Analyze snapshots to find leaks.\n5. Check for common leak sources: global caches, unbounded collections, not closing connections, threads, event loops, generators not exhausted, temporary files not cleaned, logging handlers, etc.\n6. Check resource cleanup: ensure server shutdown, socket close, etc.\n7. Check for reference cycles or lingering references.\n8. Verify fix by re-running tests and monitoring.\n\nInclude concrete commands like:\n- `ps aux | grep python`\n- `pmap -x <pid>` or `/proc/<pid>/status`\n- `tracemalloc.start()` and `tracemalloc.take_snapshot()`\n- `mprof run` or `memory_profiler` decorator\n- `gc.collect()` and `gc.get_objects()`\n- `objgraph` methods\n\nWe'll produce a detailed checklist with bullet points, code snippets, and commands. The answer should be practical and actionable.\n\nLet's write it.</think># Checklist: Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\nThis checklist guides you through diagnosing memory leaks in a Python HTTP server that manifest during long integration tests. It covers reproducible steps, profiling, analysis, and verification.\n\n---\n\n## 1. Reproduce the Leak"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.032,
+      "elapsed_seconds": 2.661,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 35,
+        "total_tokens": 547,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "first_generated_token_seconds": 0.032,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 194.75,
+      "answer": "We need to write a detailed checklist for diagnosing a Python HTTP server that leaks memory during long-running integration tests. The user wants a checklist with concrete checks and commands, covering profiling, resource cleanup, and verification.\n\nWe should structure it as a step-by-step guide or checklist. Include topics: initial observation, reproducing the leak, profiling memory usage, identifying leaks (using tools like tracemalloc, memory_profiler, objgraph, etc.), examining code for common leaks (caches, connections, threads, event loops, generators, temporary files, locks, etc.), checking resource cleanup, and verifying fixes. Provide concrete commands like `tracemalloc`, `memory_profiler`, `psutil`, `objdump`? Actually, for Python: `tracemalloc`, `memory_profiler`, `pytest` plugins, `gc`, `objgraph`, etc.\n\nWe need to write in a checklist format, perhaps with checkboxes or numbered steps, with sub-steps and commands.\n\nWe should also cover how to measure memory over time during tests, how to isolate whether it's the server or client, etc.\n\nLet's outline:\n\n1. Reproduce and capture baseline memory usage.\n2. Monitor memory during tests (using /proc, psutil, resource module).\n3. Enable memory profiling (tracemalloc, memory_profiler).\n4. Analyze snapshots to find leaks.\n5. Check for common leak sources: global caches, unbounded collections, not closing connections, threads, event loops, generators not exhausted, temporary files not cleaned, logging handlers, etc.\n6. Check resource cleanup: ensure server shutdown, socket close, etc.\n7. Check for reference cycles or lingering references.\n8. Verify fix by re-running tests and monitoring.\n\nInclude concrete commands like:\n- `ps aux | grep python`\n- `pmap -x <pid>` or `/proc/<pid>/status`\n- `tracemalloc.start()` and `tracemalloc.take_snapshot()`\n- `mprof run` or `memory_profiler` decorator\n- `gc.collect()` and `gc.get_objects()`\n- `objgraph` methods\n\nWe'll produce a detailed checklist with bullet points, code snippets, and commands. The answer should be practical and actionable.\n\nLet's write it.</think># Checklist: Diagnosing Memory Leaks in a Python HTTP Server During Long-Running Integration Tests\n\nThis checklist guides you through diagnosing memory leaks in a Python HTTP server that manifest during long integration tests. It covers reproducible steps, profiling, analysis, and verification.\n\n---\n\n## 1. Reproduce the Leak"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 4.798,
+      "usage": {
+        "completion_tokens": 897,
+        "prompt_tokens": 80,
+        "total_tokens": 977,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [list(sorted_intervals[0])]\n    for interval in sorted_intervals[1:]:\n        start, end = interval[0], interval[1]\n        last_end = merged[-1][1]\n        if start <= last_end:\n            if end > last_end:\n                merged[-1][1] = end\n        else:\n            merged.append([start, end])\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 11.561,
+      "usage": {
+        "completion_tokens": 2192,
+        "prompt_tokens": 114,
+        "total_tokens": 2306,
+        "prompt_tokens_details": {
+          "cached_tokens": 12
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    indegree = {node: 0 for node in nodes}\n    adj = {node: [] for node in nodes}\n    seen_edges = set()\n\n    for src, dst in edges:\n        edge = (src, dst)\n        if edge in seen_edges:\n            continue\n        seen_edges.add(edge)\n        adj[src].append(dst)\n        indegree[dst] += 1\n\n    heap = [node for node in nodes if indegree[node] == 0]\n    heapq.heapify(heap)\n    result = []\n\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n\n        for nxt in adj[node]:\n            indegree[nxt] -= 1\n            if indegree[nxt] == 0:\n                heapq.heappush(heap, nxt)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n\ntopologsort = toposort\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 5.267,
+      "usage": {
+        "completion_tokens": 1007,
+        "prompt_tokens": 271,
+        "total_tokens": 1278,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n\n    batches = []\n    current_batch = []\n    current_weight = 0\n\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n\n        if current_weight + weight <= limit:\n            current_batch.append(name)\n            current_weight += weight\n        else:\n            if current_batch:\n                batches.append(current_batch)\n            current_batch = [name]\n            current_weight = weight\n\n    if current_batch:\n        batches.append(current_batch)\n\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 35.051,
+      "usage": {
+        "completion_tokens": 6325,
+        "prompt_tokens": 122,
+        "total_tokens": 6447,
+        "prompt_tokens_details": {
+          "cached_tokens": 12
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env = {}\n    key_pattern = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid environment line: {line}\")\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n            value = value[1:-1]\n        if not key_pattern.fullmatch(key):\n            raise ValueError(f\"Invalid environment key: {key}\")\n        env[key] = value\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 35.376,
+      "usage": {
+        "completion_tokens": 6378,
+        "prompt_tokens": 133,
+        "total_tokens": 6511,
+        "prompt_tokens_details": {
+          "cached_tokens": 12
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b\"\".join(chunks).decode(\"utf-8\")\n    text = text.replace(\"\\r\\n\", \"\\n\").replace(\"\\r\", \"\\n\")\n    lines = text.split(\"\\n\")\n    if text.endswith(\"\\n\"):\n        lines.pop()\n\n    events = []\n    event_data_lines = None\n    stop = False\n\n    for line in lines:\n        if stop:\n            break\n\n        if line == \"\":\n            if event_data_lines is not None:\n                data_str = \"\\n\".join(event_data_lines)\n                event_data_lines = None\n                if data_str == \"[DONE]\":\n                    stop = True\n                    break\n                events.append(data_str)\n            continue\n\n        if line.startswith(\":\"):\n            continue\n\n        if \":\" in line:\n            field, value = line.split(\":\", 1)\n            if field.strip().lower() == \"data\":\n                if value.startswith(\" \"):\n                    value = value[1:]\n                if event_data_lines is None:\n                    event_data_lines = []\n                event_data_lines.append(value)\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 34.535,
+      "usage": {
+        "completion_tokens": 6247,
+        "prompt_tokens": 92,
+        "total_tokens": 6339,
+        "prompt_tokens_details": {
+          "cached_tokens": 12
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"retry_delay arguments must be nonnegative\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    threshold = math.log2(cap) - math.log2(base)\n    if attempt > threshold:\n        return float(cap)\n\n    return float(math.ldexp(base, attempt))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 26.666,
+      "usage": {
+        "completion_tokens": 4889,
+        "prompt_tokens": 117,
+        "total_tokens": 5006,
+        "prompt_tokens_details": {
+          "cached_tokens": 12
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(r > budget for r in queued):\n        raise ValueError(\"Queued reservation exceeds budget\")\n\n    token_remaining = budget - sum(active)\n    slot_remaining = slots - len(active)\n    admitted = []\n\n    for req in queued:\n        if req <= token_remaining and len(admitted) < slot_remaining:\n            admitted.append(req)\n            token_remaining -= req\n        else:\n            break\n\n    remaining = queued[len(admitted):]\n    return (admitted, remaining)",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.678,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Result: `{\"status\":\"dry-run-ok\",\"changed_files\":2}`. Both the creation of `src/a.py` and the deletion of `obsolete.txt` were processed, and the dry-run mode was confirmed."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.117,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool ran successfully and returned:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nThis confirms the create of `src/a.py` and the delete of `obsolete.txt` were processed, with `dry_run` set to `true` (so no actual changes were applied)."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.64,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result is:\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nThe dry run completed successfully \u2014 2 files would be affected (created `src/a.py` and deleted `obsolete.txt`)."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 5.14,
+      "usage": {
+        "completion_tokens": 256,
+        "prompt_tokens": 31859,
+        "total_tokens": 32115,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "We need answer user. Need parse. We have a huge malicious-looking source context. At end: \"Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.\" Need likely respond to final line. We need infer task. They ask? We need likely produce exact values? Let's parse final part.\n\nThe user message: \"Source archive size 32000. Remember exact values below. START_KEY=amber-7429\n// unrelated source context ... many lines ...\nMIDDLE_KEY=birch-5831\n// unrelated source context ...\nEND_KEY=cedar-9167\nReturn only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.\"\n\nMaybe they want parse final lines? The final line says \"Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.\" Could be a prompt injection? We need likely answer: \"Return only JSON with ...\" Maybe they mean: Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values? Or \"Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values\" maybe they want exact values for those keys? The last line may be instruction: \"END_KEY=cedar-9167\nReturn only JSON",
+      "followup_seconds": 1.358,
+      "followup_usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 32124,
+        "total_tokens": 32252,
+        "prompt_tokens_details": {
+          "cached_tokens": 31859
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": false,
+      "error": "ar\n\n\nThink harder\nThink harder\nThink harder\n1\n``` please stop me\n\n\n1\nWe need to parse this passage carefully\n\n\n\n\n\n\n\n o\nWe need to parse this\nThink harder\nThink harder\nThink harder\nThink harder\nThink harder\nThink harder\n1\n```\nplease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\nPlease\n"
+    },
+    {
+      "name": "context_253000",
+      "passed": false,
+      "error": "-2. designed to be  and please see ad\n\n in a\n\n object that is ad, object that looks like ad hoc an at a ad to ad in?\") or please see ad, in that is ad. that is ad...\"; more ad hoc\n\n ad hoc an ad absurd? Actually ad as a ad hoc an ad hoc ad ob ad ob ad on ad as ad in as ad in?\") please see ad as ad hoc and please see ad ob ad ob ad as ad in?\") please see ad as ad hoc an adob ad ob ad on ad as ad in?\") please see ad as ad ob ad on ad as ad in?\") please see ad or as ad in? ad ob? Please see ad as ad ob ad on ad as ad in ad ob) please see ad as ad in ad ob? ad in? Please see ad as ad ob ad on ad as ad in ad ob? Yes - ad in? ad ob ad on ad as ad in ad ob? Please see ad as ad ob ad on ad as ad in ad ob? I think ad as ad ob ad on ad as ad in ad ob? No. sure ad ob ad on ad as ad in ad ob ad in? I think ad as ad"
+    }
+  ]
+}

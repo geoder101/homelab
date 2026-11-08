@@ -1,0 +1,30 @@
+{"variant": "devstral2", "argv": ["podman", "run", "--rm", "--pull", "never", "--name", "ai-station-coder-candidate", "--ulimit", "core=0", "--network", "ai-station", "--network-alias", "coder-candidate", "--device", "nvidia.com/gpu=all", "--security-opt", "label=disable", "--shm-size", "8g", "--volume", "/home/geoder101/.local/share/ai-station/models/devstral-small2-q6:/models/candidate:ro,Z", "--network-alias", "llama-coder", "ghcr.io/ggml-org/llama.cpp@sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469", "--model", "/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf", "--mmproj", "/models/candidate/mmproj-BF16.gguf", "--alias", "coder", "--host", "0.0.0.0", "--port", "8000", "--n-gpu-layers", "99", "--ctx-size", "262144", "--parallel", "1", "--no-kv-unified", "--cache-ram", "16384", "--flash-attn", "on", "--cache-type-k", "q4_0", "--cache-type-v", "q4_0", "--jinja", "--reasoning-format", "deepseek", "--chat-template-kwargs", "{\"enable_thinking\": false, \"preserve_thinking\": false, \"reasoning_effort\": \"medium\"}", "--temp", "0.15", "--top-p", "1.0", "--top-k", "0", "--min-p", "0.0", "--repeat-penalty", "1.0", "--no-webui", "--log-colors", "off"]}
+warn: LLAMA_ARG_HOST environment variable is set, but will be overwritten by command line argument --host
+warn: LLAMA_ARG_PORT environment variable is set, but will be overwritten by command line argument --port
+0.00.087.834 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.
+0.00.088.202 I srv  llama_server: initializing ...
+0.00.088.210 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.088.288 I srv  init_listene: The UI is disabled
+0.00.088.289 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
+0.00.088.340 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.090.162 I srv    load_model: loading model '/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf'
+0.00.258.838 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 99, abort
+0.01.323.509 W llama_context: setting new yarn_attn_factor = 1.0000 (mscale == 1.0, mscale_all_dim = 1.0)
+0.01.373.626 I cmn          init: llama threadpool init, n_threads = 16
+/app/ggml/src/ggml-backend.cpp:328: GGML_ASSERT(buffer) failed
+0.02.222.408 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 838.51 MiB on device 0: cudaMalloc failed: out of memory
+0.02.222.411 E ggml_backend_buft_alloc_buffer_n_default: failed to allocate CUDA0 buffer of size 879243264
+libggml-base.so.0(+0x183a6)[0x7f985a2f33a6]
+libggml-base.so.0(+0x1882a)[0x7f985a2f382a]
+libggml-base.so.0(ggml_abort+0x15b)[0x7f985a2f3a0b]
+libggml-base.so.0(+0x33b61)[0x7f985a30eb61]
+libmtmd.so.0(_ZN17clip_model_loader12load_tensorsER8clip_ctx+0x4736)[0x7f985aa0e736]
+libmtmd.so.0(_Z9clip_initPKc19clip_context_params+0x255)[0x7f985a9d2a65]
+libmtmd.so.0(_ZN12mtmd_contextC2EPKcPK11llama_modelRK19mtmd_context_paramsb+0x395)[0x7f985a914955]
+libmtmd.so.0(mtmd_init_from_file+0x31)[0x7f985a901521]
+libllama-server-impl.so(_ZN19server_context_impl10load_modelER13common_params+0x88b)[0x7f985b67820b]
+libllama-server-impl.so(+0x1001df)[0x7f985b5871df]
+libllama-server-impl.so(_Z12llama_serveriPPc+0x11d2)[0x7f985b588f92]
+/lib/x86_64-linux-gnu/libc.so.6(+0x2a1ca)[0x7f985afec1ca]
+/lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0x8b)[0x7f985afec28b]
+/app/llama-server(+0x1315)[0x55dc5348b315]

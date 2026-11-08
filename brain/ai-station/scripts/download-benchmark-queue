@@ -1,0 +1,96 @@
+#!/usr/bin/env python3
+"""Prepare one queued batch's immutable artifacts before starting GPU trials."""
+import argparse
+import hashlib
+import json
+import pathlib
+import subprocess
+import time
+import urllib.request
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+IMAGE = 'docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9'
+
+
+def get_json(url):
+    for attempt in range(6):
+        try:
+            with urllib.request.urlopen(url, timeout=90) as response:
+                return json.load(response)
+        except OSError:
+            if attempt == 5:
+                result = subprocess.run(['curl', '--ipv4', '--fail', '--location', '--retry', '3',
+                    '--silent', '--show-error', url], check=True, capture_output=True, text=True, timeout=180)
+                return json.loads(result.stdout)
+            time.sleep(min(30, 2 ** attempt))
+
+
+def checks(record):
+    if record.get('bundle'):
+        data = get_json(f"https://huggingface.co/api/models/{record['repository']}/revision/{record['revision']}?blobs=true")
+        assert data['sha'] == record['revision'], 'Repository revision mismatch'
+        return [{'file': f['rfilename'], **({'sha256': f['lfs']['sha256']} if f.get('lfs')
+                    else {'git_blob': f['blobId']})} for f in data['siblings']
+                if '/' not in f['rfilename'] and f['rfilename'].endswith(
+                    ('.json', '.safetensors', '.jinja', '.txt', '.model', '.tiktoken'))]
+    values = [{'file': record['file'], 'sha256': record['sha256']}]
+    if 'vision_file' in record:
+        values.append({'file': record['vision_file'], 'sha256': record['vision_sha256']})
+    return values
+
+
+def matches(path, check):
+    if not path.is_file():
+        return False
+    with path.open('rb') as stream:
+        if 'sha256' in check:
+            return hashlib.file_digest(stream, 'sha256').hexdigest() == check['sha256']
+        digest = hashlib.sha1(f'blob {path.stat().st_size}\0'.encode())
+        while data := stream.read(1024 * 1024):
+            digest.update(data)
+        return digest.hexdigest() == check['git_blob']
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('batch', choices=['second', 'tuning'])
+    args = parser.parse_args()
+    config = yaml.safe_load((ROOT / 'config/benchmark-queue.yaml').read_text())
+    names = []
+    templates = set()
+    for name in config['batches'][args.batch]['models']:
+        variant = config['variants'][name]
+        for key in ('artifact', 'vision_artifact'):
+            if variant.get(key) and variant[key] not in names:
+                names.append(variant[key])
+        if variant.get('template'):
+            templates.add(variant['template'])
+    for name in names:
+        record = config['artifacts'][name]
+        expected = checks(record)
+        assert expected, f'No artifacts resolved for {name}'
+        directory = pathlib.Path.home() / '.local/share/ai-station/models' / record['directory']
+        directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        if not all(matches(directory / check['file'], check) for check in expected):
+            # Matching artifacts are never remounted/relabelled while production uses them.
+            selected = yaml.safe_load((ROOT / 'config/models.lock.yaml').read_text())['models']['coder']
+            if record['directory'] in (selected['directory'], selected.get('vision_directory')):
+                raise RuntimeError('Prepare missing/corrupt selected-model artifacts separately before experiments')
+            subprocess.run(['podman', 'run', '--rm', '--pull', 'never', '--name', 'ai-station-queue-download',
+                '--entrypoint', '/usr/local/bin/hf', '--volume', f'{directory}:/models/candidate:Z', IMAGE,
+                'download', record['repository'], *[check['file'] for check in expected],
+                '--revision', record['revision'], '--local-dir', '/models/candidate'], check=True)
+        for check in expected:
+            if not matches(directory / check['file'], check):
+                raise ValueError(f"Checksum mismatch: {directory / check['file']}")
+        manifest = {'repository': record['repository'], 'revision': record['revision'], 'files': expected}
+        (directory / '.ai-station-verified.json').write_text(json.dumps(manifest, indent=2) + '\n')
+        print(f'Verified queued artifact: {name}', flush=True)
+    for template in sorted(templates):
+        subprocess.run(['bash', str(ROOT / 'scripts/download-chat-template'), template], check=True)
+
+
+if __name__ == '__main__':
+    main()

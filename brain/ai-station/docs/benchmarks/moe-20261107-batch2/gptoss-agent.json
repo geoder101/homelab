@@ -1,0 +1,380 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "sampling_profile": "gptoss",
+  "backend": "llama",
+  "reasoning_budget_parameter_sent": true,
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": false,
+      "error": "Agent did not finish within 12 turns",
+      "elapsed_seconds": 29.546,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 60, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The function combines *base_url* and *path* such that the resulting URL\n    contains exactly one ``/v1`` segment before the resource name.\n\n    The implementation is careful to preserve any deployment prefix\n    that may precede the ``/v1`` version selector.\n\n    Parameters\n    ---------\n    base_url : str\n        The base URL of the gateway. It may optionally already contain a\n        ``/v1`` segment, a deployment prefix (``/proxy`` for example), or\n        neither.\n    path : str\n        Relative resource name \u2013 e.g. ``models`` or ``/chat/completions``.\n\n    Returns\n    -------\n    str\n        Fully\u2011qualified URL with a single ``/v1`` component.\n\n    Examples\n    --------\n    >>> endpoint('https://example.test', 'models')\n    'https://example.test/v1/models'\n    >>> endpoint('https://example.test/v1/', '/chat/completions')\n    'https://example.test/v1/chat/completions'\n    >>> endpoint('https://example.test/proxy/v1', '/models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/proxy/', 'models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/v10', 'models')\n    'https://example.test/v10/v1/models'\n    \"\"\"\n    # Normalise the base URL \u2013 strip any trailing slash so that we can\n    # handle ``/v1`` or ``/v1/`` uniformly.\n    base = base_url.rstrip('/')\n\n    # If the base ends with ``/v1`` or ``/v1/`` \u2013 this is the version\n    # selector \u2013 strip it and remember that it was present.\n    if base.endswith('/v1') or base.endswith('/v1/'):\n        # Remove the last component (which is exactly ``/v1`` or\n        # ``/v1/``).  ``base[:-4]`` removes ``/v1``; ``base[:-5]`` removes\n        # ``/v1/``.\n        base = base[:-4] if base.endswith('/v1') else base[:-5]\n\n    # ``base`` now contains any deployment prefix but no version part.\n    # Because we want *exactly* one ``/v1`` before the resource, we\n    # reconstruct the base with a single ``/v1/`` component.\n    base = f\"{base}/v1/\"\n\n    # And finally add the requested path, normalising any leading\n    # slash.\n    return base + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 60, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 60, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 60, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The function combines *base_url* and *path* such that the resulting URL\n    contains exactly one ``/v1`` segment before the resource name.\n\n    The implementation is careful to preserve any deployment prefix\n    that may precede the ``/v1`` version selector.\n\n    Parameters\n    ---------\n    base_url : str\n        The base URL of the gateway. It may optionally already contain a\n        ``/v1`` segment, a deployment prefix (``/proxy`` for example), or\n        neither.\n    path : str\n        Relative resource name \u2013 e.g. ``models`` or ``/chat/completions``.\n\n    Returns\n    -------\n    str\n        Fully\u2011qualified URL with a single ``/v1`` component.\n\n    Examples\n    --------\n    >>> endpoint('https://example.test', 'models')\n    'https://example.test/v1/models'\n    >>> endpoint('https://example.test/v1/', '/chat/completions')\n    'https://example.test/v1/chat/completions'\n    >>> endpoint('https://example.test/proxy/v1', '/models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/proxy/', 'models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/v10', 'models')\n    'https://example.test/v10/v1/models'\n    \"\"\"\n    # Normalise the base URL \u2013 strip any trailing slash so that we can\n    # handle ``/v1`` or ``/v1/`` uniformly.\n    base = base_url.rstrip('/')\n\n    # If the base ends with ``/v1`` or ``/v1/`` \u2013 this is the version\n    # selector \u2013 strip it and remember that it was present.\n    if base.endswith('/v1') or base.endswith('/v1/'):\n        # Remove the last component (which is exactly ``/v1`` or\n        # ``/v1/``).  ``base[:-4]`` removes ``/v1``; ``base[:-5]`` removes\n        # ``/v1/``.\n        base = base[:-4] if base.endswith('/v1') else base[:-5]\n\n    # ``base`` now contains any deployment prefix but no version part.\n    # Because we want *exactly* one ``/v1`` before the resource, we\n    # reconstruct the base with a single ``/v1/`` component.\n    base = f\"{base}/v1/\"\n\n    # And finally add the requested path, normalising any leading\n    # slash.\n    return base + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 9.927,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    \"\"\"Return admitted reservations and remaining waiting list.\n\n    * ``active``      \u2013 list of positive integers \u2013 already\u2010admitted.\n    * ``waiting``   \u2013 list of positive integers \u2013 reservations to try in FIFO order.\n    * ``budget``     \u2013 maximum total sum allowed.\n    * ``slots``      \u2013 maximum number of simultaneous reservations.\n\n    * The function does not modify its input arguments.\n    * It may raise ``ValueError`` if any waiting reservation is larger\n      than the overall ``budget``.\n    * Reservations are admitted in a forward pass until the first\n      waiting reservation cannot be admitted due to a budget\n      shortage or a slot shortage.  The offending reservation is\n      **not** admitted and the function stops there.\n    * A reservation that would exceed the total budget *even\n      if it were the last one to be admitted* triggers a\n      ``ValueError``.\n    * Duplicate reservation values are treated like distinct\n      reservations; they may be admitted multiple times.\n\n    Returns\n    -------\n    admitted : list\n        Ordered list of reservations that were admitted.\n    remaining : list\n        Ordered list of waiting reservations that were not yet admitted.\n    \"\"\"\n    # Work on copies to avoid mutating the inputs\n    active = list(active)\n    waiting = list(waiting)\n\n    # Validate that no waiting value exceeds the total budget\n    for v in waiting:\n        if v > budget:\n            raise ValueError(\"Waiting reservation value exceeds total budget\")\n\n    # Current usage\n    current_total = sum(active)\n    used_slots = len(active)\n    admitted = []\n\n    for v in waiting:\n        # First check slot constraint\n        if used_slots >= slots:\n            # No more slots left \u2013 stop processing\n            break\n        # Check budget constraint for this reservation\n        if current_total + v > budget:\n            # This reservation cannot be admitted \u2013 stop processing\n            break\n        # Admit this reservation\n        admitted.append(v)\n        current_total += v\n        used_slots += 1\n\n    # Remaining waiting list consists of all those in ``waiting`` that\n    # follow the last admitted reservation.\n    remaining_start = len(admitted)\n    remaining = waiting[remaining_start:]\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 17.213,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 36, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    \"\"\"Construct an OpenAI-compatible request URL.\n\n    The OpenAI API expects the URL to contain a single ``/v1/`` segment\n    (or ``/v1`` at the end) before the resource path.  The ``base_url`` may\n    represent either a plain OpenAI endpoint ``https://api.openai.com`` or a\n    proxy/deployment prefix such as ``https://example.test/proxy/v1`` or\n    ``https://example.test/proxy/v1/``.  The ``path`` string is a\n    relative resource name such as ``models`` or ``/chat/completions``.\n\n    The function preserves the deployment prefix regardless of how\n    the base URL is terminated, but guarantees that exactly one ``/v1``\n    (or ``/v1/``) segment appears in the final URL before the resource.\n    ``path`` may be supplied with a leading slash \u2013 this is stripped.\n\n    Network access is not performed \u2013 only string manipulation.\n    \"\"\"\n\n    # Normalise the path: strip leading slashes\n    path = path.lstrip('/')\n\n    # Detect if base_url already ends with /v1 or /v1/\n    if base_url.endswith('/v1/'):\n        # Remove trailing slash so we don't add another\n        base = base_url.rstrip('/')\n        return f\"{base}/v1/{path}\"\n    if base_url.endswith('/v1'):\n        return f\"{base_url}/{path}\"\n\n    # Base URL has no version suffix \u2013 insert \"/v1/\"\n    base = base_url.rstrip('/')\n    return f\"{base}/v1/{path}\"\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 36, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct an OpenAI-compatible request URL.\n\n    The OpenAI API expects the URL to contain a single ``/v1/`` segment\n    (or ``/v1`` at the end) before the resource path.  The ``base_url`` may\n    represent either a plain OpenAI endpoint ``https://api.openai.com`` or a\n    proxy/deployment prefix such as ``https://example.test/proxy/v1`` or\n    ``https://example.test/proxy/v1/``.  The ``path`` string is a\n    relative resource name such as ``models`` or ``/chat/completions``.\n\n    This function preserves the deployment prefix regardless of how\n    the base URL is terminated, but guarantees that exactly one ``/v1``\n    (or ``/v1/``) segment appears in the final URL before the resource.\n    ``path`` may be supplied with a leading slash \u2013 this is stripped.\n\n    Network access is not performed \u2013 only string manipulation.\n    \"\"\"\n\n    # Normalise the path: strip leading slashes\n    path = path.lstrip('/')\n\n    # Detect if base_url already ends with /v1 or /v1/\n    if base_url.endswith('/v1/'):\n        # Remove trailing slash so we don't add another\n        return f\"{base_url.rstrip('/')}/{path}\"\n    if base_url.endswith('/v1'):\n        return f\"{base_url}/{path}\"\n\n    # Base URL has no version suffix \u2013 insert \"/v1/\"\n    base = base_url.rstrip('/')\n    return f\"{base}/v1/{path}\"\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": false,
+      "error": "[{'tool': 'read_file', 'result': {'content': 'def admit(active, waiting, budget, slots):\\n    admitted = []\\n    for value in waiting:\\n        if sum(active) + sum(admitted) + value <= budget:\\n            admitted.append(value)\\n    return admitted, [v for v in waiting if v not in admitted]\\n'}}, {'tool': 'read_file', 'result': {'content': \"\\nimport copy\\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\\n    old = copy.deepcopy((a,q))\\n    assert admit(a,q,b,s) == expected\\n    assert (a,q) == old\\ntry: admit([9],[2,11],10,2)\\nexcept ValueError: pass\\nelse: raise AssertionError('oversized tail reservation was not rejected')\\n\"}}, {'tool': 'write_file', 'result': {'error': 'Temporary write lock. No changes applied. Retry the write.'}}, {'tool': 'write_file', 'result': {'status': 'written'}}, {'tool': 'read_file', 'result': {'content': '\"\"\"\\nQueueing module handling admission of reservations.\\n\\nThe function :func:`admit` processes a list of waiting reservations\\nagainst a list of active reservations under budget and slot constraints.\\n\\n- ``active`` \u2013 list of positive integers representing already accepted\\n  reservations.\\n- ``waiting`` \u2013 list of positive integers representing reservations\\n  waiting to be admitted.\\n- ``budget`` \u2013 maximum total budget that all reservations may consume.\\n- ``slots`` \u2013 maximum number of reservations that may be active at a\\n  time.  The active count is therefore ``len(active)``.\\n\\nThe function is **pure**: it never mutates the supplied arguments.\\n\\nAlgorithm\\n--------\\n\\n1.  Ensure that no waiting reservation\\'s individual value exceeds\\n    ``budget``.  If any value does so a :class:`ValueError` is raised \u2013\\n    this is required even if we would never get to that reservation\\n    because other constraints trigger a stop earlier.\\n\\n2.  Iterate over ``waiting`` in order.  For each value ``v``:\\n\\n    * If adding it would exceed ``budget`` or the ``slots`` limit,\\n      stop processing and return the list of reservations that\\n      were admitted so far and the remaining waiting reservations (beginning with\\n      ``v``).  The moment of failure is the first reservation that\\n      cannot be admitted.\\n\\n    * Otherwise, admit ``v`` and continue.\\n\\nThe function returns a tuple ``(admitted, remaining)`` where\\n``admitted`` is a list of the values that were admitted in FIFO\\norder and ``remaining`` is the list of waiting reservations that\\nwere not admitted.\\n\\nThe implementation honours the tests in ``test_queueing.py`` and\\nrespects the description that requires the stopping at the very first\\nimpossible reservation.\\n\"\"\"\\n\\nfrom __future__ import annotations\\n\\nfrom typing import List, Tuple\\n\\n\\ndef admit(active: List[int], waiting: List[int], budget: int, slots: int) -> Tuple[List[int], List[int]]:\\n    \"\"\"Return `(admitted, remaining)`.\\n\\n    Parameters\\n    ----------\\n    active : List[int]\\n        List of active reservations.  Must be valid already.\\n    waiting : List[int]\\n    \\n    Open your mind.\"\"\"\\n    pass\\n'}}, {'tool': 'write_file', 'result': {'status': 'written'}}]",
+      "elapsed_seconds": 40.747,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\"\"\"\nQueueing module handling admission of reservations.\n\nThe function :func:`admit` processes a list of waiting reservations\nagainst a list of active reservations under budget and slot constraints.\n\n- ``active`` \u2013 list of positive integers representing already accepted\n  reservations.\n- ``waiting`` \u2013 list of positive integers representing reservations\n  waiting to be admitted.\n- ``budget`` \u2013 maximum total budget that all reservations may consume.\n- ``slots`` \u2013 maximum number of reservations that may be active at a\n  time.  The active count is therefore ``len(active)``.\n\nThe function is **pure**: it never mutates the supplied arguments.\n\nAlgorithm\n--------\n\n1.  Ensure that no waiting reservation's individual value exceeds\n    ``budget``.  If any value does so a :class:`ValueError` is raised \u2013\n    this is required even if we would never get to that reservation\n    because other constraints trigger a stop earlier.\n\n2.  Iterate over ``waiting`` in order.  For each value ``v``:\n\n    * If adding it would exceed ``budget`` or the ``slots`` limit,\n      stop processing and return the list of reservations that\n      were admitted so far and the remaining waiting reservations (beginning with\n      ``v``).  The moment of failure is the first reservation that\n      cannot be admitted.\n\n    * Otherwise, admit ``v`` and continue.\n\nThe function returns a tuple ``(admitted, remaining)`` where\n``admitted`` is a list of the values that were admitted in FIFO\norder and ``remaining`` is the list of waiting reservations that\nwere not admitted.\n\nThe implementation honours the tests in ``test_queueing.py`` and\nrespects the description that requires the stopping at the very first\nimpossible reservation.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom typing import List, Tuple\n\n\ndef admit(active: List[int], waiting: List[int], budget: int, slots: int) -> Tuple[List[int], List[int]]:\n    \"\"\"Return `(admitted, remaining)`.\n\n    Parameters\n    ----------\n    active : List[int]\n        List of active reservations.  Must be valid already.\n    waiting : List[int]\n    \n    Open your mind.\"\"\"\n    pass\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        }
+      ],
+      "code": "\"\"\"\nQueueing module handling admission of reservations.\n\nThe function :func:`admit` processes a list of waiting reservations\nagainst a list of active reservations under budget and\nslot constraints.\n\n- ``active`` \u2013 list of positive integers representing already accepted\n  reservations.\n- ``waiting`` \u2013 list of positive integers representing reservations\n  waiting to be admitted.\n- ``budget`` \u2013 maximum total budget that all reservations may consume.\n- ``slots`` \u2013 maximum number of reservations that may be active at a\n  time.  The active count is therefore ``len(active)``.\n\nThe function is **pure**: it never mutates the supplied arguments.\n\nAlgorithm\n--------\n\n1.  Ensure that no waiting reservation's individual value exceeds\n    ``budget``.  If any value does so a :class:`ValueError` is raised\n    \u2013 this is required even if we would never get to that reservation\n    because other constraints trigger a stop earlier.\n\n2.  Iterate over ``waiting`` in order.  For each value ``v``:\n\n    * If adding it would exceed ``budget`` or the ``slots`` limit,\n      stop processing and return the list of reservations that\n      were admitted so far and the remaining waiting reservations\n      (starting with ``v``).  The moment of failure is the first\n      reservation that cannot be admitted.\n\n    * Otherwise, admit ``v`` and continue.\n\nThe function returns a tuple ``(admitted, remaining)`` where\n``admitted`` is a list of the values that were admitted in FIFO\norder and ``remaining`` is the list of waiting reservations that\nwere not admitted.\n\nThe implementation honours the tests in ``test_queueing.py`` and\nrespects the description that requires stopping at the very first\nimpossible reservation.\n\"\"\"\n\nfrom __future__ import annotations\n\nfrom typing import List, Tuple\n\n\n\ndef admit(active: List[int], waiting: List[int], budget: int, slots: int) -> Tuple[List[int], List[int]]:\n    \"\"\"Return `(admitted, remaining)`.\n\n    Parameters\n    ----------\n    active : List[int]\n        List of active reservations.  The list is considered\n        immutable and must not exceed ``slots``.\n    waiting : List[int]\n        List of reservations that are queued to be\n        admitted.\n    budget : int\n        Maximum total budget that can be spent.\n    slots : int\n        Maximum number of reservations that may be active at a\n        time.\n\n    Returns\n    -------\n    Tuple[List[int], List[int]]\n        ``admitted`` \u2013 reservations admitted in FIFO order.\n        ``remaining`` \u2013 the waiting reservations that could not be\n        admitted.\n\n    Raises\n    -----\n    ValueError\n        If any waiting reservation's individual value exceeds the\n        overall budget.\n    \"\"\"\n    # 1. Validation: a waiting reservation individually too large\n    for v in waiting:\n        if v > budget:\n            raise ValueError(\n                f\"Waiting reservation {v} exceeds total budget {budget}\"\n            )\n\n    admitted: List[int] = []\n    # Count of active reservations (slots already in use)\n    active_count = len(active)\n    # Sum of budget used by active reservations\n    active_sum = sum(active)\n\n    for idx, v in enumerate(waiting):\n        # Budget check: would adding this exceed overall budget?\n        if active_sum + sum(admitted) + v > budget:\n            # Stop here, the reservation ``v`` cannot be admitted\n            remaining = waiting[idx:]\n            return admitted, remaining\n        # Slots check: would this exceed the slots limit?\n        if active_count + len(admitted) + 1 > slots:\n            remaining = waiting[idx:]\n            return admitted, remaining\n        # Admit this reservation\n        admitted.append(v)\n\n    # All waiting reservations were admitted\n    return admitted, []\n\n# End of module\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 13.321,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": false,
+            "stderr": "Traceback (most recent call last):\n  File \"<string>\", line 6, in <module>\nAssertionError\n",
+            "test_source": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "File not found or not editable. Source: client.py; read-only tests: test_client.py."
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url: str, path: str) -> str:\n    # Normalise path\n    path = path.lstrip('/')\n    # Normalise base: strip trailing slash\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        return f\"{base}/{path}\"\n    else:\n        return f\"{base}/v1/{path}\"\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 33.354,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    \"\"\"Admit waiting reservations in FIFO order until either the\n    budget or available slots limits are reached.\n\n    Parameters\n    ----------\n    active: list[int]\n        List of positive integers representing active reservations.\n        The list is assumed to be *valid*, it may already adhere to the\n        constraints that are applied to the newly admitted\n        reservations.\n    waiting: list[int]\n        List of positive integers (FIFO order) to consider for admission.\n    budget: int\n        Total budget that the sum of all reservations (active + admitted)\n        may not exceed.\n    slots: int\n        Maximum number of reservations that may be active at the\n        same time.  Each reservation occupies exactly one slot.\n\n    Returns\n    -------\n    (admitted, remaining): tuple[list[int], list[int]]\n        *admitted* \u2013 reservations from waiting that were admitted.\n        *remaining* \u2013 the remaining reservations in waiting order after the\n        admitted ones have been removed.\n    \"\"\"\n\n    # Type-checks for sanity \u2013 raise if not positive integers.\n    if any(not isinstance(v, int) or v <= 0 for v in active):\n        raise TypeError(\"active list must contain positive integers\")\n    if any(not isinstance(v, int) or v <= 0 for v in waiting):\n        raise TypeError(\"waiting list must contain positive integers\")\n\n    # Immediate error if any waiting reservation alone exceeds budget.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                f\"waiting reservation {value} exceeds total budget {budget}\"\n            )\n\n    # Sum of active reservations \u2013 preserved.\n    active_sum = sum(active)\n    # List of admitted reservations.\n    admitted = []\n\n    # Iterate over waiting list in FIFO order.\n    for value in waiting:\n        # Budget constraint: total sum including this reservation.\n        if active_sum + sum(admitted) + value > budget:\n            break\n        # Slots constraint: each reservation occupies one slot.\n        if len(active) + len(admitted) + 1 > slots:\n            break\n        admitted.append(value)\n\n    # Remaining waiting reservations after admitted ones.\n    remaining = waiting[len(admitted):]\n    return admitted, remaining\n\n# Demo when run directly.\nif __name__ == \"__main__\":\n    test_cases = [\n        ([6], [5, 2], 10, 3),\n        ([3], [4, 3, 1], 10, 3),\n        ([], [2, 2, 2], 4, 3),\n        ([1], [1, 1], 10, 1),\n        ([], [], 10, 2),\n    ]\n    for a, w, b, s in test_cases:\n        print(a, w, b, s, \"=>\", admit(a, w, b, s))\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    \"\"\"Admit waiting reservations in FIFO order until either the\n    budget or available slots limits are reached.\n\n    Parameters\n    ----------\n    active: list[int]\n        List of positive integers representing active reservations.\n        The list is assumed to be *valid*, it may already adhere to the\n        constraints that are applied to the newly admitted\n        reservations.\n    waiting: list[int]\n        List of positive integers (FIFO order) to consider for admission.\n    budget: int\n        Total budget that the sum of all reservations (active + admitted)\n        may not exceed.\n    slots: int\n        Maximum number of reservations that may be active at the\n        same time.  Each reservation occupies exactly one slot.\n\n    Returns\n    -------\n    (admitted, remaining): tuple[list[int], list[int]]\n        *admitted* \u2013 reservations from waiting that were admitted.\n        *remaining* \u2013 the remaining reservations in waiting order after the\n        admitted ones have been removed.\n    \"\"\"\n\n    # Type-checks for sanity \u2013 raise if not positive integers.\n    if any(not isinstance(v, int) or v <= 0 for v in active):\n        raise TypeError(\"active list must contain positive integers\")\n    if any(not isinstance(v, int) or v <= 0 for v in waiting):\n        raise TypeError(\"waiting list must contain positive integers\")\n\n    # Immediate error if any waiting reservation alone exceeds budget.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                f\"waiting reservation {value} exceeds total budget {budget}\"\n            )\n\n    # Sum of active reservations \u2013 preserved.\n    active_sum = sum(active)\n    # List of admitted reservations.\n    admitted = []\n\n    # Iterate over waiting list in FIFO order.\n    for value in waiting:\n        # Budget constraint: total sum including this reservation.\n        if active_sum + sum(admitted) + value > budget:\n            break\n        # Slots constraint: each reservation occupies one slot.\n        if len(active) + len(admitted) + 1 > slots:\n            break\n        admitted.append(value)\n\n    # Remaining waiting reservations after admitted ones.\n    remaining = waiting[len(admitted):]\n    return admitted, remaining\n\n# Demo when run directly.\nif __name__ == \"__main__\":\n    test_cases = [\n        ([6], [5, 2], 10, 3),\n        ([3], [4, 3, 1], 10, 3),\n        ([], [2, 2, 2], 4, 3),\n        ([1], [1, 1], 10, 1),\n        ([], [], 10, 2),\n    ]\n    for a, w, b, s in test_cases:\n        print(a, w, b, s, \"=>\", admit(a, w, b, s))\n"
+    }
+  ]
+}

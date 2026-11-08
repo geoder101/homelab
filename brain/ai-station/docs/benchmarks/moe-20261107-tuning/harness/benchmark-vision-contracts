@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+"""Synthetic color and CI-screenshot extraction checks; not a vision leaderboard."""
+import argparse
+import base64
+import hashlib
+import io
+import json
+import re
+import time
+import urllib.request
+
+from PIL import Image, ImageDraw, ImageFont
+
+
+def fixtures():
+    red = Image.new('RGB', (128, 128), (255, 0, 0))
+    card = Image.new('RGB', (720, 360), 'white')
+    draw = ImageDraw.Draw(card)
+    title = ImageFont.load_default(size=30)
+    font = ImageFont.load_default(size=25)
+    draw.text((24, 20), 'CI test report', fill='black', font=title)
+    draw.text((24, 78), '17 passed | 3 failed | 2 skipped', fill='black', font=font)
+    for y, text, color in [(146, 'parser.py     FAIL    2 failed tests', '#a00000'),
+                           (208, 'queue.py      PASS    0 failed tests', '#006000'),
+                           (270, 'stream.py     FAIL    1 failed test', '#a00000')]:
+        draw.text((24, y), text, fill=color, font=font)
+    return [('red-square', red, 'What color is the image? Reply with one English word.'),
+            ('greek-ci-screenshot', card, 'Διάβασε την εικόνα αναφοράς CI. Επέστρεψε μόνο JSON '
+             'με ακέραια πεδία passed, failed, skipped και λίστα failed_files με τα ονόματα '
+             'των αρχείων που έχουν αποτυχημένες δοκιμές.')]
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--url', required=True)
+    parser.add_argument('--output', required=True)
+    parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
+    args = parser.parse_args()
+    results = []
+    for seed in (42, 43, 44):
+        for name, image, prompt in fixtures():
+            buffer = io.BytesIO()
+            image.save(buffer, format='PNG')
+            body = {'model': 'coder', 'seed': seed, 'temperature': 0, 'max_tokens': 2048,
+                    'chat_template_kwargs': {'enable_thinking': False}, 'messages': [
+                        {'role': 'user', 'content': [
+                            {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,'
+                                + base64.b64encode(buffer.getvalue()).decode()}},
+                            {'type': 'text', 'text': prompt}]}]}
+            if args.backend == 'llama':
+                body['reasoning_budget_tokens'] = 0
+            start = time.monotonic()
+            result = {'name': name, 'seed': seed, 'passed': False,
+                      'image_sha256': hashlib.sha256(buffer.getvalue()).hexdigest(),
+                      'dimensions': image.size}
+            try:
+                request = urllib.request.Request(args.url + '/v1/chat/completions',
+                    data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
+                with urllib.request.urlopen(request, timeout=180) as response:
+                    value = json.load(response)
+                choice = value['choices'][0]
+                answer = choice['message'].get('content') or ''
+                result.update(answer=answer, usage=value.get('usage'), finish_reason=choice['finish_reason'])
+                assert choice['finish_reason'] != 'length', 'Answer truncated'
+                if name == 'red-square':
+                    assert re.fullmatch(r'\W*red\W*', answer.strip(), re.I), answer
+                else:
+                    match = re.search(r'\{.*\}', answer, re.S)
+                    assert match, answer
+                    data = json.loads(match.group())
+                    assert (data['passed'], data['failed'], data['skipped']) == (17, 3, 2), data
+                    assert set(data['failed_files']) == {'parser.py', 'stream.py'}, data
+                result['passed'] = True
+            except Exception as error:
+                result['error'] = str(error)
+            result['elapsed_seconds'] = round(time.monotonic() - start, 3)
+            results.append(result)
+            print(json.dumps(result), flush=True)
+            with open(args.output, 'w') as output:
+                json.dump({'description': __doc__, 'backend': args.backend,
+                    'settings': {'temperature': 0, 'max_tokens': 2048,
+                                 'reasoning_budget_parameter_sent': args.backend == 'llama'},
+                    'tests': results}, output, indent=2)
+    raise SystemExit(0 if all(test['passed'] for test in results) else 1)
+
+
+if __name__ == '__main__':
+    main()

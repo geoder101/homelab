@@ -14,7 +14,7 @@ in [automation](automation.md#brains-simple-native-opencode-configuration).
 1. Generate secret files with `scripts/create-secrets`.
 2. Enable lingering once with `sudo loginctl enable-linger geoder101`.
 3. Pull locked images with `scripts/pull-images`.
-4. Run `scripts/download-coder-candidate` to download the profile selected in `config/models.lock.yaml`. Ornith downloads its pinned Q4_K_M weights and projector into `~/.local/share/ai-station/models/ornith-1.5-35b-gguf` and installs the checksum-pinned history-fixed template. Both model families store their selected external template under `~/.local/share/ai-station/chat-templates/`. `scripts/download-chat-template` follows the selected template family.
+4. Run `scripts/download-coder-candidate` to download the profile selected in `config/models.lock.yaml`. Current `ornith-q5` downloads pinned Q5_K_M weights and projector into `~/.local/share/ai-station/models/ornith-1.5-35b-gguf-q5` and prepares the checksum-pinned history-fixed template. The earlier experimental `ornith` profile downloads Q4 into the unsuffixed directory. Both model families store their external templates under `~/.local/share/ai-station/chat-templates/`; `scripts/download-chat-template` follows the selected family.
 5. Run `scripts/validate-quadlets`.
 6. Copy Quadlets with `scripts/install-quadlets`.
 7. Reload and start `llama-coder`, then `litellm`, then `open-webui`.
@@ -23,9 +23,10 @@ in [automation](automation.md#brains-simple-native-opencode-configuration).
 
 ## Select or upgrade the GGUF backend
 
-For an already deployed stack, use `make profile-precision` (current Qwen Q4
-selection), `make profile-capacity` (Qwen Q3), or `make profile-ornith`
-(experimental candidate; promotion declined after native OpenCode regressions) to
+For an already deployed stack, use `make profile-ornith-q5` (current Q5/b12182
+selection), `make profile-qwen38-q4` (retained Qwen3.8 Q4/b11960),
+`make profile-qwen38-q3` (Qwen3.8 Q3/b11960), or `make profile-ornith-q4`
+(earlier experimental Q4 candidate) to
 select a persistent global profile. All retain
 256K per-agent context. These commands validate first, restart backend/gateway,
 smoke-test and restore the previous profile on failure. `make profile-status`
@@ -50,12 +51,13 @@ scripts/smoke-test http://192.168.1.11:4000
 
 Downloads resume when rerun. Previous checkpoints are retained. The API model alias remains `coder`.
 
-The selected Qwen precision profile uses llama.cpp b11960, **two fixed 256K
-slots** (524,288 aggregate tokens), UD-Q4_K_XL weights, GPU Q4 K/V, GPU vision
-and a 16 GiB RAM prompt cache. Medium is the default alias; MTP is disabled.
-The pinned froggeric template preserves and normalizes supplied reasoning,
-with soft effort steering and hard alias budgets. See the [Ornith comparison
-and rollback record](benchmarks/ornith-20261105.md) and [current settings](model-profile.md).
+The selected Ornith Q5 profile uses llama.cpp b12182, **two fixed 256K slots**
+(524,288 aggregate tokens), Q5_K_M weights, GPU Q4 K/V, GPU vision and a
+16 GiB RAM prompt cache. Medium is the default alias; MTP is disabled.
+The pinned Ornith template preserves and normalizes supplied reasoning;
+the aliases select hard thinking ceilings rather than Qwen's soft effort prompts.
+See [current settings, exact server options and preserved selection history](model-profile.md),
+[OpenCode configuration](opencode.md), and [deployment verification](deployments/20261108-ornith-q5/README.md).
 
 ### Optional NVFP4 profile
 
@@ -82,7 +84,7 @@ Input, reasoning and output must fit within the total context budget. These limi
 
 Restart LiteLLM after changing backend routing or context limits to clear cached metadata. llama.cpp's standard model listing identifies `coder` but does not advertise the context/output limits there. The server's per-slot context and explicit OpenCode limits are authoritative; `--ctx-size 524288` is aggregate across two precision slots, not a client context limit. Qwen capacity's `786432` is likewise aggregate across three slots.
 
-The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4 and llama.cpp b11960 (commit `8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin the corresponding linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
+The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4, selected llama.cpp b12182 (`fd27b2034905f8dadd8bd6d2cc44595f4929d391`) and retained b11960 (`8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
 
 ## API use
 

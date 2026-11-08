@@ -1,0 +1,355 @@
+{
+  "label": "qwen38-newengine",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.321,
+      "elapsed_seconds": 9.472,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 2.321,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.59,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore profiling, ensure you can reproduce the leak consistently.\n\n```bash\n# 1. Start the server with memory tracking enabled\npython -X tracemalloc=1 -m myserver --port 8080 &\nSERVER_PID=$!\n\n# 2. Run a sustained load that exercises the code paths under test\n#    (adjust to match your integration test scenario)\nfor i in $(seq 1 10000); do\n    curl -s http://localhost:8080/api/endpoint > /dev/null\ndone\n\n# 3. Observe RSS growth over time\nwatch -n 5 'ps -o pid,rss,vsz,comm -p '$SERVER_PID\n```\n\n**Expected sign of a leak:** `RSS` (Resident Set Size) grows monotonically and does not plateau or decrease after GC cycles.\n\n---\n\n## Phase 1: Confirm It\u2019s a Python-Object Leak (Not C-Level)\n\n### 1.1 Check if the growth is in Python heap vs. native memory\n\n```bash\n# Install psutil if not present\npip install psutil\n\npython3 -c \"\nimport psutil, os, time, sys\n\npid = $SERVER_PID\nproc = psutil.Process(pid)\n\nfor i in range(10):\n    mem = proc.memory_info()\n    print(f'Iter {i}: RSS={mem.rss/1024/1024:.1f} MB, '\n          f'VMS={mem.vms/1024/1024:.1f} MB, '\n          f'Threads={proc.num_threads()}')\n    time.sleep(5)\n\"\n```\n\n| Observation | Interpretation |\n|---|---|\n| RSS grows, VMS stays flat | Python heap leak (tracked objects not freed) |\n| Both grow significantly | Possible C-extension or thread leak |\n| Thread count grows unboundedly | Thread leak (e.g., unclosed connections spawning threads) |\n\n### 1.2 Trigger manual GC and observe recovery\n\n```bash\n# Send a signal to the server that triggers gc.collect()\n# Add this to your server startup:\n#   import signal, gc\n#   def"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.067,
+      "elapsed_seconds": 7.182,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.067,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.96,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore profiling, ensure you can reproduce the leak consistently.\n\n```bash\n# 1. Start the server with memory tracking enabled\npython -X tracemalloc=1 -m myserver --port 8080 &\nSERVER_PID=$!\n\n# 2. Run a sustained load that exercises the code paths under test\n#    (adjust to match your integration test scenario)\nfor i in $(seq 1 10000); do\n    curl -s http://localhost:8080/api/endpoint > /dev/null\ndone\n\n# 3. Observe RSS growth over time\nwatch -n 5 'ps -o pid,rss,vsz,comm -p '$SERVER_PID\n```\n\n**Expected sign of a leak:** `RSS` (Resident Set Size) grows monotonically and does not plateau or decrease after GC cycles.\n\n---\n\n## Phase 1: Confirm It\u2019s a Python-Object Leak (Not C-Level)\n\n### 1.1 Check if the growth is in Python heap vs. native memory\n\n```bash\n# Install psutil if not present\npip install psutil\n\npython3 -c \"\nimport psutil, os, time, sys\n\npid = $SERVER_PID\nproc = psutil.Process(pid)\n\nfor i in range(10):\n    mem = proc.memory_info()\n    print(f'Iter {i}: RSS={mem.rss/1024/1024:.1f} MB, '\n          f'VMS={mem.vms/1024/1024:.1f} MB, '\n          f'Threads={proc.num_threads()}')\n    time.sleep(5)\n\"\n```\n\n| Observation | Interpretation |\n|---|---|\n| RSS grows, VMS stays flat | Python heap leak (tracked objects not freed) |\n| Both grow significantly | Possible C-extension or thread leak |\n| Thread count grows unboundedly | Thread leak (e.g., unclosed connections spawning threads) |\n\n### 1.2 Trigger manual GC and observe recovery\n\n```bash\n# Send a signal to the server that triggers gc.collect()\n# Add this to your server startup:\n#   import signal, gc\n#   def"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.052,
+      "elapsed_seconds": 7.167,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.052,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 71.96,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## Phase 0: Reproduce the Leak Reliably\n\nBefore profiling, ensure you can reproduce the leak consistently.\n\n```bash\n# 1. Start the server with memory tracking enabled\npython -X tracemalloc=1 -m myserver --port 8080 &\nSERVER_PID=$!\n\n# 2. Run a sustained load that exercises the code paths under test\n#    (adjust to match your integration test scenario)\nfor i in $(seq 1 10000); do\n    curl -s http://localhost:8080/api/endpoint > /dev/null\ndone\n\n# 3. Observe RSS growth over time\nwatch -n 5 'ps -o pid,rss,vsz,comm -p '$SERVER_PID\n```\n\n**Expected sign of a leak:** `RSS` (Resident Set Size) grows monotonically and does not plateau or decrease after GC cycles.\n\n---\n\n## Phase 1: Confirm It\u2019s a Python-Object Leak (Not C-Level)\n\n### 1.1 Check if the growth is in Python heap vs. native memory\n\n```bash\n# Install psutil if not present\npip install psutil\n\npython3 -c \"\nimport psutil, os, time, sys\n\npid = $SERVER_PID\nproc = psutil.Process(pid)\n\nfor i in range(10):\n    mem = proc.memory_info()\n    print(f'Iter {i}: RSS={mem.rss/1024/1024:.1f} MB, '\n          f'VMS={mem.vms/1024/1024:.1f} MB, '\n          f'Threads={proc.num_threads()}')\n    time.sleep(5)\n\"\n```\n\n| Observation | Interpretation |\n|---|---|\n| RSS grows, VMS stays flat | Python heap leak (tracked objects not freed) |\n| Both grow significantly | Possible C-extension or thread leak |\n| Thread count grows unboundedly | Thread leak (e.g., unclosed connections spawning threads) |\n\n### 1.2 Trigger manual GC and observe recovery\n\n```bash\n# Send a signal to the server that triggers gc.collect()\n# Add this to your server startup:\n#   import signal, gc\n#   def"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 11.61,
+      "usage": {
+        "completion_tokens": 856,
+        "prompt_tokens": 98,
+        "total_tokens": 954,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n    merged = [list(sorted_intervals[0])]\n    for start, end in sorted_intervals[1:]:\n        last = merged[-1]\n        if start <= last[1]:\n            last[1] = max(last[1], end)\n        else:\n            merged.append([start, end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 22.858,
+      "usage": {
+        "completion_tokens": 1692,
+        "prompt_tokens": 131,
+        "total_tokens": 1823,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {n: set() for n in nodes}\n    in_degree = {n: 0 for n in nodes}\n\n    for src, dst in edges:\n        if dst not in adj[src]:\n            adj[src].add(dst)\n            in_degree[dst] += 1\n\n    heap = [n for n in nodes if in_degree[n] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 8.809,
+      "usage": {
+        "completion_tokens": 644,
+        "prompt_tokens": 260,
+        "total_tokens": 904,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    if not items:\n        return []\n    batches = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n        if current_sum + weight > limit:\n            batches.append(current)\n            current = []\n            current_sum = 0\n        current.append(name)\n        current_sum += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 14.189,
+      "usage": {
+        "completion_tokens": 1048,
+        "prompt_tokens": 138,
+        "total_tokens": 1186,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    result = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n\n    for line in text.splitlines():\n        line = line.strip()\n        if not line:\n            continue\n        if line.startswith('#'):\n            continue\n\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (no '='): {line!r}\")\n\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n\n        if not key_re.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n            value = value[1:-1]\n\n        result[key] = value\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 25.324,
+      "usage": {
+        "completion_tokens": 1875,
+        "prompt_tokens": 148,
+        "total_tokens": 2023,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b''.join(chunks)\n    text = raw.decode('utf-8')\n    text = text.replace('\\r\\n', '\\n')\n    lines = text.split('\\n')\n\n    events = []\n    current_data = []\n\n    for line in lines:\n        if line == '':\n            if current_data:\n                data = '\\n'.join(current_data)\n                if data == '[DONE]':\n                    return events\n                events.append(data)\n            current_data = []\n        elif line.startswith(':'):\n            pass\n        elif line.startswith('data:'):\n            value = line[5:]\n            if value.startswith(' '):\n                value = value[1:]\n            current_data.append(value)\n        else:\n            pass\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 63.968,
+      "usage": {
+        "completion_tokens": 4705,
+        "prompt_tokens": 106,
+        "total_tokens": 4811,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    if base >= cap:\n        return float(cap)\n\n    # 0 < base < cap: check whether base * 2**attempt >= cap\n    # without ever constructing 2**attempt as a huge integer.\n    # base * 2**attempt >= cap  <=>  attempt >= log2(cap) - log2(base)\n    threshold = math.log2(cap) - math.log2(base)\n\n    if attempt >= threshold:\n        return float(cap)\n\n    # Here attempt < threshold, so 2**attempt < cap/base (a finite value).\n    # math.ldexp computes base * 2**attempt directly in floating-point\n    # arithmetic without constructing an intermediate big integer.\n    return math.ldexp(base, attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 13.331,
+      "usage": {
+        "completion_tokens": 983,
+        "prompt_tokens": 133,
+        "total_tokens": 1116,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for r in queued:\n        if r > budget:\n            raise ValueError(f\"queued reservation {r} exceeds whole budget {budget}\")\n\n    remaining_tokens = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    idx = 0\n    for item in queued:\n        if remaining_slots > 0 and remaining_tokens >= item:\n            admitted.append(item)\n            remaining_tokens -= item\n            remaining_slots -= 1\n        else:\n            break\n        idx += 1\n\n    remaining = list(queued[idx:])\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 2.941,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Dry run succeeded.\n\n- **Status:** `dry-run-ok`\n- **Files affected:** 2\n  - Created `src/a.py` with content `print(42)\\n`\n  - Deleted `obsolete.txt`\n- **Metadata:** `dry_run: true`, labels `[\"coding\", \"test\"]`\n\nNo actual filesystem changes were made since this was a dry run."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 3.883,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` \u2014 all operations were validated but **not actually applied** (since `dry_run` was set to `true`).\n- **Changed files:** `2` (create `src/a.py`, delete `obsolete.txt`)\n\nNo files were created or deleted on disk. If you'd like to execute the changes for real, simply re-run with `dry_run: false`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.633,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully with the following result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nSince `dry_run` was set to `true`, no actual file system changes were made \u2014 the operations (creating `src/a.py` and deleting `obsolete.txt`) were validated and reported as planned, but nothing was persisted."
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 9.404,
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 31880,
+        "total_tokens": 31934,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.296,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31957,
+        "total_tokens": 31965,
+        "prompt_tokens_details": {
+          "cached_tokens": 31933
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 61.418,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 121881,
+        "total_tokens": 121930,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.545,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121953,
+        "total_tokens": 121961,
+        "prompt_tokens_details": {
+          "cached_tokens": 121929
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 209.89,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 252881,
+        "total_tokens": 252930,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.904,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 252953,
+        "total_tokens": 252961,
+        "prompt_tokens_details": {
+          "cached_tokens": 252929
+        }
+      }
+    }
+  ]
+}

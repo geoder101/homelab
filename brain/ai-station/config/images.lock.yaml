@@ -1,5 +1,13 @@
-# Images resolved on 2026-10-28/29; linux/amd64 manifest digests.
+# Production images resolved 2026-10-28/29; isolated trial pin added 2026-11-07.
+# All digests identify linux/amd64 manifests.
+# llama_cpp_trial/b12182 was promoted with profile ornith-q5 on 2026-11-08;
+# llama_cpp/b11960 remains the retained Qwen baseline runtime.
 images:
+  llama_cpp_trial:
+    source: ghcr.io/ggml-org/llama.cpp:server-cuda
+    version: b12182
+    commit: fd27b2034905f8dadd8bd6d2cc44595f4929d391
+    digest: sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469
   llama_cpp:
     source: ghcr.io/ggml-org/llama.cpp:server-cuda
     version: b11960

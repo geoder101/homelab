@@ -1,0 +1,286 @@
+{
+  "label": "muse",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 5.042,
+      "elapsed_seconds": 7.992,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 49
+        }
+      },
+      "first_generated_token_seconds": 0.193,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.65,
+      "answer": "A memory leak in a long-running Python HTTP server almost always comes from objects that stay reachable between requests. Use this checklist in order, from reproduce -> measure -> pinpoint -> fix -> verify.\n\n### 1. Reproduce and baseline the leak\n\n* [ ] Isolate the test\n  ```bash\n  pytest tests/integration/test_api_load.py -k leak_test -s --maxfail=1\n  ```\n  Run with a fixed number of iterations so you can compare runs.\n\n* [ ] Record baseline process metrics\n  ```bash\n  # Watch RSS/VSZ and FDs in real time\n  watch -n 5 'ps -p $(pgrep -f \"python.*myserver\") -o pid,rss,vsz,nlwp,cmd'\n  watch -n 5 'ls -l /proc/$(pgrep -f \"python.*myserver\")/fd | wc -l'\n  ```\n  RSS should plateau"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 4.68,
+      "elapsed_seconds": 7.892,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 84
+        }
+      },
+      "first_generated_token_seconds": 0.097,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.68,
+      "answer": "A memory leak in a long-running Python HTTP server is almost always a leak of objects that are referenced somewhere persistent: request handlers, connection pools, caches, threads, file descriptors, or cyclic references that `gc` never collects. Use this checklist to isolate it.\n\n### 1. Reproduce and Baseline\n\n- [ ] **Pin the environment**\n  ```bash\n  python --version\n  pip freeze > requirements.txt\n  ```\n- [ ] **Create a minimal reproducible load**\n  Use the same integration test that leaks, or simulate with `wrk`/`ab`/`hey`.\n  ```bash\n  # 10 concurrent clients, 10 minutes\n  wrk -t10 -c100 -d600s http://localhost:8000/health\n  # or\n  hey -n 100000 -c 50 http://localhost:8000/api\n  ```\n- [ ] **Baseline RSS over time**\n  ```bash\n  PID=$(pgrep -f \"your_server.py\")\n  watch -n"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 4.679,
+      "elapsed_seconds": 7.891,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 89,
+        "total_tokens": 601,
+        "prompt_tokens_details": {
+          "cached_tokens": 84
+        }
+      },
+      "first_generated_token_seconds": 0.097,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 65.69,
+      "answer": "A memory leak in a long-running Python HTTP server is almost always a leak of objects that are referenced somewhere persistent: request handlers, connection pools, caches, threads, file descriptors, or cyclic references that `gc` never collects. Use this checklist to isolate it.\n\n### 1. Reproduce and Baseline\n\n- [ ] **Pin the environment**\n  ```bash\n  python --version\n  pip freeze > requirements.txt\n  ```\n- [ ] **Create a minimal reproducible load**\n  Use the same integration test that leaks, or simulate with `wrk`/`ab`/`hey`.\n  ```bash\n  # 10 concurrent clients, 10 minutes\n  wrk -t10 -c100 -d600s http://localhost:8000/health\n  # or\n  hey -n 100000 -c 50 http://localhost:8000/api\n  ```\n- [ ] **Baseline RSS over time**\n  ```bash\n  PID=$(pgrep -f \"your_server.py\")\n  watch -n"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 13.224,
+      "usage": {
+        "completion_tokens": 856,
+        "prompt_tokens": 107,
+        "total_tokens": 963,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    copied = [[s, e] for s, e in intervals]\n    copied.sort(key=lambda x: x[0])\n    merged = []\n    cur_start, cur_end = copied[0]\n    for s, e in copied[1:]:\n        if s <= cur_end:\n            if e > cur_end:\n                cur_end = e\n        else:\n            merged.append([cur_start, cur_end])\n            cur_start, cur_end = s, e\n    merged.append([cur_start, cur_end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 10.681,
+      "usage": {
+        "completion_tokens": 691,
+        "prompt_tokens": 139,
+        "total_tokens": 830,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    nodes = list(nodes)\n    edges = list(edges)\n    indeg = {n: 0 for n in nodes}\n    adj = {n: set() for n in nodes}\n    seen = set()\n    for s, d in edges:\n        if s not in adj or d not in adj:\n            continue\n        if s == d:\n            raise ValueError(\"self loop\")\n        if (s, d) in seen:\n            continue\n        seen.add((s, d))\n        if d not in adj[s]:\n            adj[s].add(d)\n            indeg[d] += 1\n    heap = [n for n in nodes if indeg[n] == 0]\n    heapq.heapify(heap)\n    result = []\n    indeg_mut = indeg.copy()\n    adj_mut = {k: set(v) for k, v in adj.items()}\n    while heap:\n        n = heapq.heappop(heap)\n        result.append(n)\n        for m in adj_mut[n]:\n            indeg_mut[m] -= 1\n            if indeg_mut[m] == 0:\n                heapq.heappush(heap, m)\n    if len(result) != len(nodes):\n        raise ValueError(\"cycle detected\")\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 10.599,
+      "usage": {
+        "completion_tokens": 687,
+        "prompt_tokens": 255,
+        "total_tokens": 942,
+        "prompt_tokens_details": {
+          "cached_tokens": 250
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    if not items:\n        return []\n    for _, w in items:\n        if w <= 0 or w > limit:\n            raise ValueError\n    batches = []\n    cur = []\n    cur_sum = 0\n    for name, w in items:\n        if cur_sum + w > limit:\n            batches.append(cur)\n            cur = [name]\n            cur_sum = w\n        else:\n            cur.append(name)\n            cur_sum += w\n    batches.append(cur)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 10.406,
+      "usage": {
+        "completion_tokens": 673,
+        "prompt_tokens": 145,
+        "total_tokens": 818,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for raw_line in text.splitlines():\n        line = raw_line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f'Invalid line: {raw_line!r}')\n        key, val = line.split('=', 1)\n        key = key.strip()\n        val = val.strip()\n        if not key_re.match(key):\n            raise ValueError(f'Invalid key: {key!r}')\n        if len(val) >= 2 and val[0] == val[-1] and val[0] in (\"'\", '\"'):\n            val = val[1:-1]\n        env[key] = val\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 24.724,
+      "usage": {
+        "completion_tokens": 1582,
+        "prompt_tokens": 158,
+        "total_tokens": 1740,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import codecs\n\ndef parse_sse(chunks):\n    decoder = codecs.IncrementalDecoder('utf-8')\n    buf = ''\n    current_parts = []\n    events = []\n\n    def dispatch():\n        nonlocal current_parts\n        if current_parts:\n            data = '\\n'.join(current_parts)\n            if data == '[DONE]':\n                return True  # stop\n            events.append(data)\n        current_parts = []\n        return False\n\n    for chunk in chunks:\n        buf += decoder.decode(chunk, final=False)\n        while True:\n            nl = buf.find('\\n')\n            if nl == -1:\n                break\n            line = buf[:nl]\n            buf = buf[nl + 1:]\n            if line.endswith('\\r'):\n                line = line[:-1]\n            if line == '':\n                if dispatch():\n                    return events\n            else:\n                if line.startswith('data:'):\n                    content = line[5:]\n                    if content.startswith(' '):\n                        content = content[1:]\n                    current_parts.append(content)\n                # other fields ignored\n    # flush decoder\n    buf += decoder.decode(b'', final=True)\n    # process any remaining complete lines\n    while True:\n        nl = buf.find('\\n')\n        if nl == -1:\n            break\n        line = buf[:nl]\n        buf = buf[nl + 1:]\n        if line.endswith('\\r'):\n            line = line[:-1]\n        if line == '':\n            if dispatch():\n                return events\n        else:\n            if line.startswith('data:'):\n                content = line[5:]\n                if content.startswith(' '):\n                    content = content[1:]\n                current_parts.append(content)\n    # unterminated final event is ignored\n    return events\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 63, in <module>\n  File \"<string>\", line 20, in parse_sse\n  File \"<frozen codecs>\", line 274, in decode\nNotImplementedError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 35.428,
+      "usage": {
+        "completion_tokens": 2250,
+        "prompt_tokens": 117,
+        "total_tokens": 2367,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"negative argument\")\n    if base == 0 or cap == 0:\n        return 0.0\n    if base >= cap:\n        return float(cap)\n\n    # for very large attempt the product will definitely exceed cap\n    # use log to avoid a huge loop\n    import math\n    try:\n        max_attempt = math.log2(cap / base) if base > 0 else float('inf')\n        if attempt >= max_attempt:\n            return float(cap)\n    except (ValueError, OverflowError):\n        return float(cap)\n\n    # now attempt is small enough to iterate safely\n    val = float(base)\n    cap_f = float(cap)\n    for _ in range(int(attempt)):\n        val *= 2.0\n        if val >= cap_f:\n            return cap_f\n    return float(val)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 12.868,
+      "usage": {
+        "completion_tokens": 833,
+        "prompt_tokens": 141,
+        "total_tokens": 974,
+        "prompt_tokens_details": {
+          "cached_tokens": 32
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    # Validate inputs\n    if any(q > budget for q in queued):\n        raise ValueError(\"queued reservation exceeds budget\")\n    \n    used_tokens = sum(active)\n    used_slots = len(active)\n    # active is assumed valid, but guard anyway\n    remaining_tokens = budget - used_tokens\n    remaining_slots = slots - used_slots\n\n    admitted = []\n    remaining = []\n\n    for q in queued:\n        if remaining_slots <= 0 or q > remaining_tokens:\n            # head is blocked, keep it and the rest\n            remaining.append(q)\n            remaining.extend(queued[queued.index(q) + 1 :] if False else [])\n            # Simpler: break and build remaining from this point\n            # rebuild remaining correctly\n            break\n        admitted.append(q)\n        remaining_tokens -= q\n        remaining_slots -= 1\n    else:\n        # all queued processed\n        return admitted, []\n\n    # build remaining list from the point of first failure onward\n    # we need to know where we stopped\n    # redo with index for clarity\n    # (the loop above already broke, but remaining is incomplete)\n    # Re-implement correctly:\n    # We'll just recompute cleanly below\n\n    # Recompute correctly with index\n    admitted = []\n    remaining_tokens = budget - sum(active)\n    remaining_slots = slots - len(active)\n    idx = 0\n    for q in queued:\n        if remaining_slots <= 0 or q > remaining_tokens:\n            remaining = list(queued[idx:])\n            return admitted, remaining\n        admitted.append(q)\n        remaining_tokens -= q\n        remaining_slots -= 1\n        idx += 1\n    return admitted, []\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 5.524,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed with dry-run enabled.\n\n**Tool result:**\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nChanges planned:\n- `create` \u2192 `src/a.py` with content `print(42)\\n`\n- `delete` \u2192 `obsolete.txt`\n\nMetadata used: `dry_run: true`, `labels: [\"coding\", \"test\"]`\nNo files were actually modified because dry_run is true."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 5.473,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed in dry-run mode with labels `[\"coding\", \"test\"]`.\n\n**Tool result:**\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nChanges that would have been applied:\n* `create` \u2192 `src/a.py` with content `print(42)\\n`\n* `delete` \u2192 `obsolete.txt`\n\nNo files were actually modified because `metadata.dry_run` is `true`.\n"
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 5.166,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` call was executed with dry-run enabled.\n\n**Request summary**\n- Create `src/a.py` with content `print(42)\\n`\n- Delete `obsolete.txt`\n- Metadata: `dry_run: true`, `labels: [\"coding\", \"test\"]`\n\n**Tool result**\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nDry run completed successfully; no files were actually modified."
+    }
+  ]
+}

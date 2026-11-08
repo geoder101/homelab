@@ -70,6 +70,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--url', required=True)
     parser.add_argument('--output', required=True)
+    parser.add_argument('--sampling-profile', choices=['qwen', 'qwen3-coder', 'glm47', 'gemma4', 'general', 'devstral2', 'gptoss'], default='qwen')
+    parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
     args = parser.parse_args()
     tools = []
     for name, description, properties, required in [
@@ -100,6 +102,25 @@ def main():
                         'max_tokens': 16384, 'reasoning_budget_tokens': 6144,
                         'chat_template_kwargs': {'enable_thinking': True, 'reasoning_effort': 'medium',
                                                  'preserve_thinking': True}}
+                    if args.sampling_profile == 'qwen3-coder':
+                        body.update(temperature=.7, top_p=.8, repeat_penalty=1.05, reasoning_budget_tokens=0)
+                        body['chat_template_kwargs'].update(enable_thinking=False, preserve_thinking=False)
+                    elif args.sampling_profile == 'glm47':
+                        body.update(temperature=.7, top_p=1.0, top_k=0, min_p=.01, repeat_penalty=1.0)
+                    elif args.sampling_profile == 'gemma4':
+                        body.update(top_k=64)
+                        body['chat_template_kwargs']['preserve_thinking'] = False
+                    elif args.sampling_profile == 'devstral2':
+                        body.update(temperature=.15, top_p=1.0, top_k=0, reasoning_budget_tokens=0)
+                        body['chat_template_kwargs'].update(enable_thinking=False, preserve_thinking=False)
+                    elif args.sampling_profile == 'gptoss':
+                        body.update(top_p=1.0, top_k=0)
+                    if args.backend == 'vllm':
+                        body.pop('reasoning_budget_tokens', None)
+                        if body['top_k'] == 0:
+                            body['top_k'] = -1
+                        if 'repeat_penalty' in body:
+                            body['repetition_penalty'] = body.pop('repeat_penalty')
                     request = urllib.request.Request(args.url + '/v1/chat/completions',
                         data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
                     with urllib.request.urlopen(request, timeout=600) as response:
@@ -145,7 +166,9 @@ def main():
             results.append(result)
             print(json.dumps({k: v for k, v in result.items() if k not in ('trace', 'code')}), flush=True)
             with open(args.output, 'w') as output:
-                json.dump({'description': __doc__, 'tests': results}, output, indent=2)
+                json.dump({'description': __doc__, 'sampling_profile': args.sampling_profile,
+                    'backend': args.backend, 'reasoning_budget_parameter_sent': args.backend == 'llama',
+                    'tests': results}, output, indent=2)
     return 0 if all(r['passed'] for r in results) else 1
 
 

@@ -10,6 +10,7 @@ case "${profile}" in
     ;;
   precision) "${script_dir}/download-qwen38-candidates" gguf ;;
   ornith) exec bash "${script_dir}/download-ornith-candidate" ;;
+  ornith-q5) exec bash "${script_dir}/download-ornith-candidate" q5 ;;
   *) printf 'Unknown selected coder profile: %s\n' "${profile}" >&2; exit 1 ;;
 esac
 exec "${script_dir}/download-chat-template"

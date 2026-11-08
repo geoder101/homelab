@@ -1,0 +1,254 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "sampling_profile": "qwen",
+  "backend": "vllm",
+  "reasoning_budget_parameter_sent": false,
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 18.704,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    # Remove an existing trailing \"/v1\" segment (but not e.g. \"/v10\"),\n    # preserving any deployment prefix such as \"https://example.test/proxy\".\n    if base.endswith('/v1'):\n        base = base[:-len('/v1')]\n    return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 24.155,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # Reject if any waiting reservation exceeds the total budget,\n    # even if the FIFO pass would stop before reaching it.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                f\"reservation {value} exceeds total budget {budget}\"\n            )\n\n    admitted = []\n    used_budget = sum(active)\n    used_slots = len(active)\n\n    for value in waiting:\n        # Stop at the first reservation that does not fit in budget or slots.\n        if (\n            used_budget + value > budget\n            or used_slots + 1 > slots\n        ):\n            break\n        admitted.append(value)\n        used_budget += value\n        used_slots += 1\n\n    remaining = waiting[len(admitted):]\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 13.205,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    if base.rsplit('/', 1)[-1] != 'v1':\n        base = base + '/v1'\n    return base + '/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 22.717,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\"reservation exceeds total budget\")\n\n    admitted = []\n    admitted_index = 0\n    total = sum(active)\n    used = len(active)\n\n    for value in waiting:\n        if total + value > budget or used + 1 > slots:\n            break\n        admitted.append(value)\n        admitted_index += 1\n        total += value\n        used += 1\n\n    remaining = list(waiting[admitted_index:])\n    return admitted, remaining\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 11.115,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    base = base_url.rstrip('/')\n    if base.endswith('/v1'):\n        base = base[:-3]\n    return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": true,
+      "elapsed_seconds": 31.666,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    # \u0391\u03bd \u03bf\u03c0\u03bf\u03b9\u03b1\u03b4\u03ae\u03c0\u03bf\u03c4\u03b5 \u03b1\u03bd\u03b1\u03bc\u03ad\u03bd\u03bf\u03c5\u03c3\u03b1 \u03ba\u03c1\u03ac\u03c4\u03b7\u03c3\u03b7 \u03be\u03b5\u03c0\u03b5\u03c1\u03bd\u03ac \u03c4\u03bf \u03c3\u03c5\u03bd\u03bf\u03bb\u03b9\u03ba\u03cc budget,\n    # \u03b1\u03c0\u03bf\u03c1\u03c1\u03af\u03c0\u03c4\u03bf\u03c5\u03bc\u03b5 \u03b1\u03bc\u03ad\u03c3\u03c9\u03c2, \u03b1\u03ba\u03cc\u03bc\u03b1 \u03ba\u03b9 \u03b1\u03bd \u03bc\u03b5 FIFO \u03b4\u03b5\u03bd \u03b8\u03b1 \u03c4\u03b7\u03bd \u03ae\u03bc\u03b1\u03c3\u03c4\u03b1\u03bd \u03bd\u03b1 \u03c6\u03c4\u03ac\u03c3\u03bf\u03c5\u03bc\u03b5.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                f\"reservation {value} exceeds total budget {budget}\"\n            )\n\n    admitted = []\n    used = sum(active)\n    taken_slots = len(active)\n    for value in waiting:\n        # \u03a3\u03c4\u03b1\u03bc\u03b1\u03c4\u03ac\u03bc\u03b5 \u03c3\u03c4\u03b7 \u03a0\u03a1\u03a9\u03a4\u0397 \u03b1\u03bd\u03b1\u03bc\u03ad\u03bd\u03bf\u03c5\u03c3\u03b1 \u03ba\u03c1\u03ac\u03c4\u03b7\u03c3\u03b7 \u03c0\u03bf\u03c5 \u03b4\u03b5\u03bd \u03c7\u03c9\u03c1\u03ac\n        # (\u03cc\u03c7\u03b9 \u03c3\u03c4\u03bf budget \u03ae \u03cc\u03c7\u03b9 \u03c3\u03c4\u03bf\u03c5\u03c2 slots) -- \u03b4\u03b5\u03bd \u03c0\u03c1\u03bf\u03c3\u03c0\u03b5\u03c1\u03bd\u03ac\u03bc\u03b5.\n        if (used + value > budget\n                or taken_slots + 1 > slots):\n            break\n        admitted.append(value)\n        used += value\n        taken_slots += 1\n\n    # \u03a4\u03bf \u03c5\u03c0\u03cc\u03bb\u03bf\u03b9\u03c0\u03bf \u03b5\u03af\u03bd\u03b1\u03b9 \u03b1\u03ba\u03c1\u03b9\u03b2\u03ce\u03c2 \u03cc,\u03c4\u03b9 \u03b1\u03ba\u03bf\u03bb\u03bf\u03c5\u03b8\u03b5\u03af \u03c4\u03b7 \u03b4\u03b9\u03b1\u03ba\u03bf\u03c0\u03ae (FIFO),\n    # \u03bc\u03b5 \u03b1\u03c5\u03c4\u03cc \u03c4\u03bf\u03bd \u03c4\u03c1\u03cc\u03c0\u03bf \u03b4\u03b9\u03b1\u03c4\u03b7\u03c1\u03bf\u03cd\u03bd\u03c4\u03b1\u03b9 \u03ba\u03b1\u03b9 \u03bf\u03b9 \u03b4\u03b9\u03c0\u03bb\u03ad\u03c2 \u03c4\u03b9\u03bc\u03ad\u03c2.\n    remaining = list(waiting[len(admitted):])\n    return admitted, remaining\n"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    # \u0391\u03bd \u03bf\u03c0\u03bf\u03b9\u03b1\u03b4\u03ae\u03c0\u03bf\u03c4\u03b5 \u03b1\u03bd\u03b1\u03bc\u03ad\u03bd\u03bf\u03c5\u03c3\u03b1 \u03ba\u03c1\u03ac\u03c4\u03b7\u03c3\u03b7 \u03be\u03b5\u03c0\u03b5\u03c1\u03bd\u03ac \u03c4\u03bf \u03c3\u03c5\u03bd\u03bf\u03bb\u03b9\u03ba\u03cc budget,\n    # \u03b1\u03c0\u03bf\u03c1\u03c1\u03af\u03c0\u03c4\u03bf\u03c5\u03bc\u03b5 \u03b1\u03bc\u03ad\u03c3\u03c9\u03c2, \u03b1\u03ba\u03cc\u03bc\u03b1 \u03ba\u03b9 \u03b1\u03bd \u03bc\u03b5 FIFO \u03b4\u03b5\u03bd \u03b8\u03b1 \u03c4\u03b7\u03bd \u03ae\u03bc\u03b1\u03c3\u03c4\u03b1\u03bd \u03bd\u03b1 \u03c6\u03c4\u03ac\u03c3\u03bf\u03c5\u03bc\u03b5.\n    for value in waiting:\n        if value > budget:\n            raise ValueError(\n                f\"reservation {value} exceeds total budget {budget}\"\n            )\n\n    admitted = []\n    used = sum(active)\n    taken_slots = len(active)\n    for value in waiting:\n        # \u03a3\u03c4\u03b1\u03bc\u03b1\u03c4\u03ac\u03bc\u03b5 \u03c3\u03c4\u03b7 \u03a0\u03a1\u03a9\u03a4\u0397 \u03b1\u03bd\u03b1\u03bc\u03ad\u03bd\u03bf\u03c5\u03c3\u03b1 \u03ba\u03c1\u03ac\u03c4\u03b7\u03c3\u03b7 \u03c0\u03bf\u03c5 \u03b4\u03b5\u03bd \u03c7\u03c9\u03c1\u03ac\n        # (\u03cc\u03c7\u03b9 \u03c3\u03c4\u03bf budget \u03ae \u03cc\u03c7\u03b9 \u03c3\u03c4\u03bf\u03c5\u03c2 slots) -- \u03b4\u03b5\u03bd \u03c0\u03c1\u03bf\u03c3\u03c0\u03b5\u03c1\u03bd\u03ac\u03bc\u03b5.\n        if (used + value > budget\n                or taken_slots + 1 > slots):\n            break\n        admitted.append(value)\n        used += value\n        taken_slots += 1\n\n    # \u03a4\u03bf \u03c5\u03c0\u03cc\u03bb\u03bf\u03b9\u03c0\u03bf \u03b5\u03af\u03bd\u03b1\u03b9 \u03b1\u03ba\u03c1\u03b9\u03b2\u03ce\u03c2 \u03cc,\u03c4\u03b9 \u03b1\u03ba\u03bf\u03bb\u03bf\u03c5\u03b8\u03b5\u03af \u03c4\u03b7 \u03b4\u03b9\u03b1\u03ba\u03bf\u03c0\u03ae (FIFO),\n    # \u03bc\u03b5 \u03b1\u03c5\u03c4\u03cc \u03c4\u03bf\u03bd \u03c4\u03c1\u03cc\u03c0\u03bf \u03b4\u03b9\u03b1\u03c4\u03b7\u03c1\u03bf\u03cd\u03bd\u03c4\u03b1\u03b9 \u03ba\u03b1\u03b9 \u03bf\u03b9 \u03b4\u03b9\u03c0\u03bb\u03ad\u03c2 \u03c4\u03b9\u03bc\u03ad\u03c2.\n    remaining = list(waiting[len(admitted):])\n    return admitted, remaining\n"
+    }
+  ]
+}

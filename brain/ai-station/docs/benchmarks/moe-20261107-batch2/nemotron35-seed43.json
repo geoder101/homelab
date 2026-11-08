@@ -1,0 +1,286 @@
+{
+  "label": "nemotron35",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.127,
+      "elapsed_seconds": 1.667,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 5
+        }
+      },
+      "first_generated_token_seconds": 0.127,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 332.45,
+      "answer": "Here is a detailed, step-by-step checklist for diagnosing memory leaks in a long-running Python HTTP server. This is structured to move from \"observation\" to \"root cause identification.\"\n\n### Phase 1: Observation & Metrics (The \"What\")\n\nBefore digging into code, you need to confirm the leak exists and quantify its growth rate.\n\n**1. Enable and monitor `psutil` or `resource` metrics.**\nYou need to see the actual memory footprint, not just Python's internal counters.\n*   **Command/Code:** Use a wrapper script or monitoring tool.\n    ```bash\n    # Example using psutil to monitor the process every 30 seconds\n    while true; do\n        pid=$(pgrep -f \"python your_server.py\")\n        python -c \"import psutil; p = psutil.Process($pid); print(f'RSS: {p.memory_info().rss / 1024 / 1024:.2f} MB')\"\n        sleep 30\n    done\n    ```\n*   **What to look for:** A linearly increasing RSS (Resident Set Size) or VMS (Virtual Memory Size) that does not plateau. If the memory grows steadily (e.g., +5MB per hour) and never releases, you have a leak.\n\n**2. Enable `tracemalloc` for detailed allocation tracking.**\nPython\u2019s standard library `tracemalloc` can show you exactly where memory is being allocated.\n*   **Command/Code:** Start your server with tracing enabled.\n    ```python\n    import tracemalloc\n    tracemalloc.start() # Add this at the top of your entry point\n    \n    # Periodically check stats (e.g., via a /debug endpoint or cron job)\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    \n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n*   **What to look for:** Identify the top filename/line numbers consuming memory. If you see `your_app/routers/users.py` or specific third-party libraries at the top, you have a suspect.\n\n---\n\n### Phase 2: The \"Growth Pattern\" Analysis\n\nNot all memory growth is a \"leak.\" Sometimes it is just caching or request buffering. You must distinguish between the two.\n\n**3. Check for \"Step-Growth\" vs. \"Linear Growth.\"**\n*  "
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.029,
+      "elapsed_seconds": 1.569,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.029,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 332.53,
+      "answer": "Here is a detailed, step-by-step checklist for diagnosing memory leaks in a long-running Python HTTP server. This is structured to move from \"observation\" to \"root cause identification.\"\n\n### Phase 1: Observation & Metrics (The \"What\")\n\nBefore digging into code, you need to confirm the leak exists and quantify its growth rate.\n\n**1. Enable and monitor `psutil` or `resource` metrics.**\nYou need to see the actual memory footprint, not just Python's internal counters.\n*   **Command/Code:** Use a wrapper script or monitoring tool.\n    ```bash\n    # Example using psutil to monitor the process every 30 seconds\n    while true; do\n        pid=$(pgrep -f \"python your_server.py\")\n        python -c \"import psutil; p = psutil.Process($pid); print(f'RSS: {p.memory_info().rss / 1024 / 1024:.2f} MB')\"\n        sleep 30\n    done\n    ```\n*   **What to look for:** A linearly increasing RSS (Resident Set Size) or VMS (Virtual Memory Size) that does not plateau. If the memory grows steadily (e.g., +5MB per hour) and never releases, you have a leak.\n\n**2. Enable `tracemalloc` for detailed allocation tracking.**\nPython\u2019s standard library `tracemalloc` can show you exactly where memory is being allocated.\n*   **Command/Code:** Start your server with tracing enabled.\n    ```python\n    import tracemalloc\n    tracemalloc.start() # Add this at the top of your entry point\n    \n    # Periodically check stats (e.g., via a /debug endpoint or cron job)\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    \n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n*   **What to look for:** Identify the top filename/line numbers consuming memory. If you see `your_app/routers/users.py` or specific third-party libraries at the top, you have a suspect.\n\n---\n\n### Phase 2: The \"Growth Pattern\" Analysis\n\nNot all memory growth is a \"leak.\" Sometimes it is just caching or request buffering. You must distinguish between the two.\n\n**3. Check for \"Step-Growth\" vs. \"Linear Growth.\"**\n*  "
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.022,
+      "elapsed_seconds": 1.562,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.022,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 332.5,
+      "answer": "Here is a detailed, step-by-step checklist for diagnosing memory leaks in a long-running Python HTTP server. This is structured to move from \"observation\" to \"root cause identification.\"\n\n### Phase 1: Observation & Metrics (The \"What\")\n\nBefore digging into code, you need to confirm the leak exists and quantify its growth rate.\n\n**1. Enable and monitor `psutil` or `resource` metrics.**\nYou need to see the actual memory footprint, not just Python's internal counters.\n*   **Command/Code:** Use a wrapper script or monitoring tool.\n    ```bash\n    # Example using psutil to monitor the process every 30 seconds\n    while true; do\n        pid=$(pgrep -f \"python your_server.py\")\n        python -c \"import psutil; p = psutil.Process($pid); print(f'RSS: {p.memory_info().rss / 1024 / 1024:.2f} MB')\"\n        sleep 30\n    done\n    ```\n*   **What to look for:** A linearly increasing RSS (Resident Set Size) or VMS (Virtual Memory Size) that does not plateau. If the memory grows steadily (e.g., +5MB per hour) and never releases, you have a leak.\n\n**2. Enable `tracemalloc` for detailed allocation tracking.**\nPython\u2019s standard library `tracemalloc` can show you exactly where memory is being allocated.\n*   **Command/Code:** Start your server with tracing enabled.\n    ```python\n    import tracemalloc\n    tracemalloc.start() # Add this at the top of your entry point\n    \n    # Periodically check stats (e.g., via a /debug endpoint or cron job)\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    \n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n*   **What to look for:** Identify the top filename/line numbers consuming memory. If you see `your_app/routers/users.py` or specific third-party libraries at the top, you have a suspect.\n\n---\n\n### Phase 2: The \"Growth Pattern\" Analysis\n\nNot all memory growth is a \"leak.\" Sometimes it is just caching or request buffering. You must distinguish between the two.\n\n**3. Check for \"Step-Growth\" vs. \"Linear Growth.\"**\n*  "
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 3.221,
+      "usage": {
+        "completion_tokens": 1048,
+        "prompt_tokens": 98,
+        "total_tokens": 1146,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = []\n\n    for start, end in sorted_intervals:\n        if not merged:\n            merged.append([start, end])\n        else:\n            last_start, last_end = merged[-1]\n            if start <= last_end:\n                merged[-1][1] = max(last_end, end)\n            else:\n                merged.append([start, end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 6.845,
+      "usage": {
+        "completion_tokens": 2231,
+        "prompt_tokens": 131,
+        "total_tokens": 2362,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    # Deduplicate edges so duplicate edges don't affect in-degree counts\n    unique_edges = set(edges)\n\n    # Build in-degree and adjacency structures without mutating inputs\n    indeg = {n: 0 for n in nodes}\n    adj = {n: [] for n in nodes}\n\n    for u, v in unique_edges:\n        adj[u].append(v)\n        indeg[v] += 1\n\n    # Min-heap to always pick the lexicographically smallest available node\n    heap = [n for n in nodes if indeg[n] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        u = heapq.heappop(heap)\n        result.append(u)\n        for v in adj[u]:\n            indeg[v] -= 1\n            if indeg[v] == 0:\n                heapq.heappush(heap, v)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Graph contains a cycle\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 6.892,
+      "usage": {
+        "completion_tokens": 2239,
+        "prompt_tokens": 254,
+        "total_tokens": 2493,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    batches = []\n    current_batch = []\n    current_weight = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n        if current_weight + weight <= limit:\n            current_batch.append(name)\n            current_weight += weight\n        else:\n            batches.append(current_batch)\n            current_batch = [name]\n            current_weight = weight\n    if current_batch:\n        batches.append(current_batch)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 20.129,
+      "usage": {
+        "completion_tokens": 6375,
+        "prompt_tokens": 135,
+        "total_tokens": 6510,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text: str) -> dict:\n    env = {}\n    key_re = re.compile(r\"^[A-Za-z_][A-Za-z0-9_]*$\")\n\n    for line in text.splitlines():\n        stripped = line.strip()\n        # skip blank lines and comment lines\n        if not stripped or stripped.startswith(\"#\"):\n            continue\n\n        eq_pos = stripped.find(\"=\")\n        if eq_pos == -1:\n            raise ValueError(f\"Invalid env line (no '='): {line!r}\")\n\n        key = stripped[:eq_pos].strip()\n        value = stripped[eq_pos + 1:].strip()\n\n        # validate key format\n        if not key_re.fullmatch(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n\n        # strip matching quotes that enclose the whole value\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n\n        env[key] = value\n\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 20.208,
+      "usage": {
+        "completion_tokens": 6395,
+        "prompt_tokens": 151,
+        "total_tokens": 6546,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b''.join(chunks).decode('utf-8')\n    lines = text.splitlines()\n\n    events = []\n    current_data_lines = []\n\n    for line in lines:\n        if line == '':\n            # Blank line dispatches the current event\n            if current_data_lines:\n                data_str = '\\n'.join(current_data_lines)\n                if data_str == '[DONE]':\n                    return events          # stop, exclude [DONE] and later\n                events.append(data_str)\n            current_data_lines = []\n            continue\n\n        if line.startswith('data:'):\n            value = line[5:]             # everything after \"data:\"\n            if value.startswith(' '):\n                value = value[1:]        # remove at most one space after colon\n            current_data_lines.append(value)\n            continue\n\n        # Ignore comments and other SSE fields\n        if line.startswith(':'):\n            continue\n        if line.startswith('event:') or line.startswith('id:') or line.startswith('retry:'):\n            continue\n\n        # Any other field is ignored\n\n    # unterminated final event is silently dropped\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": false,
+      "elapsed_seconds": 22.297,
+      "usage": {
+        "completion_tokens": 7030,
+        "prompt_tokens": 114,
+        "total_tokens": 7144,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n    if attempt == 0:\n        return float(min(cap, base))\n    # Use logarithms to avoid constructing huge integers or overflowing\n    # We want min(cap, base * 2**attempt)\n    # If base * 2**attempt >= cap, return cap\n    # Otherwise, compute base * 2**attempt safely\n    if base >= cap:\n        return float(cap)\n    # base < cap, attempt > 0\n    # Check if attempting enough doublings to reach/exceed cap\n    # base * 2**attempt >= cap  <=>  2**attempt >= cap / base\n    # Take log2: attempt >= log2(cap / base)\n    needed = math.log2(cap / base)\n    # needed is the threshold; if attempt >= needed, result caps at cap\n    # Due to floating point, we use a small epsilon guard or just compare\n    if attempt >= needed:\n        return float(cap)\n    else:\n        # attempt < needed, so base * 2**attempt < cap\n        # Since attempt is small enough that 2**attempt won't overflow float excessively,\n        # and the result is guaranteed < cap, we can compute directly.\n        # If attempt is very large (e.g. 10**9) but somehow < needed, cap must be astronomically huge,\n        # which conflicts with \"finite nonnegative numbers\" in practice. We still compute using pow\n        # to avoid huge integer construction issues, but limit to float.\n        # Actually, we can just compute base * (2 ** attempt) \u2013 Python handles big ints, but prompt says\n        # without constructing huge integer. Since attempt < needed and needed = log2(cap/base),\n        # if attempt is 10**9 here, cap > base * 2**10**9, which is absurdly large. We'll use\n        # iterative doubling with early cap, but attempt=10**9 loop is too slow.\n        # Better: use pow with two args but that computes big int. We'll just compute float power\n        # using math.pow or **, and if it overflows to inf, return cap.\n        # Given the constraints, the log branch almost always returns cap for attempt=10**9.\n        # For safety, compute with a try/except or check attempt magnitude.\n        # We'll compute base * 2**attempt as float; if it exceeds float max, it becomes inf,\n        # then we return float(cap).\n        try:\n            result = base * (2 ** attempt)\n            if not math.isfinite(result) or result > cap:\n                return float(cap)\n            return float(result)\n        except OverflowError:\n            return float(cap)</think>import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n    if attempt == 0:\n        return float(min(cap, base))\n    if base >= cap:\n        return float(cap)\n    # base < cap, attempt > 0\n    # Determine if base * 2**attempt would meet or exceed cap\n    # using logarithms to avoid constructing huge integers or overflowing\n    needed = math.log2(cap / base)\n    if attempt >= needed:\n        return float(cap)\n    # attempt < needed => base * 2**attempt < cap\n    # Compute the actual value; if it somehow overflows float, fall back to cap\n    try:\n        result = base * (2 ** attempt)\n        if not math.isfinite(result) or result > cap:\n            return float(cap)\n        return float(result)\n    except OverflowError:\n        return float(cap)",
+      "test_error": "  File \"<string>\", line 46\n    return float(cap)</think>import math\n                      ^\nSyntaxError: invalid syntax\n"
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 8.63,
+      "usage": {
+        "completion_tokens": 2806,
+        "prompt_tokens": 138,
+        "total_tokens": 2944,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(r > budget for r in queued):\n        raise ValueError(\"Queued reservation exceeds budget\")\n    \n    i = 0\n    n = len(queued)\n    active_slots = len(active)\n    active_tokens = sum(active)\n    \n    while i < n:\n        head = queued[i]\n        if active_slots + 1 <= slots and active_tokens + head <= budget:\n            active_slots += 1\n            active_tokens += head\n            i += 1\n        else:\n            break\n    \n    return queued[:i], queued[i:]\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 0.862,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool ran successfully in dry\u2011run mode:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2 (created `src/a.py` with the specified content and deleted `obsolete.txt`)\n\nThe requested metadata (`dry_run: true`, `labels: [\"coding\", \"test\"]`) was applied, and no actual file modifications were performed because the operation was a dry run."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 0.691,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed a dry\u2011run and reported:\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```"
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.866,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool reports a successful dry\u2011run:\n\n- **Status:** `dry-run-ok`  \n- **Changed files:** 2 (created `src/a.py` and deleted `obsolete.txt`)  \n\nThe requested operations were simulated without actually modifying the filesystem, as indicated by `metadata.dry_run: true`."
+    }
+  ]
+}

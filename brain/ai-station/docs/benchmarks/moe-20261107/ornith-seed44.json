@@ -1,0 +1,286 @@
+{
+  "label": "ornith",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.1,
+      "elapsed_seconds": 2.329,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.1,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 229.7,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\n## Phase 1: Confirm the Leak Exists\n\nBefore chasing causes, prove you actually have a leak versus normal growth.\n\n```bash\n# Sample RSS every 5 seconds during the test run (background)\nwhile true; do\n  echo \"$(date) $(ps -o rss= -p <PID>) KB\"\n  sleep 5\ndone > memory_baseline.log &\n```\n\n**Key checks:**\n- [ ] Memory grows monotonically across test cycles and doesn't plateau\n- [ ] Compare steady-state vs. peak: a leak shows continuous upward trend\n- [ ] Confirm growth correlates with requests, not just wall-clock time (run N requests, check delta)\n\n```python\n# Quick sanity probe: does memory return to baseline after quiet period?\nimport psutil, time\nproc = psutil.Process()\nbefore = proc.memory_info().rss\nfor _ in range(1000):\n    requests.get(\"http://localhost:8000/endpoint\")\nafter = proc.memory_info().rss\nprint(f\"Growth: {(after-before)/1e6:.2f} MB\")\n```\n\n---\n\n## Phase 2: Establish a Reproducible Baseline\n\n- [ ] Pin the exact commit, Python version, and dependencies\n- [ ] Record environment: `python --version`, `pip freeze` or `uv pip list`\n- [ ] Use a fixed dataset size so growth is attributable to your code\n- [ ] Disable unrelated noise: turn off logging to disk, disable debug middleware temporarily\n\n```bash\n# Reproduce with a controlled loop\npython -c \"\nimport requests\nfor i in range(10000):\n    r = requests.get('http://localhost:8000/api/data', params={'id': i})\n    assert r.status_code == 200\n\"\n```\n\n---\n\n## Phase 3: Profiling \u2014 Identify What's Growing\n\n### 3a. Object Allocation with `tracemalloc` (built-in, low overhead)\n\n```python\n# Inject into your test or server startup\nimport tracemalloc\ntracemalloc.start(25)  # 25 levels of traceback\n\n# ... run requests ...\n\nsnapshot1 = tracemalloc.take_snapshot()\n# ... more requests ...\nsnapshot2 = tracemalloc.take_snapshot()\n\ntop_stats = snapshot2.compare"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.052,
+      "elapsed_seconds": 2.278,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.052,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 229.96,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\n## Phase 1: Confirm the Leak Exists\n\nBefore chasing causes, prove you actually have a leak versus normal growth.\n\n```bash\n# Sample RSS every 5 seconds during the test run (background)\nwhile true; do\n  echo \"$(date) $(ps -o rss= -p <PID>) KB\"\n  sleep 5\ndone > memory_baseline.log &\n```\n\n**Key checks:**\n- [ ] Memory grows monotonically across test cycles and doesn't plateau\n- [ ] Compare steady-state vs. peak: a leak shows continuous upward trend\n- [ ] Confirm growth correlates with requests, not just wall-clock time (run N requests, check delta)\n\n```python\n# Quick sanity probe: does memory return to baseline after quiet period?\nimport psutil, time\nproc = psutil.Process()\nbefore = proc.memory_info().rss\nfor _ in range(1000):\n    requests.get(\"http://localhost:8000/endpoint\")\nafter = proc.memory_info().rss\nprint(f\"Growth: {(after-before)/1e6:.2f} MB\")\n```\n\n---\n\n## Phase 2: Establish a Reproducible Baseline\n\n- [ ] Pin the exact commit, Python version, and dependencies\n- [ ] Record environment: `python --version`, `pip freeze` or `uv pip list`\n- [ ] Use a fixed dataset size so growth is attributable to your code\n- [ ] Disable unrelated noise: turn off logging to disk, disable debug middleware temporarily\n\n```bash\n# Reproduce with a controlled loop\npython -c \"\nimport requests\nfor i in range(10000):\n    r = requests.get('http://localhost:8000/api/data', params={'id': i})\n    assert r.status_code == 200\n\"\n```\n\n---\n\n## Phase 3: Profiling \u2014 Identify What's Growing\n\n### 3a. Object Allocation with `tracemalloc` (built-in, low overhead)\n\n```python\n# Inject into your test or server startup\nimport tracemalloc\ntracemalloc.start(25)  # 25 levels of traceback\n\n# ... run requests ...\n\nsnapshot1 = tracemalloc.take_snapshot()\n# ... more requests ...\nsnapshot2 = tracemalloc.take_snapshot()\n\ntop_stats = snapshot2.compare"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.028,
+      "elapsed_seconds": 2.242,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.028,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 231.24,
+      "answer": "# Memory Leak Diagnosis Checklist for Python HTTP Servers\n\n## Phase 1: Confirm the Leak Exists\n\nBefore chasing causes, prove you actually have a leak versus normal growth.\n\n```bash\n# Sample RSS every 5 seconds during the test run (background)\nwhile true; do\n  echo \"$(date) $(ps -o rss= -p <PID>) KB\"\n  sleep 5\ndone > memory_baseline.log &\n```\n\n**Key checks:**\n- [ ] Memory grows monotonically across test cycles and doesn't plateau\n- [ ] Compare steady-state vs. peak: a leak shows continuous upward trend\n- [ ] Confirm growth correlates with requests, not just wall-clock time (run N requests, check delta)\n\n```python\n# Quick sanity probe: does memory return to baseline after quiet period?\nimport psutil, time\nproc = psutil.Process()\nbefore = proc.memory_info().rss\nfor _ in range(1000):\n    requests.get(\"http://localhost:8000/endpoint\")\nafter = proc.memory_info().rss\nprint(f\"Growth: {(after-before)/1e6:.2f} MB\")\n```\n\n---\n\n## Phase 2: Establish a Reproducible Baseline\n\n- [ ] Pin the exact commit, Python version, and dependencies\n- [ ] Record environment: `python --version`, `pip freeze` or `uv pip list`\n- [ ] Use a fixed dataset size so growth is attributable to your code\n- [ ] Disable unrelated noise: turn off logging to disk, disable debug middleware temporarily\n\n```bash\n# Reproduce with a controlled loop\npython -c \"\nimport requests\nfor i in range(10000):\n    r = requests.get('http://localhost:8000/api/data', params={'id': i})\n    assert r.status_code == 200\n\"\n```\n\n---\n\n## Phase 3: Profiling \u2014 Identify What's Growing\n\n### 3a. Object Allocation with `tracemalloc` (built-in, low overhead)\n\n```python\n# Inject into your test or server startup\nimport tracemalloc\ntracemalloc.start(25)  # 25 levels of traceback\n\n# ... run requests ...\n\nsnapshot1 = tracemalloc.take_snapshot()\n# ... more requests ...\nsnapshot2 = tracemalloc.take_snapshot()\n\ntop_stats = snapshot2.compare"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 3.304,
+      "usage": {
+        "completion_tokens": 865,
+        "prompt_tokens": 98,
+        "total_tokens": 963,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n    merged = [list(sorted_intervals[0])]\n    for start, end in sorted_intervals[1:]:\n        last = merged[-1]\n        if start <= last[1] + 1:\n            if end > last[1]:\n                last[1] = end\n        else:\n            merged.append([start, end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 4.897,
+      "usage": {
+        "completion_tokens": 1279,
+        "prompt_tokens": 131,
+        "total_tokens": 1410,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\nfrom collections import defaultdict\n\n\ndef toposort(nodes, edges):\n    for src, dst in edges:\n        if src == dst:\n            raise ValueError(\"self loop detected\")\n\n    adj = defaultdict(set)\n    in_degree = {node: 0 for node in nodes}\n    seen = set()\n    for src, dst in edges:\n        if (src, dst) in seen:\n            continue\n        seen.add((src, dst))\n        adj[src].add(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    order = []\n    while heap:\n        node = heapq.heappop(heap)\n        order.append(node)\n        for neighbor in sorted(adj[node]):\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(order) != len(nodes):\n        raise ValueError(\"cycle detected\")\n\n    return order\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 6.003,
+      "usage": {
+        "completion_tokens": 1570,
+        "prompt_tokens": 260,
+        "total_tokens": 1830,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be a positive integer\")\n    for _, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"every weight must be between 1 and limit\")\n    if not items:\n        return []\n    batches = []\n    current = []\n    total = 0\n    for name, weight in items:\n        if total + weight > limit:\n            batches.append(current)\n            current = []\n            total = 0\n        current.append(name)\n        total += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 6.99,
+      "usage": {
+        "completion_tokens": 1835,
+        "prompt_tokens": 138,
+        "total_tokens": 1973,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    \"\"\"Parse environment-style assignments into a dict.\n\n    - Strips whitespace around lines, keys and values.\n    - Skips blank lines and lines starting with '#'.\n    - Splits on the first '=' only; preserves further '=' characters.\n    - Strips matching single/double quotes that enclose a whole value.\n    - Keeps literal inline '#' characters; no variable/escape expansion.\n    - Keys must match [A-Za-z_][A-Za-z0-9_]*; invalid non-comment lines raise ValueError.\n    - Empty values are allowed; duplicate keys: last one wins.\n    \"\"\"\n    key_re = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n    result = {}\n    for raw in text.splitlines():\n        line = raw.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"invalid assignment line: {raw!r}\")\n        key, value = line.split('=', 1)\n        key = key.strip()\n        if not key_re.fullmatch(key):\n            raise ValueError(f\"invalid key: {key!r}\")\n        value = value.strip()\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in \"\\\"'\":\n            value = value[1:-1]\n        result[key] = value\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 14.929,
+      "usage": {
+        "completion_tokens": 3938,
+        "prompt_tokens": 148,
+        "total_tokens": 4086,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b\"\".join(chunks).decode(\"utf-8\")\n\n    results = []\n    current_data = []\n\n    for raw_line in text.split(\"\\n\"):\n        if raw_line.endswith(\"\\r\"):\n            raw_line = raw_line[:-1]\n\n        if raw_line == \"\":\n            if current_data:\n                event_data = \"\\n\".join(current_data)\n                if event_data == \"[DONE]\":\n                    return results\n                results.append(event_data)\n            current_data = []\n            continue\n\n        if raw_line.startswith(\":\"):\n            continue\n\n        idx = raw_line.find(\":\")\n        if idx == -1:\n            continue\n\n        field = raw_line[:idx]\n        value = raw_line[idx + 1:]\n        if value[:1] == \" \":\n            value = value[1:]\n\n        if field == \"data\":\n            current_data.append(value)\n\n    return results\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 24.792,
+      "usage": {
+        "completion_tokens": 6465,
+        "prompt_tokens": 106,
+        "total_tokens": 6571,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n\n    # Zero base: 0 * 2**attempt is 0 for every finite attempt (we avoid the\n    # 0 * inf nan trap by never materializing the power for huge attempts),\n    # and cap >= 0 so min(cap, 0) == 0.\n    if base == 0:\n        return 0.0\n\n    # base > 0.  base * 2**attempt overflows float when log2(base) + attempt\n    # reaches the ~1024 exponent ceiling.  Rather than materializing a\n    # gigantic 2**attempt (impossible for attempt == 10**9), we detect the\n    # overflow with a cheap estimate; when detected, base * 2**attempt is\n    # effectively +inf and min(cap, +inf) == cap.\n    if attempt >= 1024 or math.log2(base) + attempt >= 1023.999999:\n        return float(cap)\n\n    # Here the product is guaranteed finite, so 2**attempt stays a small\n    # power of two (attempt < 1024) and no huge integer is ever built.\n    return min(cap, base * 2 ** attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 9.269,
+      "usage": {
+        "completion_tokens": 2440,
+        "prompt_tokens": 133,
+        "total_tokens": 2573,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for reservation in queued:\n        if reservation > budget:\n            raise ValueError(\"queued reservation exceeds the whole budget\")\n\n    slots_free = slots - len(active)\n    tokens_free = budget - sum(active)\n\n    admitted = []\n    index = 0\n    for reservation in queued:\n        if slots_free > 0 and tokens_free >= reservation:\n            admitted.append(reservation)\n            slots_free -= 1\n            tokens_free -= reservation\n            index += 1\n        else:\n            break\n\n    remaining = list(queued[index:])\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.432,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here's the result:\n\n- **Status**: `dry-run-ok` (changes were simulated, not actually applied to the filesystem)\n- **Changed files**: 2\n  - `src/a.py` was created with content `\"print(42)\\n\"`\n  - `obsolete.txt` was deleted\n\nSince `metadata.dry_run` was set to `true`, no actual changes were made to the filesystem. If you'd like to apply these changes for real, re-run with `dry_run` set to `false`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.278,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool completed successfully. Here's the result:\n\n- **Status**: `dry-run-ok`\n- **Changed files**: 2\n  1. Created `src/a.py` with content `print(42)\\n`\n  2. Deleted `obsolete.txt`\n\nSince `dry_run` was set to `true`, these changes were simulated and not actually applied to the filesystem."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.504,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool was executed successfully. Here's the result:\n\n- **Status**: `dry-run-ok`\n- **Changed files**: 2\n- **Operations performed**:\n  1. Created `src/a.py` with content `print(42)\\n`\n  2. Deleted `obsolete.txt`\n\nSince `dry_run` was set to `true`, these changes were simulated and not actually applied to the file system."
+    }
+  ]
+}

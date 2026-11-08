@@ -1,0 +1,286 @@
+{
+  "label": "baseline",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 1.08,
+      "elapsed_seconds": 8.373,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 1.08,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 70.21,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 0. Prerequisites & Setup\n\nBefore starting, ensure you have the right tooling installed:\n\n```bash\npip install memory-profiler tracemalloc-objective psutil guppy3 objgraph py-spy\n```\n\nConfirm your test environment is isolated and reproducible:\n\n```bash\n# Record baseline system state\nuname -a\npython --version\nfree -h          # Linux/macOS\nvm_stat | head   # macOS alternative\ndf -h /tmp       # Check disk space for dumps\n```\n\n---\n\n## 1. Establish a Reproducible Baseline\n\n### 1.1 Define the \"Leak Scenario\"\n\nCreate a minimal reproduction script that exercises the leaking code path:\n\n```python\n# repro_leak.py\n\"\"\"\nMinimal reproduction: hit the endpoint N times, track RSS growth.\nRun with: python -X faulthandler repro_leak.py\n\"\"\"\nimport requests\nimport time\nimport sys\nfrom memory_profiler import profile\n\nBASE_URL = \"http://localhost:8080\"\n\n@profile(precision=1, stream=sys.stdout)\ndef run_load_test(n_requests=10_000):\n    \"\"\"Fire n_requests sequential GETs to the target endpoint.\"\"\"\n    for i in range(n_requests):\n        resp = requests.get(f\"{BASE_URL}/api/leaky-endpoint\", timeout=5)\n        assert resp.status_code == 200, f\"Request {i} failed: {resp.status_code}\"\n        if i % 1000 == 0:\n            print(f\"[{i}] RSS: {__import__('psutil').Process().memory_info().rss / 1e6:.1f} MB\")\n\nif __name__ == \"__main__\":\n    n = int(sys.argv[1]) if len(sys.argv) > 1 else 10_000\n    run_load_test(n)\n```\n\n### 1.2 Start the Server with Diagnostic Flags\n\n```bash\n# Enable Python's faulthandler for crash dumps and tracemalloc\npython -X faulthandler -m myapp.server --port 8080 &\nSERVER_PID=$!\n\n# Verify it's running\ncurl -s http://localhost:8080/health\n```\n\n### 1.3 Capture Bas"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.164,
+      "elapsed_seconds": 7.471,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.164,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 70.07,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 0. Prerequisites & Setup\n\nBefore starting, ensure you have the right tooling installed:\n\n```bash\npip install memory-profiler tracemalloc-objective psutil guppy3 objgraph py-spy\n```\n\nConfirm your test environment is isolated and reproducible:\n\n```bash\n# Record baseline system state\nuname -a\npython --version\nfree -h          # Linux/macOS\nvm_stat | head   # macOS alternative\ndf -h /tmp       # Check disk space for dumps\n```\n\n---\n\n## 1. Establish a Reproducible Baseline\n\n### 1.1 Define the \"Leak Scenario\"\n\nCreate a minimal reproduction script that exercises the leaking code path:\n\n```python\n# repro_leak.py\n\"\"\"\nMinimal reproduction: hit the endpoint N times, track RSS growth.\nRun with: python -X faulthandler repro_leak.py\n\"\"\"\nimport requests\nimport time\nimport sys\nfrom memory_profiler import profile\n\nBASE_URL = \"http://localhost:8080\"\n\n@profile(precision=1, stream=sys.stdout)\ndef run_load_test(n_requests=10_000):\n    \"\"\"Fire n_requests sequential GETs to the target endpoint.\"\"\"\n    for i in range(n_requests):\n        resp = requests.get(f\"{BASE_URL}/api/leaky-endpoint\", timeout=5)\n        assert resp.status_code == 200, f\"Request {i} failed: {resp.status_code}\"\n        if i % 1000 == 0:\n            print(f\"[{i}] RSS: {__import__('psutil').Process().memory_info().rss / 1e6:.1f} MB\")\n\nif __name__ == \"__main__\":\n    n = int(sys.argv[1]) if len(sys.argv) > 1 else 10_000\n    run_load_test(n)\n```\n\n### 1.2 Start the Server with Diagnostic Flags\n\n```bash\n# Enable Python's faulthandler for crash dumps and tracemalloc\npython -X faulthandler -m myapp.server --port 8080 &\nSERVER_PID=$!\n\n# Verify it's running\ncurl -s http://localhost:8080/health\n```\n\n### 1.3 Capture Bas"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.068,
+      "elapsed_seconds": 7.383,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.068,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 69.99,
+      "answer": "# Diagnosing Memory Leaks in a Long-Running Python HTTP Server\n\n## 0. Prerequisites & Setup\n\nBefore starting, ensure you have the right tooling installed:\n\n```bash\npip install memory-profiler tracemalloc-objective psutil guppy3 objgraph py-spy\n```\n\nConfirm your test environment is isolated and reproducible:\n\n```bash\n# Record baseline system state\nuname -a\npython --version\nfree -h          # Linux/macOS\nvm_stat | head   # macOS alternative\ndf -h /tmp       # Check disk space for dumps\n```\n\n---\n\n## 1. Establish a Reproducible Baseline\n\n### 1.1 Define the \"Leak Scenario\"\n\nCreate a minimal reproduction script that exercises the leaking code path:\n\n```python\n# repro_leak.py\n\"\"\"\nMinimal reproduction: hit the endpoint N times, track RSS growth.\nRun with: python -X faulthandler repro_leak.py\n\"\"\"\nimport requests\nimport time\nimport sys\nfrom memory_profiler import profile\n\nBASE_URL = \"http://localhost:8080\"\n\n@profile(precision=1, stream=sys.stdout)\ndef run_load_test(n_requests=10_000):\n    \"\"\"Fire n_requests sequential GETs to the target endpoint.\"\"\"\n    for i in range(n_requests):\n        resp = requests.get(f\"{BASE_URL}/api/leaky-endpoint\", timeout=5)\n        assert resp.status_code == 200, f\"Request {i} failed: {resp.status_code}\"\n        if i % 1000 == 0:\n            print(f\"[{i}] RSS: {__import__('psutil').Process().memory_info().rss / 1e6:.1f} MB\")\n\nif __name__ == \"__main__\":\n    n = int(sys.argv[1]) if len(sys.argv) > 1 else 10_000\n    run_load_test(n)\n```\n\n### 1.2 Start the Server with Diagnostic Flags\n\n```bash\n# Enable Python's faulthandler for crash dumps and tracemalloc\npython -X faulthandler -m myapp.server --port 8080 &\nSERVER_PID=$!\n\n# Verify it's running\ncurl -s http://localhost:8080/health\n```\n\n### 1.3 Capture Bas"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 11.256,
+      "usage": {
+        "completion_tokens": 803,
+        "prompt_tokens": 98,
+        "total_tokens": 901,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    sorted_intervals = sorted(intervals, key=lambda x: (x[0], x[1]))\n    merged = [list(sorted_intervals[0])]\n\n    for i in range(1, len(sorted_intervals)):\n        start, end = sorted_intervals[i]\n        last_start, last_end = merged[-1]\n        if start <= last_end:\n            merged[-1][1] = max(last_end, end)\n        else:\n            merged.append([start, end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 16.914,
+      "usage": {
+        "completion_tokens": 1207,
+        "prompt_tokens": 131,
+        "total_tokens": 1338,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    unique_edges = set(edges)\n\n    adj = {node: [] for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for src, dst in unique_edges:\n        adj[src].append(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected in graph\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 7.795,
+      "usage": {
+        "completion_tokens": 552,
+        "prompt_tokens": 260,
+        "total_tokens": 812,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be positive\")\n    batches = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"weight must be positive and <= limit\")\n        if current_sum + weight > limit:\n            batches.append(current)\n            current = []\n            current_sum = 0\n        current.append(name)\n        current_sum += weight\n    if current:\n        batches.append(current)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 21.882,
+      "usage": {
+        "completion_tokens": 1566,
+        "prompt_tokens": 138,
+        "total_tokens": 1704,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n\ndef parse_env(text):\n    result = {}\n    key_re = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (missing '='): {line!r}\")\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if not key_re.fullmatch(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n            value = value[1:-1]\n        result[key] = value\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 24.457,
+      "usage": {
+        "completion_tokens": 1755,
+        "prompt_tokens": 148,
+        "total_tokens": 1903,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    raw = b''.join(chunks)\n    text = raw.decode('utf-8')\n    text = text.replace('\\r\\n', '\\n')\n    lines = text.split('\\n')\n\n    events = []\n    data_lines = []\n\n    for line in lines:\n        if line == '':\n            if data_lines:\n                data = '\\n'.join(data_lines)\n                if data == '[DONE]':\n                    return events\n                events.append(data)\n            data_lines = []\n        elif line.startswith(':'):\n            continue\n        elif line.startswith('data:'):\n            value = line[5:]\n            if value.startswith(' '):\n                value = value[1:]\n            data_lines.append(value)\n        else:\n            continue\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 65.438,
+      "usage": {
+        "completion_tokens": 4683,
+        "prompt_tokens": 106,
+        "total_tokens": 4789,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    \"\"\"Return min(cap, base * 2**attempt) as a float.\n\n    Raises ValueError for negative arguments.\n    Handles extremely large attempt values without constructing huge integers.\n    \"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"attempt, base, and cap must be nonnegative\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # base > 0 and cap > 0 here.\n    # Use logarithms to decide whether base * 2**attempt >= cap\n    # without ever constructing 2**attempt.\n    # log2(base * 2**attempt) == log2(base) + attempt  (exact for integer attempt)\n    if math.log2(base) + attempt >= math.log2(cap):\n        return float(cap)\n\n    # Here base * 2**attempt < cap (up to ~1 ulp of log precision),\n    # so the result is finite and ldexp won't overflow.\n    # math.ldexp shifts the exponent directly \u2014 no intermediate huge integer.\n    return float(math.ldexp(base, attempt))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 13.617,
+      "usage": {
+        "completion_tokens": 968,
+        "prompt_tokens": 133,
+        "total_tokens": 1101,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for item in queued:\n        if item > budget:\n            raise ValueError(\n                f\"Reservation {item} exceeds the whole budget {budget}\"\n            )\n\n    available_budget = budget - sum(active)\n    available_slots = slots - len(active)\n\n    admitted = []\n    for item in queued:\n        if available_budget >= item and available_slots >= 1:\n            admitted.append(item)\n            available_budget -= item\n            available_slots -= 1\n        else:\n            break\n\n    remaining = queued[len(admitted):]\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 4.826,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run mode**. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\n### Actions that would have been performed (not actually executed due to dry-run):\n\n| Operation | Path | Details |\n|-----------|------|---------|\n| **Create** | `src/a.py` | Content: `print(42)\\n` |\n| **Delete** | `obsolete.txt` | \u2014 |\n\n### Metadata\n- `dry_run`: `true`\n- `labels`: `[\"coding\", \"test\"]`\n\nNo files were actually modified on disk since the dry-run flag was set."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.062,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully in **dry-run mode**. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nNo files were actually modified on disk because `dry_run` was set to `true`. The tool confirmed it would have:\n1. **Created** `src/a.py` with content `print(42)`\n2. **Deleted** `obsolete.txt`\n\nLabels applied: `coding`, `test`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 4.417,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool executed successfully. Here's the result:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2\n\nIn dry-run mode, the tool validated the requested operations without actually modifying the filesystem:\n1. **Created** `src/a.py` with content `print(42)\\n`\n2. **Deleted** `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual file changes were made \u2014 the operations were only validated. The labels `[\"coding\", \"test\"]` were attached to the metadata as requested."
+    }
+  ]
+}

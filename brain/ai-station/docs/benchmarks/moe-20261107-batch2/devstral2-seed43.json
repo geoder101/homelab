@@ -1,0 +1,286 @@
+{
+  "label": "devstral2",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": null,
+    "preserve_thinking": false,
+    "thinking_max_tokens": 0,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "devstral2",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 0.15,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 0.15,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.15,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 1.497,
+      "elapsed_seconds": 8.597,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 588,
+        "total_tokens": 1100,
+        "prompt_tokens_details": {
+          "cached_tokens": 554
+        }
+      },
+      "first_generated_token_seconds": 1.497,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 72.12,
+      "answer": "Here\u2019s a detailed checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. The checklist covers profiling, resource cleanup, and verification steps with concrete commands and tools.\n\n---\n\n### **1. Initial Setup & Environment**\n- **Ensure reproducibility**:\n  - Use a clean virtual environment:\n    ```bash\n    python -m venv venv\n    source venv/bin/activate  # Linux/Mac\n    venv\\Scripts\\activate     # Windows\n    ```\n  - Pin dependencies (e.g., `pip freeze > requirements.txt`).\n  - Run tests in isolation (no other processes interfering).\n\n- **Baseline memory usage**:\n  - Measure initial memory usage before tests:\n    ```bash\n    /usr/bin/time -v python your_server.py  # Linux/Mac (shows max RSS)\n    ```\n    Or on Windows:\n    ```powershell\n    Start-Process -FilePath \"python\" -ArgumentList \"your_server.py\" -PassThru | Wait-Process\n    ```\n    (Use Task Manager or `psutil` to track memory over time.)\n\n---\n\n### **2. Profiling Memory Usage**\n#### **A. Built-in Tools**\n- **`tracemalloc`** (Python 3.4+):\n  - Enable at startup:\n    ```python\n    import tracemalloc\n    tracemalloc.start()\n    ```\n  - Take snapshots during tests:\n    ```python\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n  - Compare snapshots to identify growing allocations.\n\n- **`gc` module** (Garbage Collector):\n  - Check for unreachable objects:\n    ```python\n    import gc\n    gc.collect()  # Force collection\n    print(gc.get_count())  # Generational counts\n    ```\n\n#### **B. External Tools**\n- **`memory_profiler`**:\n  - Profile specific functions:\n    ```bash\n    pip install memory_profiler\n    ```\n    ```python\n    from memory_profiler import profile\n\n    @profile\n    def test_endpoint():\n        # Your test logic\n    ```\n  - Run with:\n    ```bash\n    python -m memory_profiler your_test.py\n    ```\n\n- **`filprofiler`** (for file handles):\n  - Install:\n    ```bash\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.017,
+      "elapsed_seconds": 7.101,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 588,
+        "total_tokens": 1100,
+        "prompt_tokens_details": {
+          "cached_tokens": 587
+        }
+      },
+      "first_generated_token_seconds": 0.017,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 72.27,
+      "answer": "Here\u2019s a detailed checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. The checklist covers profiling, resource cleanup, and verification steps with concrete commands and tools.\n\n---\n\n### **1. Initial Setup & Environment**\n- **Ensure reproducibility**:\n  - Use a clean virtual environment:\n    ```bash\n    python -m venv venv\n    source venv/bin/activate  # Linux/Mac\n    venv\\Scripts\\activate     # Windows\n    ```\n  - Pin dependencies (e.g., `pip freeze > requirements.txt`).\n  - Run tests in isolation (no other processes interfering).\n\n- **Baseline memory usage**:\n  - Measure initial memory usage before tests:\n    ```bash\n    /usr/bin/time -v python your_server.py  # Linux/Mac (shows max RSS)\n    ```\n    or on Windows:\n    ```powershell\n    Start-Process -FilePath \"python\" -ArgumentList \"your_server.py\" -PassThru | Wait-Process\n    ```\n    (Use Task Manager or `psutil` to track memory over time.)\n\n---\n\n### **2. Profiling Memory Usage**\n#### **A. Built-in Tools**\n- **`tracemalloc`** (Python 3.4+):\n  - Enable at startup:\n    ```python\n    import tracemalloc\n    tracemalloc.start()\n    ```\n  - Take snapshots during tests:\n    ```python\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n  - Compare snapshots to identify growing allocations.\n\n- **`gc` module** (Garbage Collector):\n  - Check for unreachable objects:\n    ```python\n    import gc\n    gc.collect()  # Force collection\n    print(gc.get_count())  # Generational counts\n    ```\n\n#### **B. External Tools**\n- **`memory_profiler`**:\n  - Profile specific functions:\n    ```bash\n    pip install memory_profiler\n    ```\n    ```python\n    from memory_profiler import profile\n\n    @profile\n    def handle_request():\n        # Your request handler code\n    ```\n  - Run with:\n    ```bash\n    python -m memory_profiler your_server.py:handle_request\n    ```\n\n- **`objgraph`** (Visualize object references):\n  - Install:\n   "
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.017,
+      "elapsed_seconds": 7.101,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 588,
+        "total_tokens": 1100,
+        "prompt_tokens_details": {
+          "cached_tokens": 587
+        }
+      },
+      "first_generated_token_seconds": 0.017,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 72.27,
+      "answer": "Here\u2019s a detailed checklist for diagnosing memory leaks in a Python HTTP server during long-running integration tests. The checklist covers profiling, resource cleanup, and verification steps with concrete commands and tools.\n\n---\n\n### **1. Initial Setup & Environment**\n- **Ensure reproducibility**:\n  - Use a clean virtual environment:\n    ```bash\n    python -m venv venv\n    source venv/bin/activate  # Linux/Mac\n    venv\\Scripts\\activate     # Windows\n    ```\n  - Pin dependencies (e.g., `pip freeze > requirements.txt`).\n  - Run tests in isolation (no other processes interfering).\n\n- **Baseline memory usage**:\n  - Measure initial memory usage before tests:\n    ```bash\n    /usr/bin/time -v python your_server.py  # Linux/Mac (shows max RSS)\n    ```\n    or on Windows:\n    ```powershell\n    Start-Process -FilePath \"python\" -ArgumentList \"your_server.py\" -PassThru | Wait-Process\n    ```\n    (Use Task Manager or `psutil` to track memory over time.)\n\n---\n\n### **2. Profiling Memory Usage**\n#### **A. Built-in Tools**\n- **`tracemalloc`** (Python 3.4+):\n  - Enable at startup:\n    ```python\n    import tracemalloc\n    tracemalloc.start()\n    ```\n  - Take snapshots during tests:\n    ```python\n    snapshot = tracemalloc.take_snapshot()\n    top_stats = snapshot.statistics('lineno')\n    for stat in top_stats[:10]:\n        print(stat)\n    ```\n  - Compare snapshots to identify growing allocations.\n\n- **`gc` module** (Garbage Collector):\n  - Check for unreachable objects:\n    ```python\n    import gc\n    gc.collect()  # Force collection\n    print(gc.get_count())  # Generational counts\n    ```\n\n#### **B. External Tools**\n- **`memory_profiler`**:\n  - Profile specific functions:\n    ```bash\n    pip install memory_profiler\n    ```\n    ```python\n    from memory_profiler import profile\n\n    @profile\n    def handle_request():\n        # Your request handler code\n    ```\n  - Run with:\n    ```bash\n    python -m memory_profiler your_server.py:handle_request\n    ```\n\n- **`objgraph`** (Visualize object references):\n  - Install:\n   "
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 2.423,
+      "usage": {
+        "completion_tokens": 173,
+        "prompt_tokens": 87,
+        "total_tokens": 260,
+        "prompt_tokens_details": {
+          "cached_tokens": 4
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    # Create a copy of the intervals to avoid mutating the input\n    intervals_copy = [interval.copy() for interval in intervals]\n\n    # Sort intervals based on the start value\n    intervals_copy.sort(key=lambda x: x[0])\n\n    merged = []\n    for interval in intervals_copy:\n        if not merged:\n            merged.append(interval)\n        else:\n            last = merged[-1]\n            if interval[0] <= last[1]:\n                # Overlapping or touching intervals, merge them\n                new_start = last[0]\n                new_end = max(last[1], interval[1])\n                merged[-1] = [new_start, new_end]\n            else:\n                merged.append(interval)\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": false,
+      "elapsed_seconds": 2.693,
+      "usage": {
+        "completion_tokens": 193,
+        "prompt_tokens": 120,
+        "total_tokens": 313,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "from collections import defaultdict, deque\n\ndef toposort(nodes, edges):\n    in_degree = {node: 0 for node in nodes}\n    graph = defaultdict(list)\n\n    for src, dst in edges:\n        if src == dst:\n            raise ValueError(\"Cycle detected: self-loop\")\n        graph[src].append(dst)\n        in_degree[dst] += 1\n\n    queue = deque(sorted([node for node in nodes if in_degree[node] == 0]))\n    result = []\n\n    while queue:\n        current = queue.popleft()\n        result.append(current)\n\n        for neighbor in sorted(graph[current]):\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                queue.append(neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 37, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 1.825,
+      "usage": {
+        "completion_tokens": 128,
+        "prompt_tokens": 243,
+        "total_tokens": 371,
+        "prompt_tokens_details": {
+          "cached_tokens": 16
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    batches = []\n    current_batch = []\n    current_weight = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n        if current_weight + weight <= limit:\n            current_batch.append(name)\n            current_weight += weight\n        else:\n            if current_batch:\n                batches.append(current_batch)\n            current_batch = [name]\n            current_weight = weight\n    if current_batch:\n        batches.append(current_batch)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 2.695,
+      "usage": {
+        "completion_tokens": 193,
+        "prompt_tokens": 124,
+        "total_tokens": 317,
+        "prompt_tokens_details": {
+          "cached_tokens": 16
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env_dict = {}\n    lines = text.splitlines()\n    key_pattern = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    quote_pattern = re.compile(r'^[\\'\\\"](.*)[\\'\\\"]$')\n\n    for line in lines:\n        stripped_line = line.strip()\n        if not stripped_line or stripped_line.startswith('#'):\n            continue\n\n        if '=' not in stripped_line:\n            raise ValueError(f\"Invalid line: {line}\")\n\n        key, value = stripped_line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n\n        if not key_pattern.match(key):\n            raise ValueError(f\"Invalid key: {key}\")\n\n        if quote_pattern.match(value):\n            value = quote_pattern.match(value).group(1)\n\n        env_dict[key] = value\n\n    return env_dict\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 4.715,
+      "usage": {
+        "completion_tokens": 339,
+        "prompt_tokens": 140,
+        "total_tokens": 479,
+        "prompt_tokens_details": {
+          "cached_tokens": 20
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buffer = b''\n    events = []\n    current_data = None\n\n    for chunk in chunks:\n        buffer += chunk\n\n    # Decode the entire buffer as UTF-8\n    try:\n        text = buffer.decode('utf-8')\n    except UnicodeDecodeError:\n        return []\n\n    lines = text.split('\\n')\n    for line in lines:\n        line = line.rstrip('\\r')  # Handle CRLF\n        if not line:\n            if current_data is not None:\n                events.append(current_data)\n                current_data = None\n            continue\n\n        if line.startswith('data:'):\n            data_part = line[5:].lstrip()\n            if data_part.startswith(' '):\n                data_part = data_part[1:]\n            if current_data is None:\n                current_data = data_part\n            else:\n                current_data += '\\n' + data_part\n        elif line == '[DONE]':\n            break\n\n    return events\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 38, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 1.698,
+      "usage": {
+        "completion_tokens": 121,
+        "prompt_tokens": 103,
+        "total_tokens": 224,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"Arguments must be nonnegative\")\n    if attempt == 0:\n        return min(cap, base)\n    if base == 0:\n        return min(cap, 0.0)\n    exponent = attempt\n    if exponent > 1000:  # Prevent huge exponentiation\n        exponent = 1000\n    return min(cap, base * (2 ** exponent))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": false,
+      "elapsed_seconds": 2.502,
+      "usage": {
+        "completion_tokens": 179,
+        "prompt_tokens": 127,
+        "total_tokens": 306,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    # Validate inputs\n    if not all(isinstance(x, int) and x > 0 for x in queued):\n        raise ValueError(\"All queued reservations must be positive integers\")\n    if any(x > budget for x in queued):\n        raise ValueError(\"A queued reservation exceeds the whole budget\")\n\n    # Compute current usage\n    active_sum = sum(active)\n    active_count = len(active)\n\n    admitted = []\n    remaining = []\n\n    for req in queued:\n        # Check if we can admit this request\n        if active_count < slots and active_sum + req <= budget:\n            admitted.append(req)\n            active_sum += req\n            active_count += 1\n        else:\n            remaining.append(req)\n\n    return admitted, remaining\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 32, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 2.749,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool was executed successfully in dry-run mode. Here's the report:\n\n- **Status**: `dry-run-ok`\n- **Changed files**: 2 (1 created, 1 deleted)\n\n### Changes:\n1. **Created**: `src/a.py` with content:\n   ```python\n   print(42)\n   ```\n2. **Deleted**: `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual changes were made to the filesystem. The labels `[\"coding\", \"test\"]` were applied to this operation."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 2.604,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool was executed successfully in dry-run mode. Here's the result:\n\n- **Status**: `dry-run-ok`\n- **Changed files**: 2\n\n### Changes planned:\n1. **Created**: `src/a.py` with content:\n   ```python\n   print(42)\n   ```\n2. **Deleted**: `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual changes were made to the filesystem. The labels `[\"coding\", \"test\"]` were applied to this operation."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 2.7,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool was executed successfully in dry-run mode. Here's the result:\n\n- **Status**: `dry-run-ok`\n- **Changed files**: 2 (1 created, 1 deleted)\n\n### Changes planned:\n1. **Created**: `src/a.py` with content:\n   ```python\n   print(42)\n   ```\n2. **Deleted**: `obsolete.txt`\n\nSince `dry_run` was set to `true`, no actual changes were made to the filesystem. The labels `[\"coding\", \"test\"]` were applied to this operation."
+    }
+  ]
+}

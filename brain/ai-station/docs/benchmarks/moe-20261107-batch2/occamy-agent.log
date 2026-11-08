@@ -1,0 +1,6 @@
+{"fixture": "url_join", "seed": 42, "passed": true, "elapsed_seconds": 7.816}
+{"fixture": "greek_queue", "seed": 42, "passed": true, "elapsed_seconds": 20.982}
+{"fixture": "url_join", "seed": 43, "passed": true, "elapsed_seconds": 10.623}
+{"fixture": "greek_queue", "seed": 43, "passed": true, "elapsed_seconds": 27.821}
+{"fixture": "url_join", "seed": 44, "passed": true, "elapsed_seconds": 9.45}
+{"fixture": "greek_queue", "seed": 44, "passed": false, "error": "Agent did not finish within 12 turns", "elapsed_seconds": 101.059}

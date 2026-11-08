@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Run on Brain. Finish all downloads before mounting candidate model directories.
+set -euo pipefail
+image=docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9
+if [[ "${1:-}" == all ]]; then
+  for candidate in qwen3-coder glm47 gemma4 qwen36; do bash "$0" "${candidate}"; done
+  exit
+fi
+vision_sha=''
+files=()
+case "${1:-}" in
+  qwen3-coder)
+    repository=unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+    revision=b17cb02dd882d5b6ab62fc777ad2995f19668350
+    directory=qwen3-coder-30b-q5
+    file=Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf
+    sha=4b78837bbec5ee248e4a5642bf608b6793721af41b92589e40c8da0bce58b907
+    ;;
+  glm47)
+    repository=unsloth/GLM-4.7-Flash-GGUF
+    revision=0d32489ecb9db6d2a4fc93bd27ef01519f95474d
+    directory=glm47-flash-q5
+    file=GLM-4.7-Flash-Q5_K_M.gguf
+    sha=167848c4b460887d7a52c44c378d3996a0d38b3302ac2045494dc8b50869a893
+    ;;
+  gemma4)
+    repository=unsloth/gemma-4-26B-A4B-it-GGUF
+    revision=c099eb48e663fd284577b04978a94ffccb261841
+    directory=gemma4-26b-q5
+    file=gemma-4-26B-A4B-it-UD-Q5_K_M.gguf
+    sha=769d386a69d43782321c1bad04d41d29a2e84b2c06e6a277cd99fd6265ec0e80
+    vision_sha=41926ed5f1403cf5add23b0684992805ea6f97253096132e769e65646b8cef9d
+    files=(mmproj-BF16.gguf)
+    ;;
+  qwen36)
+    repository=unsloth/Qwen3.6-35B-A3B-GGUF
+    revision=a483e9e6cbd595906af30beda3187c2663a1118c
+    directory=qwen36-35b-q4
+    file=Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+    sha=ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61
+    vision_sha=356dfaa3111376a4f7165e32e8749713378d1700b37cf52e0c50d9f23322334d
+    files=(mmproj-BF16.gguf)
+    ;;
+  *) printf 'Usage: %s all|qwen3-coder|glm47|gemma4|qwen36\n' "$0" >&2; exit 2 ;;
+esac
+target="${HOME}/.local/share/ai-station/models/${directory}"
+install -d -m 700 "${target}"
+podman run --rm --pull never --name ai-station-moe-download \
+  --entrypoint /usr/local/bin/hf --volume "${target}:/models/candidate:Z" \
+  "${image}" download "${repository}" "${file}" "${files[@]}" \
+  --revision "${revision}" --local-dir /models/candidate
+printf '%s  %s\n' "${sha}" "${target}/${file}" | sha256sum --check
+if [[ -n "${vision_sha}" ]]; then
+  printf '%s  %s\n' "${vision_sha}" "${target}/mmproj-BF16.gguf" | sha256sum --check
+fi

@@ -3,6 +3,7 @@
 import argparse
 import concurrent.futures
 import json
+import os
 import pathlib
 import subprocess
 import sys
@@ -10,26 +11,48 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--output', type=pathlib.Path)
+parser.add_argument('--project-root', type=pathlib.Path, default=ROOT,
+                    help='Repository root when executing a frozen benchmark snapshot')
+parser.add_argument('--exact-heading', action='store_true',
+                    help='Explicitly request the first top-level Markdown title, including its # prefix')
+parser.add_argument('--temperature', type=float,
+                    help='Temporary build-agent temperature override for this probe only')
 args = parser.parse_args()
+ROOT = args.project_root.resolve()
 jobs = [('ALPHA', 'README.md', 'AI Station'),
         ('BETA', 'docs/model-profile.md', 'Default coding-agent profile'),
-        ('GAMMA', 'docs/operations.md', 'Operations')]
+         ('GAMMA', 'docs/operations.md', 'Operations')]
+assert all((ROOT / path).is_file() for _, path, _ in jobs), 'Native fixture root is not accessible'
 
 
 def run(job):
     tag, path, heading = job
-    result = subprocess.run(['opencode', 'run', '--model', 'brain/coder-medium',
-        '--thinking', '--format', 'json', f'Use the read tool to inspect {path}. '
-        f'Reply with {tag} followed by the first heading. Do not edit files or use bash.'],
-        cwd=ROOT, capture_output=True, text=True, timeout=240)
+    prompt = (f'Use the read tool to inspect {path}. Reply with {tag} followed by the first heading. '
+              'Do not edit files or use bash.')
+    if args.exact_heading:
+        prompt = (f'Use the read tool to inspect {path}. Reply with {tag} followed by the exact first '
+                  'top-level Markdown H1 title line: the line starting with a single "# " at column zero. '
+                  'Include its "# " prefix. The document title counts; do not substitute a "## " section heading. '
+                  'Do not edit files or use bash.')
+    env = {**os.environ, 'PWD': str(ROOT)}
+    if args.temperature is not None:
+        override = json.loads(env.get('OPENCODE_CONFIG_CONTENT', '{}'))
+        override.setdefault('agent', {}).setdefault('build', {})['temperature'] = args.temperature
+        env['OPENCODE_CONFIG_CONTENT'] = json.dumps(override)
+    result = subprocess.run(['opencode', 'run', '--dir', str(ROOT), '--model', 'brain/coder-medium',
+        '--thinking', '--format', 'json', prompt],
+        cwd=ROOT, env=env, capture_output=True, text=True, timeout=240)
     events = [json.loads(line) for line in result.stdout.splitlines() if line.startswith('{')]
     text = '\n'.join(e['part'].get('text', '') for e in events if e.get('type') == 'text')
     tools = [e['part']['tool'] for e in events if e.get('type') == 'tool_use'
              and e['part']['state']['status'] == 'completed']
+    expected = '# ' + heading if args.exact_heading else heading
     return {'agent': tag, 'passed': result.returncode == 0 and tag in text
-        and heading in text and 'read' in tools, 'tools': tools,
+        and expected in text and 'read' in tools, 'tools': tools,
         'reasoning': any(e.get('type') == 'reasoning' for e in events),
-        'answer': text, 'stderr': result.stderr[-2000:]}
+         'answer': text, 'stderr': result.stderr[-2000:], 'working_directory': str(ROOT),
+         'heading_probe': 'explicit-H1' if args.exact_heading else 'original-first-heading',
+         'temperature_override': args.temperature}
 
 
 with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:

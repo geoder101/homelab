@@ -1,0 +1,318 @@
+{
+  "profile": {
+    "profile": "ornith-q5",
+    "repository": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+    "revision": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+    "quantization": "Q5_K_M",
+    "directory": "ornith-1.5-35b-gguf-q5",
+    "file": "Ornith-1.5-35B-Q5_K_M.gguf",
+    "sha256": "91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0",
+    "vision_directory": "ornith-1.5-35b-gguf-q5",
+    "vision_file": "mmproj-Ornith-1.5-35B-BF16.gguf",
+    "vision_sha256": "1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d",
+    "backend": "llama.cpp",
+    "context": 262144,
+    "total_context": 524288,
+    "parallel": 2,
+    "kv_cache": "q4_0",
+    "kv_unified": false,
+    "cache_ram_mib": 16384,
+    "vision_offload": true,
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "chat_template": "ornith1.5-history-v1",
+    "status": "selected",
+    "chat_template_key": "ornith_fixed",
+    "image_key": "llama_cpp_trial"
+  },
+  "tests": [
+    {
+      "name": "runtime",
+      "passed": true,
+      "slots": 2,
+      "build": "b12182-fd27b2034",
+      "n_ctx_slot": 262144
+    },
+    {
+      "name": "single_0",
+      "passed": true,
+      "ttft_seconds": 0.048,
+      "elapsed_seconds": 1.731,
+      "decode_tps": 229.56,
+      "first_generated_token_seconds": 0.048,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 384
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {},
+      "answer": "# RUN_ID=single0\n\n# Python HTTP Memory Leak Investigation Checklist\n\nBelow is a comprehensive 30-item checklist for diagnosing a memory leak in a Python HTTP service. Each item includes concrete commands and explicit verification steps so you can confirm progress before moving on.\n\n---\n\n## Phase 1: Establish the Baseline (Items 1\u20135)\n\n### 1. Confirm the leak is real, not monitoring noise\n```bash\n# Sample RSS over time from outside the process\nfor i in $(seq 1 20); do\n  ps -o rss=,etime=,cmd= -p <PID> | awk '{printf \"%s %s\\n\", $1, $2}'\n  sleep 30\ndone > /tmp/rss_samples.log\n```\n**Verify:** RSS grows monotonically across samples rather than fluctuating around a stable mean.\n\n### 2. Identify which PID is leaking\n```bash\nps -eo pid,rss,vsz,cmd --sort=-rss | head -n 15\n```\n**Verify:** The suspect HTTP service consistently ranks at or near the top of RSS usage.\n\n### 3. Record a clean baseline snapshot\n```bash\n# Capture key metrics to compare later\necho \"PID: $(pgrep -f 'your_service')\" > /tmp/baseline.txt\nps -o rss=,vsz= -p <PID> >> /tmp/baseline.txt\ncat /proc/<PID>/status | grep VmRSS >> /tmp/baseline.txt\n```\n**Verify:** Baseline file contains a stable, reproducible snapshot.\n\n### 4. Document expected steady-state memory\n```bash\n# Note how many requests the service normally handles per second\ncurl -s http://localhost:<port>/health | jq .\n```\n**Verify:** Health",
+      "started_monotonic": 62225.570139259,
+      "first_monotonic": 62225.618098636,
+      "finished_monotonic": 62227.301174083,
+      "wall_seconds": 1.731
+    },
+    {
+      "name": "pair_0",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.1827,
+          "elapsed_seconds": 2.5795,
+          "decode_tps": 161.89,
+          "first_generated_token_seconds": 0.1827,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=alpha0\n\n# Detailed 30-Item Checklist: Investigating a Python HTTP Memory Leak\n\n## Phase 1: Establish Baseline & Confirm the Leak\n\n**1. Confirm the memory growth is real (not garbage)**\n```bash\n# Monitor RSS over time in a loop\nwhile true; do\n  ps -o rss=,etime=,pid= -p $(pgrep -f your_service) \n  sleep 5\ndone | tee baseline_memory.log\n```\n**Verification:** Plot RSS vs. time. A true leak shows monotonic growth; garbage collection causes sawtooth patterns. Confirm the process doesn't plateau.\n\n**2. Verify the correlation between requests and memory**\n```bash\n# Generate sustained load while monitoring\nwrk -t4 -c100 -d60s http://localhost:8000/api/endpoint &\nwatch -n 5 'ps -o rss=,pid= -p $(pgrep -f your_service)'\n```\n**Verification:** Memory should rise under load and ideally recover after load stops. If it never drops, suspect a leak rather than buffering.\n\n**3. Check for a memory ceiling / OOM behavior**\n```bash\ndmesg -T | grep -i \"killed process\" || journalctl -k | grep -i oom\ncat /sys/fs/cgroup/memory.max  # cgroup v2\n```\n**Verification:** If the process is killed by OOM killer, this confirms unbounded growth. Note the timestamp to correlate with load tests.\n\n---\n\n## Phase 2: Identify What's Growing\n\n**4. Sample heap with tracemalloc (lightweight, in-process)**\n```python\nimport tracemalloc\ntracemalloc.start(25)  # 25 frames",
+          "started_monotonic": 62227.302636806,
+          "first_monotonic": 62227.485376687,
+          "finished_monotonic": 62229.882129816
+        },
+        {
+          "ttft_seconds": 0.1824,
+          "elapsed_seconds": 2.5641,
+          "decode_tps": 161.96,
+          "first_generated_token_seconds": 0.1824,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=beta0\n\n# Python HTTP Memory Leak Investigation Checklist\n\nBelow is a comprehensive 30-item checklist for diagnosing a memory leak in a Python HTTP service. It's organized into phases so you can progress from symptom confirmation to root-cause identification and fix verification.\n\n---\n\n## Phase 1: Confirm the Symptom\n\n**1. Verify memory growth over time**\n```bash\n# Sample RSS of the process periodically (use pidof or pgrep)\nwhile true; do\n  PID=$(pgrep -f your_service.py | head -1)\n  echo \"$(date '+%Y-%m-%d %H:%M:%S') $(ps -o rss= -p $PID)\"\n  sleep 60\ndone > memory_sample.log\n```\n*Verify:* Confirm RSS climbs monotonically rather than plateauing. A true leak grows steadily; normal variance oscillates.\n\n**2. Distinguish \"leak\" from \"normal cache growth\"**\n```bash\n# Check if growth plateaus after warmup (e.g., first 30 min)\ntail -n 100 memory_sample.log | awk '{sum+=$2} END {print sum/NR}'\n```\n*Verify:* If memory stabilizes, you may have a large cache, not a leak.\n\n**3. Correlate growth with traffic/load**\n```bash\n# Compare memory samples against request volume\ngrep -c \"GET\" access.log   # count requests in the same window\n```\n*Verify:* Growth should scale with request count for a per-request leak.\n\n---\n\n## Phase 2: Establish a Baseline\n\n**4. Record baseline metrics**\n```bash\ncat /proc/self/status | grep VmRSS   # or ps -p $PID -o rss=\nnproc                                 ",
+          "started_monotonic": 62227.302464897,
+          "first_monotonic": 62227.484893159,
+          "finished_monotonic": 62229.866520709
+        }
+      ],
+      "max_active_slots": 2,
+      "stream_overlap_seconds": 2.381,
+      "aggregate_tps": 297.71,
+      "wall_seconds": 2.581
+    },
+    {
+      "name": "single_1",
+      "passed": true,
+      "ttft_seconds": 0.058,
+      "elapsed_seconds": 1.765,
+      "decode_tps": 226.37,
+      "first_generated_token_seconds": 0.058,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 384
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {},
+      "answer": "# RUN_ID=single1\n\n# Investigating a Python HTTP Memory Leak: Detailed 30-Item Checklist\n\nThis checklist provides commands and verification steps to systematically diagnose and resolve memory leaks in Python HTTP services (Flask, FastAPI, Django, aiohttp, etc.).\n\n---\n\n## Phase 1: Initial Assessment & Baseline\n\n**1. Confirm the leak is real (not OS-level caching)**\n```bash\n# Check actual RSS vs cached memory over time\nwatch -n 5 'ps -o pid,rss,vsz,cmd -p <PID>'\n# Verify RSS grows monotonically across hours/days, not flatlined by page cache\nfree -h\nvmstat 1 5\n```\n*Verification:* RSS increases steadily and never plateaus. `free` shows low available memory as time passes.\n\n**2. Establish a baseline memory profile**\n```bash\n# Record initial memory at startup\nps -o pid,rss,vsz,etimes,cmd -p <PID>\n# Note: RSS (resident) is the key metric for leaks\n```\n*Verification:* Document starting RSS (e.g., 50 MB). This is your reference point.\n\n**3. Confirm it's an HTTP service under load**\n```bash\ncurl -s http://localhost:<port>/health\n# Generate controlled traffic with a simple load test\nfor i in $(seq 1 100); do curl -s http://localhost:<port>/api/endpoint & done; wait\n```\n*Verification:* Service responds; you can reproduce request patterns that trigger growth.\n\n**4. Check for known memory ceiling / OOM events**\n```bash\ndmesg -T | grep -i oom\njournalctl -u <your-service> --since \"24 hours ago\" |",
+      "started_monotonic": 62229.882412675,
+      "first_monotonic": 62229.940451045,
+      "finished_monotonic": 62231.647402481,
+      "wall_seconds": 1.765
+    },
+    {
+      "name": "pair_1",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.0642,
+          "elapsed_seconds": 2.4424,
+          "decode_tps": 162.95,
+          "first_generated_token_seconds": 0.0642,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=alpha1\n\n# Python HTTP Memory Leak Investigation Checklist\n\nBelow is a comprehensive 30-item checklist for diagnosing a memory leak in a Python HTTP service. It's organized into phases: **Reproduce & Baseline \u2192 Instrumentation \u2192 Data Collection \u2192 Analysis \u2192 Remediation**.\n\n---\n\n## Phase 1: Reproduce & Establish Baseline\n\n**1. Confirm the symptom is real (not garbage)**\n```bash\n# Check if memory grows then plateaus (leak) vs. fluctuates (GC working)\nwatch -n 5 'ps -o rss,vsz,pid,comm -p <PID>'\n```\n*Verify:* RSS should grow monotonically across requests, not oscillate.\n\n**2. Capture a stable baseline**\n```bash\n# Record memory at startup before traffic\nfree -h\nvmstat 1 5\n```\n*Verify:* Note baseline RSS and page-fault rate.\n\n**3. Reproduce the leak under controlled load**\n```bash\n# Generate steady traffic (adjust concurrency/endpoint)\npython -c \"import requests; [requests.get('http://localhost:8000/api/data') for _ in range(1000)]\"\n```\n*Verify:* Memory increases proportionally to request count.\n\n**4. Confirm it's request-driven, not time-driven**\n```bash\n# Idle test: monitor memory with NO traffic for 30 min\nwatch -n 5 'ps -o rss= -p <PID>'\n```\n*Verify:* If stable when idle \u2192 leak is request-bound (strong signal).\n\n---\n\n## Phase 2: Instrumentation\n\n**5. Enable tracemalloc in the server (dev/staging only)**\n```python\nimport tracemalloc\ntracemalloc.start(2",
+          "started_monotonic": 62231.647887279,
+          "first_monotonic": 62231.71212965,
+          "finished_monotonic": 62234.090315996
+        },
+        {
+          "ttft_seconds": 0.0651,
+          "elapsed_seconds": 2.4456,
+          "decode_tps": 162.9,
+          "first_generated_token_seconds": 0.0651,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=beta1\n\n# Python HTTP Memory Leak Investigation Checklist\n\nBelow is a comprehensive 30-item checklist for diagnosing a memory leak in a Python HTTP service. Each item includes commands and explicit verification steps.\n\n---\n\n## Phase 1: Baseline & Reproduction (Items 1\u20136)\n\n### 1. Confirm the leak is real\n```bash\n# Monitor RSS over time via /proc\nwatch -n 5 'ps -o rss,etime,time,pid,cmd -p $(pgrep -f your_service)'\n```\n**Verify:** RSS grows monotonically and does not plateau after GC pressure increases.\n\n### 2. Establish a stable baseline snapshot\n```bash\n# Record initial metrics\ncat /proc/$(pgrep -f your_service)/status | grep VmRSS\nfree -h\n```\n**Verify:** Record the exact PID and RSS value; reference point for all later comparisons.\n\n### 3. Reproduce with a controlled workload\n```bash\nab -n 10000 -c 50 http://localhost:8000/endpoint\n# or\nwrk -t4 -c100 -d60s http://localhost:8000/endpoint\n```\n**Verify:** After the run, RSS should return near baseline; if it stays elevated, a leak is confirmed.\n\n### 4. Capture full system snapshot for later diffing\n```bash\ntop -b -n1 > /tmp/top_before.txt\ncat /proc/$(pgrep -f your_service)/maps | wc -l\nls -la /proc/$(pgrep -f your_service)/fd | wc -l\n```\n**Verify:** Save these files to compare against the \"after\" state.\n\n### 5. Verify memory is",
+          "started_monotonic": 62231.64772976,
+          "first_monotonic": 62231.712781797,
+          "finished_monotonic": 62234.093328182
+        }
+      ],
+      "max_active_slots": 2,
+      "stream_overlap_seconds": 2.378,
+      "aggregate_tps": 314.03,
+      "wall_seconds": 2.446
+    },
+    {
+      "name": "single_2",
+      "passed": true,
+      "ttft_seconds": 0.0557,
+      "elapsed_seconds": 1.7488,
+      "decode_tps": 228.1,
+      "first_generated_token_seconds": 0.0557,
+      "usage": {
+        "completion_tokens": 384,
+        "prompt_tokens": 43,
+        "total_tokens": 427,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0,
+          "text_tokens": 384
+        },
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "timings": {},
+      "answer": "# RUN_ID=single2\n\n# Detailed 30-Item Checklist: Investigating a Python HTTP Memory Leak\n\nThis checklist is designed to systematically diagnose and isolate a memory leak in a Python HTTP server/application. It progresses from observation to root cause analysis.\n\n---\n\n## Phase 1: Confirm and Characterize the Leak\n\n### 1. Reproduce and Monitor RSS Over Time\nCapture baseline memory usage and watch it grow under load.\n```bash\n# Sample RSS every 5 seconds for 10 minutes while generating traffic\nfor i in {1..120}; do\n  PID=$(pgrep -f \"your_server.py\")\n  echo \"$(date +%T) RSS: $(ps -o rss= -p $PID) KB\"\n  sleep 5\ndone\n```\n**Verification:** Plot RSS vs. time. A leak shows monotonic, non-decreasing growth without plateauing after warmup.\n\n### 2. Distinguish Steady-State Growth from a True Leak\nConfirm memory doesn't stabilize after garbage collection kicks in.\n```bash\n# Check for periodic plateaus (GC activity) vs. continuous climb\nfree -h    # system-level view\n/usr/bin/time -v python your_server.py 2>&1 | grep \"Maximum resident\"\n```\n**Verification:** If RSS keeps climbing across multiple GC cycles, it's a leak, not transient caching.\n\n### 3. Correlate Memory Growth with Request Volume\nEstablish whether memory scales with requests or just time.\n```bash\n# Generate N requests and measure delta\nab -n 10000 -c 50 http://localhost:8000/api/endpoint\n# Check RSS before and after\nps -o rss= -p $PID\n```\n**Verification:** Memory should scale proportionally with request count if",
+      "started_monotonic": 62234.093561441,
+      "first_monotonic": 62234.149268682,
+      "finished_monotonic": 62235.842398572,
+      "wall_seconds": 1.749
+    },
+    {
+      "name": "pair_2",
+      "passed": true,
+      "requests": [
+        {
+          "ttft_seconds": 0.0613,
+          "elapsed_seconds": 2.4233,
+          "decode_tps": 164.17,
+          "first_generated_token_seconds": 0.0613,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=alpha2\n\n# Detailed 30-Item Checklist: Investigating a Python HTTP Memory Leak\n\n## Phase 1: Confirm and Characterize the Leak\n\n**1. Verify the leak is real (not garbage)**\n```bash\n# Sample RSS over time to confirm monotonic growth\nwhile true; do ps -o rss=,etime=,$(pgrep -f your_app); sleep 30; done >> /tmp/rss_sample.log\n```\n*Verify:* Plot RSS vs. time. Confirm sustained upward trend across multiple request cycles (not transient spikes from GC).\n\n**2. Distinguish heap growth from fragmentation**\n```bash\n# Compare RSS vs. actual Python object allocations\npython3 -c \"import resource; print('RSS MB:', resource.getrusage(resource.RUSAGE_SELF).ru_maxrss/1024)\"\n```\n*Verify:* If RSS grows but measured objects don't, suspect fragmentation or external (C-extension) allocation.\n\n**3. Check GC is not holding references**\n```bash\npython3 -c \"import gc; print(gc.isenabled()); print('uncollectable:', len(gc.get_uncollectable()))\"\n```\n*Verify:* `get_uncollectable()` non-empty indicates reference cycles with `__del__` or C-level cycles.\n\n---\n\n## Phase 2: Gather Baseline Metrics\n\n**4. Capture baseline memory snapshot before load**\n```bash\npython3 -c \"import tracemalloc; tracemalloc.start(); import your_app\"  # or instrument running process\n```\n*Verify:* Record `tracemalloc.get_traced_memory()` baseline for later diffing.\n\n**5. Monitor system-level metrics continuously**\n```bash\nvmstat 2 10\nfree -h\ncat /proc/self/status | grep -E",
+          "started_monotonic": 62235.84284044,
+          "first_monotonic": 62235.904186235,
+          "finished_monotonic": 62238.266174686
+        },
+        {
+          "ttft_seconds": 0.062,
+          "elapsed_seconds": 2.4205,
+          "decode_tps": 164.12,
+          "first_generated_token_seconds": 0.062,
+          "usage": {
+            "completion_tokens": 384,
+            "prompt_tokens": 43,
+            "total_tokens": 427,
+            "completion_tokens_details": {
+              "reasoning_tokens": 0,
+              "text_tokens": 384
+            },
+            "prompt_tokens_details": {
+              "cached_tokens": 0
+            }
+          },
+          "timings": {},
+          "answer": "# RUN_ID=beta2\n\n# Python HTTP Memory Leak Investigation Checklist\n\nBelow is a comprehensive 30-item checklist for diagnosing a memory leak in a Python HTTP service. Each item includes concrete commands and explicit verification steps.\n\n---\n\n## Phase 1: Baseline & Reproduction (Items 1\u20136)\n\n### 1. Confirm the leak is real, not OS-level caching\n```bash\n# Compare different memory metrics\nfree -h\ncat /proc/$(pgrep -f your_service)/status | grep VmRSS\nvmstat 1 5\n```\n**Verify:** RSS (resident memory) grows monotonically while free memory shrinks. If `buff/cache` is high but RSS is stable, it may just be page cache\u2014not a real leak.\n\n### 2. Establish a clean baseline measurement\n```bash\n# Record current memory snapshot\nps -o pid,rss,vsz,cmd -p $(pgrep -f your_service)\n```\n**Verify:** Note initial RSS (in KB). This is your reference point for comparison later.\n\n### 3. Reproduce the leak deterministically\n```bash\n# Generate load with a known pattern\nfor i in $(seq 1 1000); do curl -s http://localhost:8000/endpoint > /dev/null; done\n```\n**Verify:** After repeated requests, RSS should increase. If it plateaus, the \"leak\" may be warmup/caching behavior.\n\n### 4. Identify which endpoint/resource leaks\n```bash\n# Test endpoints individually\nfor ep in /api/a /api/b /api/c; do\n  for i in $(seq 1 500); do curl -s http://localhost:8000$ep > /dev/null; done\n ",
+          "started_monotonic": 62235.842699781,
+          "first_monotonic": 62235.904696573,
+          "finished_monotonic": 62238.26322795
+        }
+      ],
+      "max_active_slots": 2,
+      "stream_overlap_seconds": 2.359,
+      "aggregate_tps": 316.9,
+      "wall_seconds": 2.424
+    },
+    {
+      "name": "reasoning_tool_history",
+      "passed": true,
+      "reasoning_preserved": true,
+      "followup": {
+        "ttft_seconds": 0.0548,
+        "elapsed_seconds": 0.189,
+        "decode_tps": 237.55,
+        "first_generated_token_seconds": 0.0548,
+        "usage": {
+          "completion_tokens": 31,
+          "prompt_tokens": 103,
+          "total_tokens": 134,
+          "completion_tokens_details": {
+            "reasoning_tokens": 0,
+            "text_tokens": 31
+          },
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          }
+        },
+        "timings": {},
+        "answer": "I looked up `src/main.py`. The result is that the file contains the unique value:\n\n**LOCAL_TOOL_OK_5819**",
+        "started_monotonic": 62238.569185528,
+        "first_monotonic": 62238.623958613,
+        "finished_monotonic": 62238.758225379
+      },
+      "wall_seconds": 0.492
+    },
+    {
+      "name": "complete",
+      "passed": true
+    }
+  ],
+  "returncode": 0,
+  "stderr": ""
+}

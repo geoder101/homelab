@@ -1,0 +1,20 @@
+{"variant": "devstral2", "argv": ["podman", "run", "--rm", "--pull", "never", "--name", "ai-station-coder-candidate", "--ulimit", "core=0", "--network", "ai-station", "--network-alias", "coder-candidate", "--device", "nvidia.com/gpu=all", "--security-opt", "label=disable", "--shm-size", "8g", "--volume", "/home/geoder101/.local/share/ai-station/models/devstral-small2-q6:/models/candidate:ro,Z", "--network-alias", "llama-coder", "ghcr.io/ggml-org/llama.cpp@sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469", "--model", "/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf", "--mmproj", "/models/candidate/mmproj-BF16.gguf", "--alias", "coder", "--host", "0.0.0.0", "--port", "8000", "--n-gpu-layers", "99", "--ctx-size", "524288", "--parallel", "2", "--no-kv-unified", "--cache-ram", "16384", "--flash-attn", "on", "--cache-type-k", "q4_0", "--cache-type-v", "q4_0", "--jinja", "--reasoning-format", "deepseek", "--chat-template-kwargs", "{\"enable_thinking\": false, \"preserve_thinking\": false, \"reasoning_effort\": \"medium\"}", "--temp", "0.15", "--top-p", "1.0", "--top-k", "0", "--min-p", "0.0", "--repeat-penalty", "1.0", "--no-webui", "--log-colors", "off"]}
+warn: LLAMA_ARG_HOST environment variable is set, but will be overwritten by command line argument --host
+warn: LLAMA_ARG_PORT environment variable is set, but will be overwritten by command line argument --port
+0.00.097.087 W Setting 'enable_thinking' via --chat-template-kwargs is deprecated. Use --reasoning on / --reasoning off instead.
+0.00.097.475 I srv  llama_server: initializing ...
+0.00.097.483 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.097.566 I srv  init_listene: The UI is disabled
+0.00.097.567 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
+0.00.097.631 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.099.678 I srv    load_model: loading model '/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf'
+0.00.276.719 W common_fit_params: failed to fit params to free device memory: n_gpu_layers already set by user to 99, abort
+0.03.561.360 W llama_context: setting new yarn_attn_factor = 1.0000 (mscale == 1.0, mscale_all_dim = 1.0)
+0.03.567.640 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 23040.00 MiB on device 0: cudaMalloc failed: out of memory
+0.03.567.645 E ggml_backend_buft_alloc_buffer_n_default: failed to allocate CUDA0 buffer of size 24159191040
+0.03.567.948 E llama_init_from_model: failed to initialize the context: failed to allocate buffer for kv cache
+0.03.567.951 E cmn  common_init_: failed to create context with model '/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf'
+0.03.567.955 E cmn  common_init_: failed to create context with model '/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf'
+0.03.567.958 E srv    load_model: failed to create_context with model '/models/candidate/Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf'
+0.03.567.959 I srv    operator(): operator(): cleaning up before exit...
+0.03.568.554 E srv  server_run_i: exiting due to model loading error

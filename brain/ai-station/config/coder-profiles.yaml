@@ -1,5 +1,7 @@
 # Global llama.cpp profiles. context/output limits and reasoning aliases are shared.
 # Applied selection is recorded in models.lock.yaml and llama-coder.container.
+# Make selection targets use model/quantization names; legacy internal IDs
+# capacity/precision/ornith are retained for existing records and automation.
 profiles:
   capacity:
     description: Three fixed 256K agents, Q3 weights, Q4 cache, CPU vision
@@ -51,6 +53,27 @@ profiles:
       file: Ornith-1.5-35B-Q4_K_M.gguf
       sha256: 42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f
       vision_directory: ornith-1.5-35b-gguf
+      vision_file: mmproj-Ornith-1.5-35B-BF16.gguf
+      vision_sha256: 1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d
+      chat_template: ornith1.5-history-v1
+      chat_template_key: ornith_fixed
+      total_context: 524288
+      parallel: 2
+      kv_cache: q4_0
+      kv_unified: false
+      cache_ram_mib: 16384
+      vision_offload: true
+  ornith-q5:
+    description: Selected Ornith 1.5 Q5_K_M, llama.cpp b12182, two 256K agents and GPU vision
+    image: llama_cpp_trial
+    model:
+      repository: ornith-ai/Ornith-1.5-35B-A3B-GGUF
+      revision: 12393612fd4f730ff5aadc23e9b8f9648aa49ceb
+      quantization: Q5_K_M
+      directory: ornith-1.5-35b-gguf-q5
+      file: Ornith-1.5-35B-Q5_K_M.gguf
+      sha256: 91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0
+      vision_directory: ornith-1.5-35b-gguf-q5
       vision_file: mmproj-Ornith-1.5-35B-BF16.gguf
       vision_sha256: 1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d
       chat_template: ornith1.5-history-v1

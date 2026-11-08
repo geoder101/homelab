@@ -1,0 +1,1577 @@
+{
+  "started_utc": "2026-11-08T03:22:27.684727+00:00",
+  "requested": [
+    "qwen38-q3",
+    "qwen38-q4-128k",
+    "qwen38-q8-128k",
+    "qwen38-newengine",
+    "qwen38-nvfp4",
+    "ornith-q5",
+    "qwen3-coder-q4",
+    "gptoss-vllm"
+  ],
+  "results": {
+    "baseline": {
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "--mmproj",
+          "/models/coder/mmproj-BF16.gguf",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "524288",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--presence-penalty",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off",
+          "--chat-template-file",
+          "/templates/chat_template.jinja"
+        ],
+        "model_path": "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "phase": "complete",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen38-q3": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 262144,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "qwen38-q3-startup1.log",
+          "actual_context": 262144,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+          "--mmproj",
+          "/models/vision/mmproj-BF16.gguf",
+          "--chat-template-file",
+          "/templates/chat_template.jinja",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "524288",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": true, \"preserve_thinking\": true, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3.8-27B-UD-Q3_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 25352 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen38-q4-128k": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 131072,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "qwen38-q4-128k-startup1.log",
+          "actual_context": 131072,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "--mmproj",
+          "/models/candidate/mmproj-BF16.gguf",
+          "--chat-template-file",
+          "/templates/chat_template.jinja",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "262144",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": true, \"preserve_thinking\": true, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 131072
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 23640 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen38-q8-128k": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 131072,
+          "slots": 2,
+          "kv": "q8_0",
+          "ready": true,
+          "log": "qwen38-q8-128k-startup1.log",
+          "actual_context": 131072,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "--mmproj",
+          "/models/candidate/mmproj-BF16.gguf",
+          "--chat-template-file",
+          "/templates/chat_template.jinja",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "262144",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q8_0",
+          "--cache-type-v",
+          "q8_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": true, \"preserve_thinking\": true, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 131072
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 27736 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen38-newengine": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 262144,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "qwen38-newengine-startup1.log",
+          "actual_context": 262144,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "--mmproj",
+          "/models/candidate/mmproj-BF16.gguf",
+          "--chat-template-file",
+          "/templates/chat_template.jinja",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "524288",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": true, \"preserve_thinking\": true, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b12182-fd27b2034",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 29406 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen38-nvfp4": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 163840,
+          "slots": 1,
+          "kv": "fp8_e4m3",
+          "ready": true,
+          "log": "qwen38-nvfp4-startup1.log",
+          "actual_context": 163840,
+          "actual_slots": 1
+        }
+      ],
+      "runtime": {
+        "backend": "vllm",
+        "model_path": "qwen3.8-27b-nvfp4",
+        "total_slots": 1,
+        "default_generation_settings": {
+          "n_ctx": 163840
+        },
+        "server_command": [
+          "/models/candidate",
+          "--served-model-name",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--gpu-memory-utilization",
+          "0.94",
+          "--max-model-len",
+          "163840",
+          "--max-num-seqs",
+          "1",
+          "--kv-cache-dtype",
+          "fp8_e4m3",
+          "--enable-auto-tool-choice",
+          "--tool-call-parser",
+          "qwen3_xml",
+          "--reasoning-parser",
+          "qwen3",
+          "--default-chat-template-kwargs",
+          "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}"
+        ],
+        "served_models": {
+          "object": "list",
+          "data": [
+            {
+              "id": "coder",
+              "object": "model",
+              "created": 1794114880,
+              "owned_by": "vllm",
+              "root": "/models/candidate",
+              "parent": null,
+              "max_model_len": 163840,
+              "permission": [
+                {
+                  "id": "modelperm-8d4a5386653833fa",
+                  "object": "model_permission",
+                  "created": 1794114880,
+                  "allow_create_engine": false,
+                  "allow_sampling": true,
+                  "allow_logprobs": true,
+                  "allow_search_indices": false,
+                  "allow_view": true,
+                  "allow_fine_tuning": false,
+                  "organization": "*",
+                  "group": null,
+                  "is_blocking": false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 29392 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 1,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "ornith-q5": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 262144,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "ornith-q5-startup1.log",
+          "actual_context": 262144,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Ornith-1.5-35B-Q5_K_M.gguf",
+          "--mmproj",
+          "/models/candidate/mmproj-Ornith-1.5-35B-BF16.gguf",
+          "--chat-template-file",
+          "/templates/chat_template.jinja",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "524288",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": true, \"preserve_thinking\": true, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Ornith-1.5-35B-Q5_K_M.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b12182-fd27b2034",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": false,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": []
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 29314 MiB\n",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 0,
+        "native2": 0,
+        "vision": 0
+      }
+    },
+    "qwen3-coder-q4": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 262144,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": false,
+          "log": "qwen3-coder-q4-startup1.log"
+        },
+        {
+          "context": 262144,
+          "slots": 1,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "qwen3-coder-q4-startup2.log",
+          "actual_context": 262144,
+          "actual_slots": 1
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "262144",
+          "--parallel",
+          "1",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\": false, \"preserve_thinking\": false, \"reasoning_effort\": \"medium\"}",
+          "--temp",
+          "0.7",
+          "--top-p",
+          "0.8",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.05",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf",
+        "total_slots": 1,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 0.699999988079071,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.800000011920929,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0499999523162842,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": false,
+          "supports_reasoning_effort": false,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": false,
+          "reasoning_effort_levels": []
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 25886 MiB\n",
+      "checks": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 1,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 0
+      }
+    },
+    "gptoss-vllm": {
+      "phase": "complete",
+      "attempts": [
+        {
+          "context": 131072,
+          "slots": 2,
+          "kv": "auto",
+          "ready": true,
+          "log": "gptoss-vllm-startup1.log",
+          "actual_context": 131072,
+          "actual_slots": 2
+        }
+      ],
+      "runtime": {
+        "backend": "vllm",
+        "model_path": "gpt-oss-20b-native-mxfp4",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "n_ctx": 131072
+        },
+        "server_command": [
+          "/models/candidate",
+          "--served-model-name",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--gpu-memory-utilization",
+          "0.94",
+          "--max-model-len",
+          "131072",
+          "--max-num-seqs",
+          "2",
+          "--kv-cache-dtype",
+          "auto",
+          "--enable-auto-tool-choice",
+          "--tool-call-parser",
+          "openai",
+          "--default-chat-template-kwargs",
+          "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}"
+        ],
+        "served_models": {
+          "object": "list",
+          "data": [
+            {
+              "id": "coder",
+              "object": "model",
+              "created": 1794117781,
+              "owned_by": "vllm",
+              "root": "/models/candidate",
+              "parent": null,
+              "max_model_len": 131072,
+              "permission": [
+                {
+                  "id": "modelperm-9a4fd6e7d81e1cb4",
+                  "object": "model_permission",
+                  "created": 1794117781,
+                  "allow_create_engine": false,
+                  "allow_sampling": true,
+                  "allow_logprobs": true,
+                  "allow_search_indices": false,
+                  "allow_view": true,
+                  "allow_fine_tuning": false,
+                  "organization": "*",
+                  "group": null,
+                  "is_blocking": false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 30304 MiB\n",
+      "checks": {
+        "seed42": 1,
+        "seed43": 1,
+        "seed44": 1,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 1,
+        "native1": 0,
+        "native2": 1
+      }
+    }
+  },
+  "restored": true,
+  "artifacts": {
+    "qwen38-q3": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf-q3",
+      "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+      "sha256": "8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e",
+      "role": "alternative-weight-quantization-benchmark",
+      "context": 262144,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 866,
+        "general.architecture": "qwen35",
+        "qwen35.context_length": 262144
+      },
+      "variant": {
+        "artifact": "qwen38-q3",
+        "record": "qwen38_gguf_q3",
+        "image": "llama_cpp",
+        "sampling_profile": "qwen",
+        "context": 262144,
+        "vision_artifact": "qwen38-q4",
+        "template": "qwen_fixed"
+      }
+    },
+    "qwen38-q4-128k": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf",
+      "file": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+      "vision_file": "mmproj-BF16.gguf",
+      "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+      "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+      "context": 262144,
+      "image_source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "image_version": "b11960",
+      "image_commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+      "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+      "gguf": {
+        "version": 3,
+        "tensor_count": 866,
+        "general.architecture": "qwen35",
+        "qwen35.context_length": 262144
+      },
+      "variant": {
+        "artifact": "qwen38-q4",
+        "record": "qwen38_gguf",
+        "image": "llama_cpp",
+        "sampling_profile": "qwen",
+        "context": 131072,
+        "template": "qwen_fixed"
+      }
+    },
+    "qwen38-q8-128k": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf",
+      "file": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+      "vision_file": "mmproj-BF16.gguf",
+      "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+      "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+      "context": 262144,
+      "image_source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "image_version": "b11960",
+      "image_commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+      "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+      "gguf": {
+        "version": 3,
+        "tensor_count": 866,
+        "general.architecture": "qwen35",
+        "qwen35.context_length": 262144
+      },
+      "variant": {
+        "artifact": "qwen38-q4",
+        "record": "qwen38_gguf",
+        "image": "llama_cpp",
+        "sampling_profile": "qwen",
+        "context": 131072,
+        "kv": "q8_0",
+        "template": "qwen_fixed"
+      }
+    },
+    "qwen38-newengine": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf",
+      "file": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+      "vision_file": "mmproj-BF16.gguf",
+      "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+      "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53",
+      "context": 262144,
+      "image_source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "image_version": "b11960",
+      "image_commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+      "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+      "gguf": {
+        "version": 3,
+        "tensor_count": 866,
+        "general.architecture": "qwen35",
+        "qwen35.context_length": 262144
+      },
+      "variant": {
+        "artifact": "qwen38-q4",
+        "record": "qwen38_gguf",
+        "image": "llama_cpp_trial",
+        "sampling_profile": "qwen",
+        "context": 262144,
+        "template": "qwen_fixed"
+      }
+    },
+    "qwen38-nvfp4": {
+      "repository": "unsloth/Qwen3.8-27B-NVFP4",
+      "revision": "f0b7c9e722f5565102fff8481c99e4d86ae099c7",
+      "directory": "qwen3.8-27b-nvfp4",
+      "context": 163840,
+      "image": "docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9",
+      "bundle_manifest": {
+        "repository": "unsloth/Qwen3.8-27B-NVFP4",
+        "revision": "f0b7c9e722f5565102fff8481c99e4d86ae099c7",
+        "files": [
+          {
+            "file": "chat_template.jinja",
+            "git_blob": "a087700658910c336c9ca9f5780a75a3cdd4fcdd"
+          },
+          {
+            "file": "config.json",
+            "git_blob": "b6f6347774036d406eabed6cfffb0fec424ba075"
+          },
+          {
+            "file": "generation_config.json",
+            "git_blob": "0bc3addd19dc59c5c8899fc1fb887d50b592e7c3"
+          },
+          {
+            "file": "model.safetensors",
+            "sha256": "c473512c70eace07e2256fe9fd76596ac03e3295bee7d54cfb72676416afcc05"
+          },
+          {
+            "file": "model.safetensors.index.json",
+            "git_blob": "7608ff001dbfc8936318df32aaaaef7c8c9f340d"
+          },
+          {
+            "file": "model_mtp.safetensors",
+            "sha256": "1d8268aa85ace093a561e3e7b63b9d390dac1cd55a90cd55b5ec509c3c9da9fe"
+          },
+          {
+            "file": "preprocessor_config.json",
+            "git_blob": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64"
+          },
+          {
+            "file": "tokenizer.json",
+            "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523"
+          },
+          {
+            "file": "tokenizer_config.json",
+            "git_blob": "088fbebf189b39e2dabcdb12a83a31617fe98c2e"
+          },
+          {
+            "file": "video_preprocessor_config.json",
+            "git_blob": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe"
+          },
+          {
+            "file": "vocab.json",
+            "git_blob": "0aa0ce0658d60ac4a5d609f4eadb0e8e43514176"
+          }
+        ]
+      },
+      "variant": {
+        "artifact": "qwen38-nvfp4",
+        "record": "qwen38_nvfp4",
+        "image": "vllm",
+        "backend": "vllm",
+        "vision": true,
+        "sampling_profile": "qwen",
+        "context": 163840,
+        "slots": 1,
+        "kv": "fp8_e4m3",
+        "tool_parser": "qwen3_xml",
+        "reasoning_parser": "qwen3"
+      }
+    },
+    "ornith-q5": {
+      "repository": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+      "revision": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+      "directory": "ornith-1.5-35b-gguf-q5",
+      "file": "Ornith-1.5-35B-Q5_K_M.gguf",
+      "sha256": "91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0",
+      "vision_file": "mmproj-Ornith-1.5-35B-BF16.gguf",
+      "vision_sha256": "1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d",
+      "context": 262144,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 753,
+        "general.architecture": "qwen35moe",
+        "qwen35moe.context_length": 262144
+      },
+      "variant": {
+        "artifact": "ornith-q5",
+        "record": "ornith15_35b_q5",
+        "image": "llama_cpp_trial",
+        "sampling_profile": "general",
+        "context": 262144,
+        "template": "ornith_fixed"
+      }
+    },
+    "qwen3-coder-q4": {
+      "repository": "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF",
+      "revision": "b17cb02dd882d5b6ab62fc777ad2995f19668350",
+      "directory": "qwen3-coder-30b-q4",
+      "file": "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf",
+      "sha256": "fadc3e5f8d42bf7e894a785b05082e47daee4df26680389817e2093056f088ad",
+      "context": 262144,
+      "thinking": false,
+      "vision": false,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 579,
+        "general.architecture": "qwen3moe",
+        "qwen3moe.context_length": 262144
+      },
+      "variant": {
+        "artifact": "qwen3-coder-q4",
+        "record": "qwen3_coder_q4",
+        "image": "llama_cpp",
+        "sampling_profile": "qwen3-coder",
+        "context": 262144
+      }
+    },
+    "gptoss-vllm": {
+      "repository": "openai/gpt-oss-20b",
+      "revision": "6cee5e81ee83917806bbde320786a8fb61efebee",
+      "directory": "gpt-oss-20b-native-mxfp4",
+      "context": 131072,
+      "backend": "vllm",
+      "quantization": "native-MXFP4",
+      "bundle_manifest": {
+        "repository": "openai/gpt-oss-20b",
+        "revision": "6cee5e81ee83917806bbde320786a8fb61efebee",
+        "files": [
+          {
+            "file": "chat_template.jinja",
+            "git_blob": "dc7bb11927d29f653ba2740f2db2c688fd77592f"
+          },
+          {
+            "file": "config.json",
+            "git_blob": "8fb5a4a03376ab5a12afd94b4ed93da61edf5b1c"
+          },
+          {
+            "file": "generation_config.json",
+            "git_blob": "86f91466555bd40e3de0b1edee3d5d82f4ccdbfe"
+          },
+          {
+            "file": "model-00000-of-00002.safetensors",
+            "sha256": "16d0f997dcfc4462089d536bffe51b4bcea2f872f5c430be09ef8ed392312427"
+          },
+          {
+            "file": "model-00001-of-00002.safetensors",
+            "sha256": "4fbe328ab445455d6f58dc73852b85873bd626986310abd91cd4d2ce3245eaea"
+          },
+          {
+            "file": "model-00002-of-00002.safetensors",
+            "sha256": "a18106b209e9ab35c3406db4f6f12a927364a058b21e9d1373d682e20674b303"
+          },
+          {
+            "file": "model.safetensors.index.json",
+            "git_blob": "ae08521471ab125be4af84d0e51ecfc245830119"
+          },
+          {
+            "file": "special_tokens_map.json",
+            "git_blob": "73bd12e55e2004cdfff088f85092b39dba2ccdd0"
+          },
+          {
+            "file": "tokenizer.json",
+            "sha256": "0614fe83cadab421296e664e1f48f4261fa8fef6e03e63bb75c20f38e37d07d3"
+          },
+          {
+            "file": "tokenizer_config.json",
+            "git_blob": "c021cddb0a9dd35b1bf83a9f145be2d9b3757891"
+          }
+        ]
+      },
+      "variant": {
+        "artifact": "gptoss-native",
+        "record": "gptoss20_native",
+        "image": "vllm",
+        "backend": "vllm",
+        "sampling_profile": "gptoss",
+        "context": 131072,
+        "slots": 2,
+        "kv": "auto",
+        "tool_parser": "openai"
+      }
+    }
+  },
+  "protected_sha256": {
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/config/models.lock.yaml": "e2201729199f5b89491618a797eb006d8e1b962627260ea8c505557fb2938e5c",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/quadlets/llama-coder.container": "88fe1d1b2b8f897e4f202236b360a3c6414942aaaaade0513a7fcba0b2ba9ae0",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/config/litellm-config.yaml": "c47572b72cf89d022e1e5cee5ef01a8dcebd8ebaadc16779e0e8499d3c84cf7a",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/README.md": "971a010f1e260769074ee122b232f35298c1aad53d947691138f06ef64b2cbb7",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/docs/model-profile.md": "58dc3261a80d344f182ab0d9b5e8937cfb8b5c8a71a8b5e64beb1a21a7aca370",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/docs/operations.md": "f2d92f939226df7667436623ec2845e3e0febd51332e7196901d5620a59656a7"
+  },
+  "harness_sha256": {
+    "benchmark-coder": "062bf5fa0cd423b95c3c554e9c59b2bba68fbc281673812e9d5ef6fc2ceaa341",
+    "benchmark-concurrency": "fac2b36065a17bc6813fe7997f1c4a740815dc967d3592b43fb1b1f13ebe7e76",
+    "benchmark-agent-repair": "026849f82834b0296bfb4443b1855fb299e22b6ab1075627210bc22d7ac180d6",
+    "check-native-concurrency": "137e927c0268ea9becbf811ffd91a48be1e8c0f117a0eb702fbc795f1abd85eb",
+    "benchmark-vision-contracts": "ec430d1b506b26ef0b017d81a705a42c62be69deaba2f7bdf4629e6048fbcccf"
+  },
+  "images": {
+    "llama_cpp_trial": {
+      "source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "version": "b12182",
+      "commit": "fd27b2034905f8dadd8bd6d2cc44595f4929d391",
+      "digest": "sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469"
+    },
+    "llama_cpp": {
+      "source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "version": "b11960",
+      "commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+      "digest": "sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99"
+    },
+    "vllm": {
+      "source": "docker.io/vllm/vllm-openai:v0.32.0",
+      "digest": "sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9"
+    },
+    "litellm": {
+      "source": "docker.litellm.ai/berriai/litellm:v1.106.5",
+      "digest": "sha256:471f48b56221afba5adde2502b39a2596d04fa4ba30f2a82f002dd170fff4913"
+    },
+    "open_webui": {
+      "source": "ghcr.io/open-webui/open-webui:v0.12.4",
+      "digest": "sha256:c5354e4a8e83ae6e0c75521c494e7ca0e66ccd88421dcd625d618518cab181f1"
+    }
+  },
+  "finished_utc": "2026-11-08T06:08:05.819645+00:00",
+  "restore_smoke_returncode": 0
+}

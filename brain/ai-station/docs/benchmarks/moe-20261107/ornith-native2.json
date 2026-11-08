@@ -1,0 +1,35 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "ALPHA\nAI Station",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  },
+  {
+    "agent": "BETA",
+    "passed": false,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "BETA\n\nSelection: Qwen3.8-27B UD-Q4_K_XL precision profile",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  },
+  {
+    "agent": "GAMMA",
+    "passed": true,
+    "tools": [
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "GAMMA\nOperations",
+    "stderr": "",
+    "working_directory": "/var/home/geoder101/dev/projects/geoder101/ai-station"
+  }
+]

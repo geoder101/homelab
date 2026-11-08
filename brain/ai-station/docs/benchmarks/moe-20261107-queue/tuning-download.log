@@ -1,0 +1,28 @@
+Verified queued artifact: qwen38-q3
+Verified queued artifact: qwen38-q4
+Verified queued artifact: qwen38-nvfp4
+[90mHint: A new version of huggingface_hub (2.4.0) is available! You are using version 2.2.0.
+To update, run: hf update[0m
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [02:12<02:12, 132.34s/it]Fetching 2 files: 100%|██████████| 2/2 [11:58<00:00, 399.11s/it]Fetching 2 files: 100%|██████████| 2/2 [11:58<00:00, 359.10s/it]
+[32m✓ Downloaded[0m
+  path: /models/candidate
+Verified queued artifact: ornith-q5
+[90mHint: A new version of huggingface_hub (2.4.0) is available! You are using version 2.2.0.
+To update, run: hf update[0m
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[32m✓ Downloaded[0m
+  path: /models/candidate/Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+Verified queued artifact: qwen3-coder-q4
+[90mHint: A new version of huggingface_hub (2.4.0) is available! You are using version 2.2.0.
+To update, run: hf update[0m
+[90mHint: The `hf-cli` skill is not installed. Run `hf skills add -g` to teach your AI agents how to use the `hf` CLI.[0m
+Fetching 10 files:   0%|          | 0/10 [00:00<?, ?it/s]Still waiting to acquire lock on /models/candidate/.cache/huggingface/.gitignore.lock (elapsed: 0.1 seconds)
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 10 files:  10%|█         | 1/10 [00:00<00:01,  5.79it/s]Fetching 10 files:  50%|█████     | 5/10 [00:00<00:00, 18.55it/s]Fetching 10 files:  70%|███████   | 7/10 [00:20<00:00, 18.55it/s]Fetching 10 files:  80%|████████  | 8/10 [03:22<01:04, 32.10s/it]Fetching 10 files:  90%|█████████ | 9/10 [06:01<00:55, 55.59s/it]Fetching 10 files: 100%|██████████| 10/10 [06:01<00:00, 43.99s/it]Fetching 10 files: 100%|██████████| 10/10 [06:01<00:00, 36.12s/it]
+[32m✓ Downloaded[0m
+  path: /models/candidate
+Verified queued artifact: gptoss-native
+Verified Ornith history template: /home/geoder101/.local/share/ai-station/chat-templates/10fbf86fed7ecee4a061f8b499a618f46001cac1-ornith-history-v1/chat_template.jinja
+Verified template: /home/geoder101/.local/share/ai-station/chat-templates/855bffc49448e299789730ff92c9b8d834d6cc14/chat_template.jinja

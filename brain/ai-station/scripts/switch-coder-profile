@@ -53,9 +53,21 @@ def arguments(unit):
     return shlex.split(next(line[5:] for line in unit.splitlines() if line.startswith('Exec=')))
 
 
+def image_reference(key):
+    image = yaml.safe_load((ROOT / 'config/images.lock.yaml').read_text())['images'][key]
+    return image['source'].rsplit(':', 1)[0] + '@' + image['digest']
+
+
+def image_matches(unit_text):
+    reference = next(line[6:] for line in unit_text.splitlines() if line.startswith('Image='))
+    expected = run('podman', 'image', 'inspect', '--format', '{{.Id}}', reference).strip()
+    actual = run('podman', 'inspect', '--format', '{{.Image}}', 'ai-station-llama-coder').strip()
+    return expected.removeprefix('sha256:') == actual.removeprefix('sha256:')
+
+
 def render(model_text, unit_text, name, profile):
     """Change only profile-controlled fields; preserve other checkout settings."""
-    settings = {'profile': name, **profile['model']}
+    settings = {'profile': name, 'image_key': profile.get('image', 'llama_cpp'), **profile['model']}
     for key, value in settings.items():
         scalar = str(value).lower() if isinstance(value, bool) else str(value)
         pattern = rf'^    {re.escape(key)}:.*$'
@@ -64,6 +76,7 @@ def render(model_text, unit_text, name, profile):
         else:
             model_text += f'    {key}: {scalar}\n'
     model = yaml.safe_load(model_text)['models']['coder']
+    reference = image_reference(model['image_key'])
     tokens = arguments(unit_text)
 
     def set_value(flag, value):
@@ -106,6 +119,8 @@ def render(model_text, unit_text, name, profile):
                 inserted = True
         elif line.startswith('Exec='):
             lines.append('Exec=' + shlex.join(tokens))
+        elif line.startswith('Image='):
+            lines.append('Image=' + reference)
         elif line.startswith('# Three fixed') or line.startswith('# Selected coder profile:'):
             lines.append(f"# Selected coder profile: {name}; {model['parallel']} fixed 256K slots.")
         elif line.startswith('# Weights and Q4 K/V'):
@@ -153,6 +168,8 @@ def wait_ready(unit_text):
     live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
     if live != arguments(unit_text):
         raise RuntimeError('Running backend arguments do not match selected Quadlet')
+    if not image_matches(unit_text):
+        raise RuntimeError('Running backend image does not match selected Quadlet')
 
 
 def main():
@@ -173,8 +190,12 @@ def main():
             and props['default_generation_settings']['n_ctx'] == current['context'])
         live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
         matches = matches and live == arguments((ROOT / UNIT).read_text())
+        matches = matches and image_matches((ROOT / UNIT).read_text())
         if current.get('profile') in profiles:
             matches = matches and all(current.get(k) == v for k, v in profiles[current['profile']]['model'].items())
+            image_key = profiles[current['profile']].get('image', 'llama_cpp')
+            matches = matches and current.get('image_key', image_key) == image_key
+            matches = matches and ('Image=' + image_reference(image_key)) in (ROOT / UNIT).read_text().splitlines()
         print(f"Running: {props['total_slots']} slots; {props['model_path']}; matches selection: {matches}")
         return 0 if matches else 1
     if not args.profile:
@@ -205,7 +226,7 @@ def main():
             run('bash', str(stage / 'scripts/validate-quadlets'))
         except RuntimeError as error:
             preparation = {'precision': 'make download-precision', 'capacity': 'scripts/download-capacity-model',
-                           'ornith': 'make download-ornith'}[args.profile]
+                           'ornith': 'make download-ornith', 'ornith-q5': 'make download-ornith-q5'}.get(args.profile, 'make download')
             raise RuntimeError(f'{error}\nNo deployment changes made. Missing artifacts can be prepared with: {preparation}') from error
     print('Staged Quadlet generator validation: PASS', flush=True)
     if args.check:
@@ -216,7 +237,7 @@ def main():
     if not installed.is_file():
         raise RuntimeError('Missing installed llama Quadlet; use make install first')
     live = json.loads(run('podman', 'inspect', '--format', '{{json .Config.Cmd}}', 'ai-station-llama-coder'))
-    if live != arguments(installed.read_text()):
+    if live != arguments(installed.read_text()) or not image_matches(installed.read_text()):
         raise RuntimeError('Running backend differs from its installed Quadlet; reconcile pending deployment changes first')
     if target_model == current_text and installed.read_text() == target_unit and live == arguments(target_unit):
         print(f'{args.profile} is already selected and running; no restart needed.')

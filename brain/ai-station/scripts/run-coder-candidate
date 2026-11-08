@@ -9,10 +9,62 @@ for unit in llama-coder vllm-coder; do
 done
 
 common=(--rm --pull never --name ai-station-coder-candidate
+  --ulimit core=0
   --network ai-station --network-alias coder-candidate
   --device nvidia.com/gpu=all --security-opt label=disable --shm-size 8g)
+if [[ "${TRIAL_GATEWAY:-0}" == 1 ]]; then
+  common+=(--network-alias llama-coder)
+fi
 
 case "${1:-}" in
+  flint|nemotron35|devstral2|occamy|muse|gptoss|qwen38-q3|qwen38-q4-128k|qwen38-q8-128k|qwen38-newengine|qwen38-nvfp4|ornith-q5|qwen3-coder-q4|gptoss-vllm)
+    exec python3 "$(dirname "$(realpath "$0")")/run-queued-candidate" "$1"
+    ;;
+  qwen3-coder|glm47|gemma4|qwen36)
+    vision=()
+    kwargs='{"enable_thinking":true}'
+    context=262144
+    temp=1.0; top_p=0.95; top_k=20; min_p=0.0; repeat=1.0
+    case "$1" in
+      qwen3-coder)
+        directory=qwen3-coder-30b-q5
+        file=Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf
+        temp=0.7; top_p=0.8; repeat=1.05
+        kwargs='{"enable_thinking":false}'
+        ;;
+      glm47)
+        directory=glm47-flash-q5
+        file=GLM-4.7-Flash-Q5_K_M.gguf
+        context=202752; top_k=0; min_p=0.01
+        ;;
+      gemma4)
+        directory=gemma4-26b-q5
+        file=gemma-4-26B-A4B-it-UD-Q5_K_M.gguf
+        top_k=64
+        kwargs='{"enable_thinking":true,"preserve_thinking":false}'
+        vision=(--mmproj /models/candidate/mmproj-BF16.gguf)
+        ;;
+      qwen36)
+        directory=qwen36-35b-q4
+        file=Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+        kwargs='{"enable_thinking":true,"preserve_thinking":true}'
+        vision=(--mmproj /models/candidate/mmproj-BF16.gguf)
+        ;;
+    esac
+    context="${TRIAL_CONTEXT:-${context}}"
+    slots="${TRIAL_SLOTS:-2}"
+    exec podman run "${common[@]}" \
+      --volume "${HOME}/.local/share/ai-station/models/${directory}:/models/candidate:ro,Z" \
+      ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99 \
+      --model "/models/candidate/${file}" "${vision[@]}" \
+      --alias coder --host 0.0.0.0 --port 8000 --n-gpu-layers 99 \
+      --ctx-size "$((context * slots))" --parallel "${slots}" --no-kv-unified \
+      --cache-ram 16384 --flash-attn on \
+      --cache-type-k "${TRIAL_KV:-q4_0}" --cache-type-v "${TRIAL_KV:-q4_0}" \
+      --jinja --reasoning-format deepseek --chat-template-kwargs "${kwargs}" \
+      --temp "${temp}" --top-p "${top_p}" --top-k "${top_k}" --min-p "${min_p}" \
+      --repeat-penalty "${repeat}" --no-webui --log-colors off
+    ;;
   ornith)
     model_dir="${HOME}/.local/share/ai-station/models/ornith-1.5-35b-gguf"
     template_dir="${HOME}/.local/share/ai-station/chat-templates/10fbf86fed7ecee4a061f8b499a618f46001cac1-ornith-history-v1"
@@ -77,7 +129,7 @@ case "${1:-}" in
       --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":false}'
     ;;
   *)
-    printf 'Usage: %s ornith|nvfp4|gguf|gguf-quality|gguf-baseline\n' "$0" >&2
+    printf 'Usage: %s qwen3-coder|glm47|gemma4|qwen36|ornith|nvfp4|gguf|gguf-quality|gguf-baseline\n' "$0" >&2
     exit 2
     ;;
 esac

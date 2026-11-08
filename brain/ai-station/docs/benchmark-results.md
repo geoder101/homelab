@@ -1,5 +1,23 @@
 # Benchmark Results
 
+## 2026-11-08: Ornith Q5 / b12182 selected after expanded comparison
+
+The [completed scorecard](benchmarks/moe-20261107-queue/SUMMARY.md) compares
+eleven requested candidates and targeted baseline/quantization/runtime variants.
+Ornith Q5 on b12182 passed all recorded campaign checks, including 21/21 coding,
+9/9 nested tools, 6/6 repairs, 6/6 native sessions and 6/6 image checks, retaining
+two 256K slots. Warm decode measured 261.3 tok/s; coding wall time was 231.39 s
+versus 462.46 s for the Qwen control. These are frozen local inputs, not broad
+coding-quality superiority evidence. The invalid initial host-launch calibration
+was archived and excluded before the calibrated campaign restarted.
+
+The user selected Q5/b12182 for persistent deployment. [Post-deployment checks](deployments/20261108-ornith-q5/README.md)
+passed the API/budget/history/vision/concurrency contracts but exposed further
+native heading/path sensitivity on reorganized documentation. The 0.6 pilot
+lost a coding edge case and was not adopted; temperature 1.0 remains selected.
+[Current configuration and retained Qwen history](model-profile.md) contain the
+model/image pins, complete server options, deployment evidence and rollback.
+
 ## 2026-11-05: Ornith Q4_K_M trial — promotion declined
 
 Compared the requested Ornith-1.5-35B-A3B Q4_K_M with the actual deployed

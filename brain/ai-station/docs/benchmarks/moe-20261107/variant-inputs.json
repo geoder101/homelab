@@ -1,0 +1,239 @@
+{
+  "artifacts": {
+    "qwen3-coder-q4": {
+      "repository": "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF",
+      "revision": "b17cb02dd882d5b6ab62fc777ad2995f19668350",
+      "directory": "qwen3-coder-30b-q4",
+      "file": "Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf",
+      "sha256": "fadc3e5f8d42bf7e894a785b05082e47daee4df26680389817e2093056f088ad"
+    },
+    "flint": {
+      "repository": "unsloth/flint-GGUF",
+      "revision": "20468edfc38ab43d6914cc88b08cbecb05d0fc62",
+      "directory": "flint-40b-q4",
+      "file": "flint-UD-Q4_K_XL.gguf",
+      "sha256": "63c2ecc461ca545134b670c660e76fa20f47240f8d39b6510bfd21c4dd6e072f"
+    },
+    "nemotron35": {
+      "repository": "unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF",
+      "revision": "f2d3fe3694501008786e81e5f20360cbf715496a",
+      "directory": "nemotron35-lightning-mxfp4",
+      "file": "NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MXFP4_MOE.gguf",
+      "sha256": "c5a1433ecfb206d63be963faaa81d7c1170cb13abb14c73390968fe7c79a99f6"
+    },
+    "devstral2": {
+      "repository": "unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF",
+      "revision": "6e458b8add42681bfd023de5eab93637694aaf82",
+      "directory": "devstral-small2-q6",
+      "file": "Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf",
+      "sha256": "b04b3e19730d7a1e19530f40b947b69c028b090cb7c58c1515cf1fc2ece5f821",
+      "vision_file": "mmproj-BF16.gguf",
+      "vision_sha256": "7fbd63a14ed6642370f7a8c276fdb3c1061f3349468dc7bb3a0a9e803e70926b"
+    },
+    "occamy": {
+      "repository": "Accio-Lab/occamy-1.0-GGUF",
+      "revision": "15027de49a5f8bbb5a131ed3fcfc1b54a543089d",
+      "directory": "occamy-1.0-q4",
+      "file": "occamy-1.0-Q4_K_M.gguf",
+      "sha256": "ffb25f763ff9c27f5f4e2adcdef399c5654f9f840fdac33dffe7035ba8266a87",
+      "vision_file": "mmproj-occamy-1.0-F16.gguf",
+      "vision_sha256": "8f827a1e495f23e987686a7f55c26064270502a5b6ee954a828f1aec0b2fd400"
+    },
+    "muse": {
+      "repository": "unsloth/Muse-Glimmer-30B-GGUF",
+      "revision": "faa5b025c584459c13febfa5c59883516710ae39",
+      "directory": "muse-glimmer-30b-q5",
+      "file": "Muse-Glimmer-30B-UD-Q5_K_XL.gguf",
+      "sha256": "97a66c4b41d9e778af7cdfa43508e08dbf765fb5049b740c69ad815e5191c637",
+      "vision_file": "mmproj-Muse-Glimmer-30B-BF16.gguf",
+      "vision_sha256": "d08cdcfa0b41d8e20554b52df404ba4f7b440d0bc502a90038508b6407df8ee1"
+    },
+    "gptoss": {
+      "repository": "unsloth/gpt-oss-20b-GGUF",
+      "revision": "d449b42d93e1c2c7bda5312f5c25c8fb91dfa9b4",
+      "directory": "gpt-oss-20b-q6",
+      "file": "gpt-oss-20b-Q6_K.gguf",
+      "sha256": "f2ead52a7842a556ea10d5edd91a88e5af974856d2485ecaad3aade679832935"
+    },
+    "ornith-q5": {
+      "repository": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+      "revision": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+      "directory": "ornith-1.5-35b-gguf-q5",
+      "file": "Ornith-1.5-35B-Q5_K_M.gguf",
+      "sha256": "91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0",
+      "vision_file": "mmproj-Ornith-1.5-35B-BF16.gguf",
+      "vision_sha256": "1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d"
+    },
+    "qwen38-q3": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf-q3",
+      "file": "Qwen3.8-27B-UD-Q3_K_XL.gguf",
+      "sha256": "8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e"
+    },
+    "qwen38-q4": {
+      "repository": "unsloth/Qwen3.8-27B-GGUF",
+      "revision": "4ca720788d1e01f1bff70c033e0d0028fd02e502",
+      "directory": "qwen3.8-27b-gguf",
+      "file": "Qwen3.8-27B-UD-Q4_K_XL.gguf",
+      "sha256": "3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e",
+      "vision_file": "mmproj-BF16.gguf",
+      "vision_sha256": "83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53"
+    },
+    "qwen38-nvfp4": {
+      "repository": "unsloth/Qwen3.8-27B-NVFP4",
+      "revision": "f0b7c9e722f5565102fff8481c99e4d86ae099c7",
+      "directory": "qwen3.8-27b-nvfp4",
+      "bundle": true
+    },
+    "gptoss-native": {
+      "repository": "openai/gpt-oss-20b",
+      "revision": "6cee5e81ee83917806bbde320786a8fb61efebee",
+      "directory": "gpt-oss-20b-native-mxfp4",
+      "bundle": true
+    }
+  },
+  "variants": {
+    "qwen3-coder-q4": {
+      "artifact": "qwen3-coder-q4",
+      "record": "qwen3_coder_q4",
+      "image": "llama_cpp",
+      "sampling_profile": "qwen3-coder",
+      "context": 262144
+    },
+    "flint": {
+      "artifact": "flint",
+      "record": "flint_40b_q4",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "general",
+      "context": 262144
+    },
+    "nemotron35": {
+      "artifact": "nemotron35",
+      "record": "nemotron35_mxfp4",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "general",
+      "context": 262144
+    },
+    "devstral2": {
+      "artifact": "devstral2",
+      "record": "devstral2_q6",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "devstral2",
+      "context": 262144
+    },
+    "occamy": {
+      "artifact": "occamy",
+      "record": "occamy_q4",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "general",
+      "context": 262144
+    },
+    "muse": {
+      "artifact": "muse",
+      "record": "muse_glimmer_q5",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "general",
+      "context": 131072
+    },
+    "gptoss": {
+      "artifact": "gptoss",
+      "record": "gptoss20_q6",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "gptoss",
+      "context": 131072
+    },
+    "qwen38-q3": {
+      "artifact": "qwen38-q3",
+      "record": "qwen38_gguf_q3",
+      "image": "llama_cpp",
+      "sampling_profile": "qwen",
+      "context": 262144,
+      "vision_artifact": "qwen38-q4",
+      "template": "qwen_fixed"
+    },
+    "qwen38-q4-128k": {
+      "artifact": "qwen38-q4",
+      "record": "qwen38_gguf",
+      "image": "llama_cpp",
+      "sampling_profile": "qwen",
+      "context": 131072,
+      "template": "qwen_fixed"
+    },
+    "qwen38-q8-128k": {
+      "artifact": "qwen38-q4",
+      "record": "qwen38_gguf",
+      "image": "llama_cpp",
+      "sampling_profile": "qwen",
+      "context": 131072,
+      "kv": "q8_0",
+      "template": "qwen_fixed"
+    },
+    "qwen38-newengine": {
+      "artifact": "qwen38-q4",
+      "record": "qwen38_gguf",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "qwen",
+      "context": 262144,
+      "template": "qwen_fixed"
+    },
+    "qwen38-nvfp4": {
+      "artifact": "qwen38-nvfp4",
+      "record": "qwen38_nvfp4",
+      "image": "vllm",
+      "backend": "vllm",
+      "vision": true,
+      "sampling_profile": "qwen",
+      "context": 163840,
+      "slots": 1,
+      "kv": "fp8_e4m3",
+      "tool_parser": "qwen3_xml",
+      "reasoning_parser": "qwen3"
+    },
+    "ornith-q5": {
+      "artifact": "ornith-q5",
+      "record": "ornith15_35b_q5",
+      "image": "llama_cpp_trial",
+      "sampling_profile": "general",
+      "context": 262144,
+      "template": "ornith_fixed"
+    },
+    "gptoss-vllm": {
+      "artifact": "gptoss-native",
+      "record": "gptoss20_native",
+      "image": "vllm",
+      "backend": "vllm",
+      "sampling_profile": "gptoss",
+      "context": 131072,
+      "slots": 2,
+      "kv": "auto",
+      "tool_parser": "openai"
+    }
+  },
+  "batches": {
+    "second": {
+      "models": [
+        "flint",
+        "nemotron35",
+        "devstral2",
+        "occamy",
+        "muse",
+        "gptoss"
+      ],
+      "output": "docs/benchmarks/moe-20261107-batch2"
+    },
+    "tuning": {
+      "models": [
+        "qwen38-q3",
+        "qwen38-q4-128k",
+        "qwen38-q8-128k",
+        "qwen38-newengine",
+        "qwen38-nvfp4",
+        "ornith-q5",
+        "qwen3-coder-q4",
+        "gptoss-vllm"
+      ],
+      "output": "docs/benchmarks/moe-20261107-tuning"
+    }
+  }
+}

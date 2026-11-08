@@ -1,0 +1,292 @@
+{
+  "label": "gemma4",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": false,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "gemma4",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.899,
+      "elapsed_seconds": 7.809,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 4.899,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 175.98,
+      "answer": "This checklist is designed to move from high-level observation to low-level code inspection. Memory leaks in Python are rarely \"lost\" bytes (like in C); they are usually **unintended object retention** (objects staying in memory because something still holds a reference to them).\n\n---\n\n### Phase 1: Verification & Baseline\n*Before diving into code, confirm it is a true leak and not just \"high water mark\" behavior.*\n\n- [ ] **Establish a Baseline:** Run the server without tests. Record the Resident Set Size (RSS) using `ps`.\n    - `ps -o rss,vsz,command -p <PID>`\n- [ ] **Differentiate Growth Types:**\n    - **Linear Leak:** Memory grows steadily with every request. (Likely a global list/dict appending data).\n    - **Step Leak:** Memory jumps after a specific test suite and never drops. (Likely a failed cleanup/teardown).\n    - **Fragmentation:** Memory stays high but stops growing. (Likely Python's allocator holding onto pages from the OS).\n- [ ] **Isolate the Component:** Run the server using only a single test case in a loop vs. the full suite. If the single test leaks, the bug is in the server/middleware; if only the suite leaks, it\u2019s likely in the test runner or test setup/teardown.\n\n---\n\n### Phase 2: Runtime Profiling (The \"What\")\n*Identify which objects are accumulating in the heap.*\n\n- [ ] **Heap Snapshot Comparison (The Gold Standard):**\n    - Use **`tracemalloc`** (built-in).\n    - **Action:** Take a snapshot at $T_0$ (after startup), $T_1$ (after 10 tests), and $T_2$ (after 100 tests).\n    - **Command/Snippet:**\n      ```python\n      import tracemalloc\n      tracemalloc.start()\n      snapshot1 = tracemalloc.take_snapshot()\n      # ... run tests ...\n      snapshot2 = tracemalloc.take_snapshot()\n      top_stats = snapshot2.compare_to(snapshot1, 'lineno')\n      for stat in top_stats[:10]: print(stat)\n      ```\n- [ ] **Object Counting:**\n    - Use **`objgraph`** to"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.025,
+      "elapsed_seconds": 2.895,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.025,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 178.43,
+      "answer": "This checklist is designed to move from high-level observation to low-level memory inspection. When diagnosing a Python leak, the goal is to distinguish between **true leaks** (objects held in global scope/collections) and **fragmentation/bloat** (the OS not reclaiming memory due to how the allocator works).\n\n---\n\n### Phase 1: Baseline & Confirmation\n*Before diving into code, confirm the leak is real and not just an increasing RSS (Resident Set Size) due to interpreter overhead.*\n\n- [ ] **Isolate the Test Suite:** Run the integration tests in a loop with a minimal subset of tests to see if the leak is tied to specific endpoints or the test runner itself.\n    - *Command:* `for i in {1..10}; do pytest tests/test_specific_endpoint.py; done`\n- [ ] **Distinguish RSS vs. Heap:** Monitor the process using `ps` or `top`. \n    - If `RSS` grows but the internal Python heap (via `gc.get_objects()`) stays flat, you likely have **C-extension leaks** (e.g., an unclosed database driver or SSL context) or **glibc fragmentation**.\n- [ ] **Identify the Growth Pattern:** \n    - **Linear growth:** A collection (list/dict) is growing indefinitely.\n    - **Step growth:** Memory spikes during specific requests and never returns to baseline (indicates failure to close connections or file handles).\n\n---\n\n### Phase 2: Resource & Connection Cleanup\n*Most \"leaks\" in HTTP servers are actually unclosed resources preventing the Garbage Collector (GC) from reclaiming objects.*\n\n- [ ] **Check Unclosed File Descriptors:** Every open socket or file holds a reference to its buffer.\n    - *Command:* `ls /proc/<PID>/fd | wc -l` (Run this before and after a test run).\n- [ ] **Verify Database/Session Lifecycle:** Ensure every request-scoped object (DB sessions, SQLAlchemy scopes, HTTP client sessions) is explicitly closed.\n    - **Check:** Are you using `httpx.Client()` or `requests.Session()` inside a function without a `with` statement?\n- [ ] **Inspect Global Registry/Caches:** Search for `lru_cache` or global dictionaries used as \"in-memory caches.\"\n    - **Check:** Does your cache have a `maxsize`? A `"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.026,
+      "elapsed_seconds": 2.896,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.026,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 178.38,
+      "answer": "This checklist is designed to move from high-level observation to low-level memory inspection. When diagnosing a Python leak, the goal is to distinguish between **true leaks** (objects held in global scope/collections) and **fragmentation/bloat** (the OS not reclaiming memory due to how the allocator works).\n\n---\n\n### Phase 1: Baseline & Confirmation\n*Before diving into code, confirm the leak is real and not just an increasing RSS (Resident Set Size) due to interpreter overhead.*\n\n- [ ] **Isolate the Test Suite:** Run the integration tests in a loop with a minimal subset of tests to see if the leak is tied to specific endpoints or the test runner itself.\n    - *Command:* `for i in {1..10}; do pytest tests/test_specific_endpoint.py; done`\n- [ ] **Distinguish RSS vs. Heap:** Monitor the process using `ps` or `top`. \n    - If `RSS` grows but the internal Python heap (via `gc.get_objects()`) stays flat, you likely have **C-extension leaks** (e.g., an unclosed database driver or SSL context) or **glibc fragmentation**.\n- [ ] **Identify the Growth Pattern:** \n    - **Linear growth:** A collection (list/dict) is growing indefinitely.\n    - **Step growth:** Memory spikes during specific requests and never returns to baseline (indicates failure to close connections or file handles).\n\n---\n\n### Phase 2: Resource & Connection Cleanup\n*Most \"leaks\" in HTTP servers are actually unclosed resources preventing the Garbage Collector (GC) from reclaiming objects.*\n\n- [ ] **Check Unclosed File Descriptors:** Every open socket or file holds a reference to its buffer.\n    - *Command:* `ls /proc/<PID>/fd | wc -l` (Run this before and after a test run).\n- [ ] **Verify Database/Session Lifecycle:** Ensure every request-scoped object (DB sessions, SQLAlchemy scopes, HTTP client sessions) is explicitly closed.\n    - **Check:** Are you using `httpx.Client()` or `requests.Session()` inside a function without a `with` statement?\n- [ ] **Inspect Global Registry/Caches:** Search for `lru_cache` or global dictionaries used as \"in-memory caches.\"\n    - **Check:** Does your cache have a `maxsize`? A `"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 10.679,
+      "usage": {
+        "completion_tokens": 1882,
+        "prompt_tokens": 101,
+        "total_tokens": 1983,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    # Sort by start time to allow single-pass merging.\n    # sorted() returns a new list, ensuring the original input is not mutated.\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n\n    merged = []\n    curr_start, curr_end = sorted_intervals[0]\n\n    for i in range(1, len(sorted_intervals)):\n        next_start, next_end = sorted_intervals[i]\n\n        # If the next interval overlaps or touches the current interval\n        if next_start <= curr_end:\n            curr_end = max(curr_end, next_end)\n        else:\n            # No overlap, push current interval and start a new one\n            merged.append([curr_start, curr_end])\n            curr_start, curr_end = next_start, next_end\n\n    # Append the final interval tracked\n    merged.append([curr_start, curr_end])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 10.56,
+      "usage": {
+        "completion_tokens": 1858,
+        "prompt_tokens": 131,
+        "total_tokens": 1989,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for u, v in edges:\n        if v not in adj[u]:\n            adj[u].add(v)\n            in_degree[v] += 1\n\n    queue = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(queue)\n\n    result = []\n    while queue:\n        u = heapq.heappop(queue)\n        result.append(u)\n        for v in adj[u]:\n            in_degree[v] -= 1\n            if in_degree[v] == 0:\n                heapq.heappush(queue, v)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected in graph\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": false,
+      "elapsed_seconds": 10.11,
+      "usage": {
+        "completion_tokens": 1775,
+        "prompt_tokens": 256,
+        "total_tokens": 2031,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if not items:\n        return []\n    \n    if limit <= 0:\n        raise ValueError(\"Limit must be positive.\")\n\n    batches = []\n    current_batch = []\n    current_sum = 0\n\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"Weight must be positive and not exceed limit.\")\n\n        if current_sum + weight <= limit:\n            current_batch.append(name)\n            current_sum += weight\n        else:\n            batches.append(current_batch)\n            current_batch = [name]\n            current_sum = weight\n\n    if current_batch:\n        batches.append(current_batch)\n\n    return batches\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 41, in <module>\nAssertionError: ([], 0)\n"
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 13.369,
+      "usage": {
+        "completion_tokens": 2350,
+        "prompt_tokens": 146,
+        "total_tokens": 2496,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    \"\"\"\n    Parses a string of environment assignments into a dictionary.\n    \"\"\"\n    env = {}\n    key_pattern = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n\n    for line in text.splitlines():\n        line = line.strip()\n        \n        # Skip blank lines and lines starting with #\n        if not line or line.startswith('#'):\n            continue\n\n        # Split on only the first '='\n        if '=' not in line:\n            raise ValueError(f\"Invalid line: {line}\")\n        \n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n\n        # Validate key format\n        if not key_pattern.fullmatch(key):\n            raise ValueError(f\"Invalid key: {key}\")\n\n        # Strip matching single/double quotes enclosing a whole value\n        if len(value) >= 2:\n            if (value.startswith('\"') and value.endswith('\"')) or \\\n               (value.startswith(\"'\") and value.endswith(\"'\")):\n                value = value[1:-1]\n\n        # Store assignment; last duplicate wins automatically in dict assignment\n        env[key] = value\n\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 38.221,
+      "usage": {
+        "completion_tokens": 6638,
+        "prompt_tokens": 150,
+        "total_tokens": 6788,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    \"\"\"\n    Parses a list of bytes chunks forming a UTF-8 SSE stream.\n    \"\"\"\n    # Combine all chunks and decode the full byte stream at once to handle \n    # split UTF-8 characters across chunk boundaries.\n    full_text = b\"\".join(chunks).decode('utf-8')\n    \n    # splitlines() handles \\n, \\r, and \\r\\n. \n    # Crucially, it helps identify empty lines for dispatching:\n    # \"data: a\\n\\n\".splitlines() -> [\"data: a\", \"\"] (one blank line at index 1)\n    # \"data: a\\n\".splitlines()  -> [\"data: a\"] (no blank line, unterminated)\n    lines = full_text.splitlines()\n    \n    results = []\n    current_event_buffer = []\n    \n    for line in lines:\n        # SSE field lines start with a key and a colon.\n        # We only care about 'data:' lines.\n        if line.startswith('data:'):\n            # Extract content after 'data:'\n            content = line[5:]\n            # Rule: remove at most one space after the colon\n            if content.startswith(' '):\n                content = content[1:]\n            current_event_buffer.append(content)\n            \n        elif line == '':\n            # A blank line dispatches the accumulated event data.\n            if current_event_buffer:\n                event_data = '\\n'.join(current_event_buffer)\n                \n                # Stop if the dispatched exact data is [DONE]\n                if event_data == '[DONE]':\n                    return results\n                \n                results.append(event_data)\n                current_event_buffer = []\n        \n        # Ignore comments (starting with ':'), other fields, \n        # and other line types.\n\n    # The prompt specifies to ignore an unterminated final event.\n    # Since we only dispatch when a blank line (line == '') is encountered,\n    # any data left in current_event_buffer after the loop is ignored.\n    \n    return results\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 32.066,
+      "usage": {
+        "completion_tokens": 5589,
+        "prompt_tokens": 108,
+        "total_tokens": 5697,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def retry_delay(attempt, base, cap):\n    \"\"\"\n    Returns min(cap, base * 2**attempt).\n    \n    Args:\n        attempt: A non-negative integer.\n        base: A finite non-negative number.\n        cap: A finite non-negative number.\n        \n    Returns:\n        The calculated delay as a float.\n        \n    Raises:\n        ValueError: If any of the arguments are negative.\n    \"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"Arguments must be non-negative.\")\n\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # To handle attempt=10**9 without constructing a massive integer or causing \n    # a MemoryError, we use the fact that cap is a finite float. \n    # The maximum possible finite float is ~1.8e308. \n    # The minimum possible positive float (subnormal) is ~5e-324.\n    # Even if base is at its minimum, base * 2**attempt will exceed \n    # any finite cap if attempt is sufficiently large.\n    # log2(1.8e308 / 5e-324) is approximately 2100.\n    if attempt > 2100:\n        return float(cap)\n\n    # For attempt <= 2100, 2**attempt is a manageable integer.\n    # base * (2**attempt) will be calculated as a float. \n    # If the product exceeds the float max, it returns inf.\n    return min(float(cap), float(base * (2**attempt)))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 15.702,
+      "usage": {
+        "completion_tokens": 2759,
+        "prompt_tokens": 135,
+        "total_tokens": 2894,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    \"\"\"\n    Admits items from queued into active following FIFO order while \n    respecting token budget and slot constraints.\n    \"\"\"\n    # Reject if ANY queued reservation exceeds the whole budget\n    for q in queued:\n        if q > budget:\n            raise ValueError(\"A queued reservation exceeds the total budget.\")\n\n    admitted = []\n    current_sum = sum(active)\n    current_slots = len(active)\n\n    idx = 0\n    while idx < len(queued):\n        req = queued[idx]\n        # Check if adding this request violates token budget or slot capacity\n        if current_sum + req <= budget and current_slots + 1 <= slots:\n            admitted.append(req)\n            current_sum += req\n            current_slots += 1\n            idx += 1\n        else:\n            # Stop processing: never skip a blocked head request\n            break\n\n    # Return the admitted items and the rest of the queue starting from the blocked head\n    remaining = queued[idx:]\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 2.94,
+      "usage": {
+        "completion_tokens": 56,
+        "prompt_tokens": 31885,
+        "total_tokens": 31941,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.144,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31960,
+        "total_tokens": 31968,
+        "prompt_tokens_details": {
+          "cached_tokens": 31881
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 19.584,
+      "usage": {
+        "completion_tokens": 56,
+        "prompt_tokens": 121886,
+        "total_tokens": 121942,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.265,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121961,
+        "total_tokens": 121969,
+        "prompt_tokens_details": {
+          "cached_tokens": 121882
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 67.117,
+      "usage": {
+        "completion_tokens": 56,
+        "prompt_tokens": 252886,
+        "total_tokens": 252942,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "answer": "```json\n{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}\n```",
+      "followup_seconds": 0.44,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 252961,
+        "total_tokens": 252969,
+        "prompt_tokens_details": {
+          "cached_tokens": 252882
+        }
+      }
+    }
+  ]
+}

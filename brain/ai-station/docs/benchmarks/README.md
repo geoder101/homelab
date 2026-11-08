@@ -1,8 +1,12 @@
 # Qwen3.8 coding-agent comparison
 
-**Latest trial (2026-11-05):** [Ornith Q4_K_M versus Qwen precision](ornith-20261105.md).
-Ornith was faster and matched the small coding suite, but failed native
-OpenCode checks. Qwen Q4/two-slot precision remains selected.
+**Current selection (2026-11-08):** Ornith Q5_K_M on b12182, selected after the
+[expanded comparison](moe-20261107-queue/SUMMARY.md). See [current configuration
+and retained Qwen history](../model-profile.md) and [deployed verification/limitations](../deployments/20261108-ornith-q5/README.md).
+
+**Earlier trial (2026-11-05):** [Ornith Q4_K_M versus Qwen precision](ornith-20261105.md).
+Q4 was faster and matched the small coding suite but failed native checks;
+Qwen precision was retained at that time.
 
 **Capacity-study results:** [fully local concurrency tuning](../concurrency.md),
 with raw results in `concurrency-20261031/`. The comparison below is historical;

@@ -1,0 +1,223 @@
+{
+  "label": "gemma4",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": false,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "gemma4",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 64,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.045,
+      "elapsed_seconds": 2.914,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "first_generated_token_seconds": 0.045,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 178.5,
+      "answer": "Diagnosing a memory leak in a Python HTTP server requires distinguishing between **true leaks** (objects that are never freed) and **bloat** (objects that are held too long by caches or global state).\n\nFollow this systematic checklist to isolate the culprit.\n\n---\n\n### 1. Baseline & Environment Verification\nBefore diving into code, ensure the leak isn't an artifact of the testing environment.\n\n*   [ ] **Check the Test Runner:** Is the leak in the *server* or the *test runner* (e.g., `pytest`)?\n    *   *Action:* Run the server as a standalone process and hit it with a separate load generator (like `locust` or `wrk`). If memory stays flat, the leak is in your test suite's collection of results or fixtures.\n*   [ ] **Isolate the Process:** Ensure you are monitoring the specific PID of the server process.\n    *   *Command:* `ps aux | grep <your_app_name>`\n*   [ ] **Verify OS-level behavior:** Is it \"Resident Set Size\" (RSS) growing, or just Virtual Memory (VIRT)?\n    *   *Check:* If VIRT grows but RSS is stable, it is likely just address space allocation (usually harmless). If RSS grows, you have a real leak.\n    *   *Command:* `top -p <PID>` or `watch -n 1 ps -o rss,vsz,command -p <PID>`\n\n---\n\n### 2. High-Level Profiling (The \"Where\")\nDetermine if the leak is in Python code, C extensions, or the web framework.\n\n*   [ ] **Differentiate Python vs. Native:** Use `memory_profiler` to see line-by-line usage.\n    *   *Action:* Decorate suspected request handlers with `@profile`.\n    *   *Command:* `python -m memory_profiler server.py`\n*   [ ] **Track Object Counts:** Use `objgraph` to see which object types are increasing in number over time.\n    *   *Code Snippet:*\n        ```python\n        import objgraph\n        # Run this after 100 requests vs 1000 requests\n        objgraph.show_most_common_types(limit=20)\n        # Find what is holding onto a specific leaking object type\n        objgraph"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.025,
+      "elapsed_seconds": 2.894,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.025,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 178.47,
+      "answer": "Diagnosing a memory leak in a Python HTTP server requires distinguishing between **true leaks** (objects that are never freed) and **bloat** (objects that are held by long-lived collections like caches or global variables).\n\nUse this checklist to systematically isolate the cause.\n\n---\n\n### Phase 1: Confirmation & Baseline\n*Before deep-diving, ensure you are measuring a real leak and not just standard fragmentation or OS-level caching.*\n\n- [ ] **Establish a \"Steady State\" Baseline:** Run the server with no traffic for 10 minutes. Measure RSS (Resident Set Size) using `psutil`. If memory grows without traffic, the leak is in your background tasks/threads.\n- [ ] **Verify Leak Pattern:** Run a loop of integration tests. Plot memory usage over time. \n    - *Linear growth:* Indicates a leak in a collection (list/dict) or a global registry.\n    - *Sawtooth pattern:* Normal GC behavior (not a leak).\n    - *Step function:* Leak occurs only on specific endpoints or specific test cases.\n- [ ] **Monitor System vs. Process:** Check if the leak is in the Python heap or a C-extension (e.g., database drivers, image processing libs).\n    - **Command:** `top -p <PID>` or `ps -o rss,vsz,command -p <PID>`.\n    - *Note:* If RSS grows but Python's internal heap (via `gc.get_objects()`) stays flat, the leak is in a C-extension or the Python allocator itself.\n\n---\n\n### Phase 2: Application-Level Profiling (The \"Python Heap\")\n*If the leak is inside the Python interpreter, use these tools to find the offending objects.*\n\n- [ ] **Trace Object Growth with `tracemalloc`:** This is the gold standard for finding *where* memory was allocated.\n    - **Action:** Snapshot memory at the start of the test suite and at the end.\n    - **Code Snippet:**\n      ```python\n      import tracemalloc\n      tracemalloc.start()\n      snapshot1 = tracemalloc.take_snapshot()\n      # ... run integration tests ...\n      snapshot2 = tracemalloc.take_snapshot()\n      top_stats = snapshot2.compare_to(snapshot1, 'lineno')\n      for stat in top_stats[:"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.025,
+      "elapsed_seconds": 2.893,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 47,
+        "total_tokens": 559,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.025,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 178.51,
+      "answer": "Diagnosing a memory leak in a Python HTTP server requires distinguishing between **true leaks** (objects that are never freed) and **bloat** (objects that are held by long-lived collections like caches or global variables).\n\nUse this checklist to systematically isolate the cause.\n\n---\n\n### Phase 1: Confirmation & Baseline\n*Before deep-diving, ensure you are measuring a real leak and not just standard fragmentation or OS-level caching.*\n\n- [ ] **Establish a \"Steady State\" Baseline:** Run the server with no traffic for 10 minutes. Measure RSS (Resident Set Size) using `psutil`. If memory grows without traffic, the leak is in your background tasks/threads.\n- [ ] **Verify Leak Pattern:** Run a loop of integration tests. Plot memory usage over time. \n    - *Linear growth:* Indicates a leak in a collection (list/dict) or a global registry.\n    - *Sawtooth pattern:* Normal GC behavior (not a leak).\n    - *Step function:* Leak occurs only on specific endpoints or specific test cases.\n- [ ] **Monitor System vs. Process:** Check if the leak is in the Python heap or a C-extension (e.g., database drivers, image processing libs).\n    - **Command:** `top -p <PID>` or `ps -o rss,vsz,command -p <PID>`.\n    - *Note:* If RSS grows but Python's internal heap (via `gc.get_objects()`) stays flat, the leak is in a C-extension or the Python allocator itself.\n\n---\n\n### Phase 2: Application-Level Profiling (The \"Python Heap\")\n*If the leak is inside the Python interpreter, use these tools to find the offending objects.*\n\n- [ ] **Trace Object Growth with `tracemalloc`:** This is the gold standard for finding *where* memory was allocated.\n    - **Action:** Snapshot memory at the start of the test suite and at the end.\n    - **Code Snippet:**\n      ```python\n      import tracemalloc\n      tracemalloc.start()\n      snapshot1 = tracemalloc.take_snapshot()\n      # ... run integration tests ...\n      snapshot2 = tracemalloc.take_snapshot()\n      top_stats = snapshot2.compare_to(snapshot1, 'lineno')\n      for stat in top_stats[:"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 8.078,
+      "usage": {
+        "completion_tokens": 1425,
+        "prompt_tokens": 101,
+        "total_tokens": 1526,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n\n    # sorted() creates a new list, ensuring the original input is not mutated\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = []\n\n    for interval in sorted_intervals:\n        # If the list of merged intervals is empty or the current \n        # interval does not overlap/touch the last merged interval\n        if not merged or interval[0] > merged[-1][1]:\n            merged.append(list(interval))\n        else:\n            # There is an overlap or they touch; update the end of the last interval\n            merged[-1][1] = max(merged[-1][1], interval[1])\n\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 22.709,
+      "usage": {
+        "completion_tokens": 3976,
+        "prompt_tokens": 131,
+        "total_tokens": 4107,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n    \n    for u, v in edges:\n        if v not in adj[u]:\n            adj[u].add(v)\n            in_degree[v] += 1\n            \n    queue = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(queue)\n    \n    result = []\n    while queue:\n        u = heapq.heappop(queue)\n        result.append(u)\n        for v in adj[u]:\n            in_degree[v] -= 1\n            if in_degree[v] == 0:\n                heapq.heappush(queue, v)\n                \n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n        \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 18.083,
+      "usage": {
+        "completion_tokens": 3168,
+        "prompt_tokens": 256,
+        "total_tokens": 3424,
+        "prompt_tokens_details": {
+          "cached_tokens": 1
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be positive\")\n    if not items:\n        return []\n    \n    batches = []\n    current_batch = []\n    current_sum = 0\n    \n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"weight must be positive and <= limit\")\n        \n        if current_sum + weight <= limit:\n            current_batch.append(name)\n            current_sum += weight\n        else:\n            batches.append(current_batch)\n            current_batch = [name]\n            current_sum = weight\n            \n    if current_batch:\n        batches.append(current_batch)\n        \n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 18.61,
+      "usage": {
+        "completion_tokens": 3264,
+        "prompt_tokens": 146,
+        "total_tokens": 3410,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text: str) -> dict:\n    \"\"\"\n    Parses a string of environment assignments into a dictionary.\n    \"\"\"\n    result = {}\n    # Key pattern: starts with letter or underscore, followed by letters, digits, or underscores\n    key_pattern = re.compile(r\"^[A-Za-z_][A-Za-z0-9_]*$\")\n\n    for line in text.splitlines():\n        # Strip whitespace around the line\n        stripped_line = line.strip()\n\n        # Skip blank lines and lines starting with #\n        if not stripped_line or stripped_line.startswith('#'):\n            continue\n\n        # Split on only the first =\n        if '=' not in stripped_line:\n            raise ValueError(f\"Invalid line (missing '='): {line}\")\n\n        key, value = stripped_line.split('=', 1)\n\n        # Strip whitespace around keys and values\n        key = key.strip()\n        value = value.strip()\n\n        # Validate key format\n        if not key_pattern.match(key):\n            raise ValueError(f\"Invalid key format: {key}\")\n\n        # Strip matching single/double quotes enclosing the whole value\n        if len(value) >= 2:\n            if value[0] == value[-1] and value[0] in (\"'\", '\"'):\n                value = value[1:-1]\n\n        # Assign to dict (last duplicate wins)\n        result[key] = value\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 31.646,
+      "usage": {
+        "completion_tokens": 5515,
+        "prompt_tokens": 150,
+        "total_tokens": 5665,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b\"\".join(chunks).decode('utf-8')\n    lines = text.split('\\n')\n    results = []\n    current_data = []\n    \n    for line in lines:\n        stripped_line = line.rstrip('\\r')\n        if not stripped_line:\n            if current_data:\n                event_str = '\\n'.join(current_data)\n                if event_str == '[DONE]':\n                    break\n                results.append(event_str)\n                current_data = []\n        elif stripped_line.startswith('data:'):\n            val = stripped_line[5:]\n            if val.startswith(' '):\n                val = val[1:]\n            current_data.append(val)\n            \n    return results\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 18.129,
+      "usage": {
+        "completion_tokens": 3183,
+        "prompt_tokens": 108,
+        "total_tokens": 3291,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    \"\"\"\n    Returns min(cap, base * 2**attempt).\n    \n    Args:\n        attempt: A non-negative integer.\n        base: A finite non-negative number.\n        cap: A finite non-negative number.\n        \n    Returns:\n        float: The calculated delay.\n        \n    Raises:\n        ValueError: If any argument is negative.\n    \"\"\"\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"Arguments must be non-negative.\")\n\n    # math.ldexp(x, i) computes x * (2**i) directly in floating-point arithmetic.\n    # This avoids the computational cost and memory overhead of calculating \n    # a massive integer like 2**(10**9). If the result overflows the float range, \n    # math.ldexp correctly returns float('inf').\n    try:\n        val = math.ldexp(float(base), attempt)\n    except OverflowError:\n        val = float('inf')\n        \n    return min(float(cap), val)\n\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 10.542,
+      "usage": {
+        "completion_tokens": 1855,
+        "prompt_tokens": 135,
+        "total_tokens": 1990,
+        "prompt_tokens_details": {
+          "cached_tokens": 19
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    \"\"\"\n    Admits requests from queued into active based on FIFO order, respecting\n    token budget and slot capacity.\n    \"\"\"\n    # Validate that no queued request ever exceeds the total budget\n    for req in queued:\n        if req > budget:\n            raise ValueError(\"A queued reservation exceeds the total budget.\")\n\n    current_tokens = sum(active)\n    current_slots = len(active)\n    admitted = []\n    \n    idx = 0\n    while idx < len(queued):\n        req = queued[idx]\n        # Check if both token budget and slot capacity allow for the request\n        if current_tokens + req <= budget and current_slots + 1 <= slots:\n            admitted.append(req)\n            current_tokens += req\n            current_slots += 1\n            idx += 1\n        else:\n            # FIFO constraint: if the head request is blocked, stop admitting\n            break\n            \n    return admitted, queued[idx:]\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": false,
+      "error": "{'src/a.py': {'content': 'print(42)\\\\n', 'operation': 'create', 'path': 'src/a.py'}, 'obsolete.txt': {'operation': 'delete', 'path': 'obsolete.txt'}}"
+    }
+  ]
+}

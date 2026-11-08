@@ -1,0 +1,200 @@
+{
+  "description": "Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.\n\nRun in the same disposable CPU-only container as benchmark-coder. Model edits\nstay in memory; generated Python runs in a resource-limited child process.\n",
+  "sampling_profile": "gptoss",
+  "backend": "vllm",
+  "reasoning_budget_parameter_sent": false,
+  "tests": [
+    {
+      "fixture": "url_join",
+      "seed": 42,
+      "passed": true,
+      "elapsed_seconds": 7.69,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    Parameters\n    ----------\n    base_url : str\n        Base URL potentially containing a deployment prefix and/or a version\n        suffix. May or may not end with a trailing slash.\n    path : str\n        Relative resource name such as ``models`` or ``/chat/completions``.\n\n    Returns\n    -------\n    str\n        A URL that contains exactly one ``/v1`` component before the\n        provided resource ``path``.\n\n    Examples\n    --------\n    >>> endpoint('https://example.test', 'models')\n    'https://example.test/v1/models'\n    >>> endpoint('https://example.test/v1/', '/chat/completions')\n    'https://example.test/v1/chat/completions'\n    >>> endpoint('https://example.test/proxy/v1', '/models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/proxy/', 'models')\n    'https://example.test/proxy/v1/models'\n    >>> endpoint('https://example.test/v10', 'models')\n    'https://example.test/v10/v1/models'\n    \"\"\"\n    # Remove trailing slash (if any) to allow unified handling.\n    base = base_url.rstrip('/')\n    # If ``base`` already ends with \"/v1\", keep it and simply append the path.\n    if base.endswith('/v1'):\n        # Base already contains the required version part.\n        return base + '/' + path.lstrip('/')\n    # Otherwise, prepend the ``/v1`` component.\n    return base + '/v1/' + path.lstrip('/')\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 42,
+      "passed": false,
+      "error": "Expecting ',' delimiter: line 1 column 3390 (char 3389)",
+      "elapsed_seconds": 10.462,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 7.72,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nassert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'\nassert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'\nassert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'\nassert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    Parameters\n    ----------\n    base_url : str\n        Base URL of the gateway. It may optionally end with ``/v1`` or ``/v1/``\n        or include a deployment prefix (e.g. ``https://example.test/proxy/v1``).\n    path : str\n        Relative resource name, e.g. ``models`` or ``/chat/completions``.\n\n    Returns\n    -------\n    str\n        Full request URL that preserves any deployment prefix and contains\n        exactly one ``/v1`` component immediately before the resource name.\n    \"\"\"\n    # Remove any trailing slashes to simplify processing.\n    base = base_url.rstrip('/')\n    # Determine the last path component of the base URL.\n    last_component = base.rsplit('/', 1)[-1]\n    if last_component == 'v1':\n        # Already ends with /v1 \u2013 keep it as is.\n        work_base = base\n    else:\n        # Append a single /v1 segment.\n        work_base = f\"{base}/v1\"\n    # Normalise the provided path so it does not start with a slash.\n    relative_path = path.lstrip('/')\n    return f\"{work_base}/{relative_path}\""
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 43,
+      "passed": true,
+      "elapsed_seconds": 8.928,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        },
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "\nimport copy\nfor a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),\n    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),\n    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:\n    old = copy.deepcopy((a,q))\n    assert admit(a,q,b,s) == expected\n    assert (a,q) == old\ntry: admit([9],[2,11],10,2)\nexcept ValueError: pass\nelse: raise AssertionError('oversized tail reservation was not rejected')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        },
+        {
+          "tool": "run_tests",
+          "result": {
+            "passed": true,
+            "stderr": ""
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    \"\"\"\n    Admit waiting reservations in FIFO order respecting a total budget and a\n    maximum number of concurrent slots.\n\n    Parameters\n    ----------\n    active : list[int]\n        Current active reservations.  They are guaranteed to be valid \u2013 i.e.\n        the sum of their values does not exceed ``budget`` and the number of\n        items does not exceed ``slots``.\n    waiting : list[int]\n        Reservations that are waiting to be admitted.  The order is the order\n        in which they should be considered.\n    budget : int\n        The total amount that may be used by the active reservations plus the\n        newly admitted ones.\n    slots : int\n        The maximum number of concurrent reservations.\n\n    Returns\n    -------\n    tuple[list[int], list[int]]\n        ``(admitted, remaining)`` \u2013 admissible reservations and the ones that\n        were left in the waiting list.\n\n    Notes\n    -----\n    - The function never mutates the input lists.\n    - The admission process stops at the first waiting reservation that\n      cannot be admitted due to budget or the slot limit.\n    - ``ValueError`` is raised if any single waiting reservation exceeds the\n      total budget (even if the admission process would have stopped before\n      reaching it).\n    \"\"\"\n    # Validate inputs (only needed for the ValueError behaviour) \u2013 this\n    # ensures that tests such as ``admit([9],[2,11],10,2)`` raise ValueError.\n    for val in waiting:\n        if val > budget:\n            raise ValueError(\"waiting reservation exceeds total budget\")\n\n    admitted = []\n    current_sum = sum(active)\n    slots_left = slots - len(active)\n\n    # If no slots are available at all, nothing can be admitted.\n    if slots_left <= 0:\n        return admitted, waiting[:]\n\n    # Iterate over waiting FIFO\n    for i, val in enumerate(waiting):\n        if slots_left <= 0 or current_sum + val > budget:\n            # cannot admit this reservation \u2500 stop and return remaining\n            return admitted, waiting[i:]\n        admitted.append(val)\n        current_sum += val\n        slots_left -= 1\n\n    # All waiting reservations admitted\n    return admitted, []\n"
+    },
+    {
+      "fixture": "url_join",
+      "seed": 44,
+      "passed": false,
+      "error": "Expecting ':' delimiter: line 1 column 4 (char 3)",
+      "elapsed_seconds": 5.091,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def endpoint(base_url, path):\n    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')\n"
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "error": "Temporary write lock. No changes applied. Retry the write."
+          }
+        },
+        {
+          "tool": "write_file",
+          "result": {
+            "status": "written"
+          }
+        }
+      ],
+      "code": "def endpoint(base_url, path):\n    \"\"\"Construct a request URL for an OpenAI-compatible gateway.\n\n    The *base_url* may or may not include a ``/v1`` suffix and may\n    contain an arbitrary deployment prefix.  The *path* is a relative\n    resource name such as ``models`` or ``/chat/completions``.\n\n    This function ensures that the final URL contains exactly one\n    ``/v1`` segment just before the resource.  It also preserves any\n    deployment prefix present in *base_url*.\n    \"\"\"\n    # Normalise the resource path: remove a leading slash if present.\n    path = path.lstrip('/')\n\n    # Strip any trailing slash from the base URL to simplify logic.\n    base = base_url.rstrip('/')\n\n    # Detect whether the base already ends with '/v1'.  If not, append it.\n    if not base.endswith('/v1'):\n        base += '/v1'\n\n    # Join the base and the path with a single '/'.\n    return f\"{base}/{path}\"\n"
+    },
+    {
+      "fixture": "greek_queue",
+      "seed": 44,
+      "passed": false,
+      "error": "read_filecommentary",
+      "elapsed_seconds": 0.656,
+      "trace": [
+        {
+          "tool": "read_file",
+          "result": {
+            "content": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+          }
+        }
+      ],
+      "code": "def admit(active, waiting, budget, slots):\n    admitted = []\n    for value in waiting:\n        if sum(active) + sum(admitted) + value <= budget:\n            admitted.append(value)\n    return admitted, [v for v in waiting if v not in admitted]\n"
+    }
+  ]
+}

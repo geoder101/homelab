@@ -1,0 +1,4 @@
+{"name": "runtime", "passed": true, "slots": 2, "build": "vllm-pinned-0.32.0", "n_ctx_slot": 262144}
+{"name": "reject_oversized_context", "passed": true, "rejected": true, "error": "HTTP 400: {\"error\":{\"message\":\"Input length (264899) exceeds model's maximum context length (131072).\",\"type\":\"BadRequestError\",\"param\":null,\"code\":400}}", "wall_seconds": 0.387}
+{"name": "recovery", "passed": true, "ttft_seconds": 0.056, "elapsed_seconds": 0.0598, "decode_tps": 397.16, "first_generated_token_seconds": 0.0208, "usage": {"prompt_tokens": 71, "total_tokens": 86, "completion_tokens": 15, "completion_tokens_details": {"reasoning_tokens": 4}}, "timings": {}, "answer": "READY", "started_monotonic": 32329.956260602, "first_monotonic": 32330.012297991, "finished_monotonic": 32330.016014823, "wall_seconds": 0.06}
+{"name": "complete", "passed": true}

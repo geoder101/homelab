@@ -1,5 +1,193 @@
 # Default coding-agent profile
 
+## Current selected and active deployment — 2026-11-08
+
+**Ornith-1.5-35B-A3B Q5_K_M on llama.cpp b12182** is selected persistently
+as profile **`ornith-q5`**. The running model, arguments and image ID were
+verified against the selected Quadlet with `make profile-status`.
+
+This section is the latest verified deployment snapshot. Run `make profile-status`
+for a live check. On future persistent selections, update this section and add a
+dated history entry below; preserve the previous configuration and comparisons.
+
+Deployment API/budget/history/vision/concurrency checks passed. Post-deployment
+native probes exposed some heading interpretation and one incorrect-path
+attempt on the reorganized documents; those failures are preserved in the
+[verification notes](deployments/20261108-ornith-q5/README.md). The benchmark's
+6/6 native result describes its earlier frozen inputs, not a guarantee for every
+agent task. A 0.6-temperature pilot lost a coding edge case, so the deployed
+temperature remains the measured 1.0 configuration.
+
+### Identity and immutable pins
+
+| Item | Current value |
+| --- | --- |
+| Profile / service | `ornith-q5` / `llama-coder.service` |
+| Model repository | `ornith-ai/Ornith-1.5-35B-A3B-GGUF` |
+| Model revision | `12393612fd4f730ff5aadc23e9b8f9648aa49ceb` |
+| Weight file | `Ornith-1.5-35B-Q5_K_M.gguf` (~25.35 GB on disk) |
+| Weight SHA-256 | `91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0` |
+| Projector | `mmproj-Ornith-1.5-35B-BF16.gguf`, GPU-resident |
+| Projector SHA-256 | `1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d` |
+| Engine | llama.cpp **b12182**, commit `fd27b2034905f8dadd8bd6d2cc44595f4929d391` |
+| Engine image | `ghcr.io/ggml-org/llama.cpp@sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469` |
+| Chat template | `ornith1.5-history-v1`, key `ornith_fixed` |
+| Template upstream revision | `10fbf86fed7ecee4a061f8b499a618f46001cac1` |
+| Patched template SHA-256 | `5d7c6dd4e14e15880d852536762c620e7e8c2fe54fcd9a998c6c99eca0b78e3b` |
+
+The template is Ornith's pinned upstream template with a minimal duplicate
+inline-thinking/history normalization patch. Both upstream and output hashes
+are checked by `scripts/download-ornith-template`.
+
+### Capacity, cache and reasoning
+
+| Setting | Current configuration |
+| --- | --- |
+| Hardware | Brain, RTX 5090, 32 GiB VRAM |
+| Per-agent context | **262,144 tokens**, shared by input, reasoning, images and output |
+| Concurrent slots | **2 fixed slots**; further requests queue |
+| Aggregate server context | `524288`; **not** a client context limit |
+| GPU offload | `--n-gpu-layers 99`, GPU projector, Flash Attention on |
+| GPU K/V cache | `q4_0` / `q4_0`; no unified KV pool |
+| RAM prompt cache | `16384` MiB (16 GiB) reusable prompt states, not active-KV spill |
+| MTP / speculative helper | Disabled |
+| Default thinking sampling | temperature 1.0; top-p .95; top-k 20; min-p 0; presence penalty 0; repeat penalty 1 |
+| Nonthinking alias sampling | temperature .7; top-p .8; presence penalty 1.5 |
+| OpenCode output cap | **16,384 tokens**, including reasoning |
+| History | Supplied `reasoning_content` is retained and duplicate inline history normalized |
+
+LiteLLM is the client-facing gateway at `:4000/v1`; Open WebUI is at `:3000`.
+The inference container's port 8000 is private to the Podman network.
+
+| API ID | OpenCode ID | Hard thinking ceiling |
+| --- | --- | ---: |
+| `coder-off` | `brain/coder-off` | 0 |
+| `coder-low` | `brain/coder-low` | 2048 |
+| `coder-medium` | `brain/coder-medium` | 6144 |
+| `coder-xhigh` | `brain/coder-xhigh` | 12288 |
+| `coder` | `brain/coder` | 6144; legacy medium-compatible alias |
+
+`coder-medium` is the default. Ornith's template does not implement Qwen
+froggeric's soft effort steering or consecutive-tool-error warning. Select
+the actual API aliases for their hard thinking ceilings. `max_tokens` still
+limits the combined reasoning and final answer; requests may override defaults.
+
+### Full llama.cpp server command
+
+These are the active container's entrypoint/options, with line breaks added.
+They are reproduced from `quadlets/llama-coder.container` and checked against
+the live container; paths below are **inside the container**.
+
+```bash
+/app/llama-server \
+  --model /models/coder/Ornith-1.5-35B-Q5_K_M.gguf \
+  --mmproj /models/coder/mmproj-Ornith-1.5-35B-BF16.gguf \
+  --alias coder \
+  --host 0.0.0.0 --port 8000 \
+  --n-gpu-layers 99 \
+  --ctx-size 524288 --parallel 2 --no-kv-unified \
+  --cache-ram 16384 \
+  --flash-attn on --cache-type-k q4_0 --cache-type-v q4_0 \
+  --jinja --reasoning-format deepseek \
+  --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":true}' \
+  --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 \
+  --presence-penalty 0.0 --repeat-penalty 1.0 \
+  --no-webui --log-colors off \
+  --chat-template-file /templates/chat_template.jinja
+```
+
+The Quadlet mounts `~/.local/share/ai-station/models/ornith-1.5-35b-gguf-q5`
+at `/models/coder`, and the locked Ornith template directory at `/templates`.
+It uses NVIDIA CDI, the GPU-only SELinux exception, `Pull=never` and
+`DefaultDependencies=false`. LiteLLM routing remains `http://llama-coder:8000/v1`.
+
+### Client setup, verification and rollback
+
+- [OpenCode settings](opencode.md): existing `brain/coder-*` clients retain
+  their endpoint, API key, model IDs and 262144/16384 limits.
+- [Deployed verification](deployments/20261108-ornith-q5/README.md): gateway
+  inference, alias streaming, budgets, history, vision, concurrency and native-client evidence.
+- [Full benchmark scorecard](benchmarks/moe-20261107-queue/SUMMARY.md): model and
+  configuration comparisons; raw results remain alongside it.
+- Declarative sources: `config/models.lock.yaml`, `config/coder-profiles.yaml`,
+  `config/images.lock.yaml`, `config/chat-templates.lock.yaml` and the llama Quadlet.
+
+```bash
+make profile-status       # Selected model, live arguments and image match
+make profile-ornith-q5    # Select this model AND engine persistently
+make profile-qwen38-q4   # Roll back to Qwen3.8 Q4 AND llama.cpp b11960
+make preflight           # Artifact hashes, image pins/presence, unit agreement
+```
+
+The model-specific selection commands are `profile-qwen38-q3`,
+`profile-qwen38-q4`, `profile-ornith-q4` and `profile-ornith-q5`.
+Earlier names (`profile-capacity`, `profile-precision`, `profile-ornith`) have
+been removed. Historical entries below retain their original names; use the
+model-specific replacements above when following those older instructions.
+
+## Selection history
+
+### 2026-11-08 — Ornith Q5 / b12182 promoted
+
+The user selected this configuration after the expanded comparison. It passed
+21/21 coding cases, 9/9 nested tool round trips, 6/6 repair fixtures, 6/6 native
+OpenCode sessions and 6/6 vision checks, plus context/concurrency/recovery checks.
+Warm generation measured 261.3 tok/s versus roughly 71.7 for the Qwen control;
+the 21 coding cases took 231.39 versus 462.46 seconds. These are local test
+results, not broad SWE-bench superiority claims. Q5 and the newer engine are
+a distinct configuration from the earlier unsuccessful Ornith Q4 trial.
+
+The deployment switch retained a rollback snapshot at
+`~/.local/share/ai-station/backups/coder-profile-20261108T141841Z-660e611e`.
+Qwen weights, template and b11960 image remain available. Client aliases and
+context/output limits carry across the selection.
+
+### Previous deployment, retired 2026-11-08 — Qwen Q4 precision
+
+The following snapshot preserves the prior profile and its original comparisons.
+Words such as "default" and "selected" inside this archived section refer
+to that historical deployment.
+
+| Historical pin | Value |
+| --- | --- |
+| Profile | `precision` |
+| Repository / revision | `unsloth/Qwen3.8-27B-GGUF` / `4ca720788d1e01f1bff70c033e0d0028fd02e502` |
+| Weight | `Qwen3.8-27B-UD-Q4_K_XL.gguf` |
+| Weight SHA-256 | `3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e` |
+| Projector | `mmproj-BF16.gguf`; SHA-256 `83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53` |
+| Engine | llama.cpp b11960, commit `8642541b255bfb5dc39cd351a178be09013a55d6` |
+| Image | `ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99` |
+| Template | froggeric v22.5; revision `855bffc49448e299789730ff92c9b8d834d6cc14` |
+| Template SHA-256 | `e57684bae4156211a55473c5a63be976a405a37ab5be5ae0e5abf1df5349c4b2` |
+| Capacity | Two fixed 262144-token slots, Q4 GPU K/V, GPU projector, 16 GiB RAM cache |
+| Rollback | `make profile-qwen38-q4` restores its model, template and engine |
+
+<details>
+<summary>Retained exact Qwen precision server options</summary>
+
+The pre-switch Quadlet recorded the following options (container paths):
+
+```bash
+/app/llama-server \
+  --model /models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf \
+  --mmproj /models/coder/mmproj-BF16.gguf \
+  --alias coder --host 0.0.0.0 --port 8000 \
+  --n-gpu-layers 99 --ctx-size 524288 --parallel 2 --no-kv-unified \
+  --cache-ram 16384 --flash-attn on \
+  --cache-type-k q4_0 --cache-type-v q4_0 \
+  --jinja --reasoning-format deepseek \
+  --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":true}' \
+  --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 \
+  --presence-penalty 0.0 --repeat-penalty 1.0 \
+  --no-webui --log-colors off \
+  --chat-template-file /templates/chat_template.jinja
+```
+
+</details>
+
+<details>
+<summary>Preserved Qwen profile, original rationale, client notes and 2026-10-29 comparison</summary>
+
 ## Selection: Qwen3.8-27B UD-Q4_K_XL precision profile
 
 The default is `unsloth/Qwen3.8-27B-GGUF`, `UD-Q4_K_XL`, served by
@@ -112,3 +300,5 @@ see [the report and Home verification commands](reasoning-profiles.md).
 
 For the alternative 160K NVFP4 profile and persistent startup changes, see
 `docs/operations.md`. Never start both GPU backends together.
+
+</details>

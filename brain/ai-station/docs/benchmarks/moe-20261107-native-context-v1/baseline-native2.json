@@ -1,0 +1,32 @@
+[
+  {
+    "agent": "ALPHA",
+    "passed": false,
+    "tools": [],
+    "reasoning": true,
+    "answer": "",
+    "stderr": "\u001b[93m\u001b[1m! \u001b[0mpermission requested: external_directory (/*); auto-rejecting\n"
+  },
+  {
+    "agent": "BETA",
+    "passed": true,
+    "tools": [
+      "glob",
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "BETA # Default coding-agent profile",
+    "stderr": ""
+  },
+  {
+    "agent": "GAMMA",
+    "passed": true,
+    "tools": [
+      "glob",
+      "read"
+    ],
+    "reasoning": true,
+    "answer": "GAMMA Operations",
+    "stderr": ""
+  }
+]

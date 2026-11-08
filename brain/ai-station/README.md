@@ -9,7 +9,7 @@ Declarative, rootless Podman deployment for the local AI workstation `brain`.
 - Open WebUI is the browser interface and talks only to LiteLLM.
 - Podman Quadlets run as `geoder101` user systemd services.
 
-The selected coding model is **Qwen3.8-27B UD-Q4_K_XL, precision profile**, pinned in `config/models.lock.yaml`. It serves **two concurrent agents with 256K context each**, GPU Q4 K/V cache and GPU vision on the RTX 5090. LiteLLM exposes `coder-off`, `coder-low`, `coder-medium`, and `coder-xhigh`; `coder` remains medium-compatible. The [2026-11-05 Ornith Q4_K_M trial](docs/benchmarks/ornith-20261105.md) found much faster inference and matching small-suite coding results, but native OpenCode instruction/path regressions blocked promotion. Qwen was restored and verified. See [model settings](docs/model-profile.md) for current limits and controls.
+The selected coding model is **Ornith-1.5-35B-A3B Q5_K_M on llama.cpp b12182**, profile `ornith-q5`, pinned in `config/models.lock.yaml`. It serves **two concurrent agents with 256K context each**, GPU Q4 K/V cache and GPU vision on the RTX 5090. LiteLLM exposes `coder-off`, `coder-low`, `coder-medium`, and `coder-xhigh`; `coder` remains medium-compatible. [Model settings and selection history](docs/model-profile.md) show the exact active server options and preserve the previous Qwen profile. [OpenCode configuration](docs/opencode.md) explains the existing aliases and limits. The [deployment verification report](docs/deployments/20261108-ornith-q5/README.md) records passed API checks and remaining native-probe limitations.
 
 ## Architecture
 
@@ -38,9 +38,10 @@ Only LiteLLM and Open WebUI publish host ports. Inference backends are reachable
 
 ## Before deployment
 
-On a deployed Brain, `make profile-ornith` selects the experimental Ornith candidate with two 256K agents.
-`make profile-capacity` selects Qwen Q3 with three 256K agents and
-`make profile-precision` selects Qwen Q4 with two 256K agents.
+On a deployed Brain, `make profile-ornith-q5` selects the current Q5 weights and b12182 engine.
+`make profile-ornith-q4` selects the earlier experimental Q4 candidate.
+`make profile-qwen38-q3` selects Qwen3.8 Q3 with three 256K agents and
+`make profile-qwen38-q4` restores Qwen3.8 Q4 with two 256K agents and llama.cpp b11960.
 `make profile-status` shows the current selection. Switch globally between tasks;
 the existing model aliases work in every profile.
 

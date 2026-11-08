@@ -1,6 +1,114 @@
 # Evaluation artifacts; these do not change the active coder deployment.
 # Resolved 2026-10-29. Candidate results belong in docs/benchmark-results.md.
 candidates:
+  qwen3_coder_q4:
+    repository: unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+    revision: b17cb02dd882d5b6ab62fc777ad2995f19668350
+    directory: qwen3-coder-30b-q4
+    file: Qwen3-Coder-30B-A3B-Instruct-Q4_K_M.gguf
+    sha256: fadc3e5f8d42bf7e894a785b05082e47daee4df26680389817e2093056f088ad
+    context: 262144
+    thinking: false
+    vision: false
+  flint_40b_q4:
+    repository: unsloth/flint-GGUF
+    revision: 20468edfc38ab43d6914cc88b08cbecb05d0fc62
+    directory: flint-40b-q4
+    file: flint-UD-Q4_K_XL.gguf
+    sha256: 63c2ecc461ca545134b670c660e76fa20f47240f8d39b6510bfd21c4dd6e072f
+    context: 262144
+  nemotron35_mxfp4:
+    repository: unsloth/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF
+    revision: f2d3fe3694501008786e81e5f20360cbf715496a
+    directory: nemotron35-lightning-mxfp4
+    file: NVIDIA-Nemotron-3.5-Lightning-30B-A3B-MXFP4_MOE.gguf
+    sha256: c5a1433ecfb206d63be963faaa81d7c1170cb13abb14c73390968fe7c79a99f6
+    context: 262144
+  devstral2_q6:
+    repository: unsloth/Devstral-Small-2-24B-Instruct-2512-GGUF
+    revision: 6e458b8add42681bfd023de5eab93637694aaf82
+    directory: devstral-small2-q6
+    file: Devstral-Small-2-24B-Instruct-2512-Q6_K.gguf
+    sha256: b04b3e19730d7a1e19530f40b947b69c028b090cb7c58c1515cf1fc2ece5f821
+    vision_file: mmproj-BF16.gguf
+    vision_sha256: 7fbd63a14ed6642370f7a8c276fdb3c1061f3349468dc7bb3a0a9e803e70926b
+    context: 262144
+  occamy_q4:
+    repository: Accio-Lab/occamy-1.0-GGUF
+    revision: 15027de49a5f8bbb5a131ed3fcfc1b54a543089d
+    directory: occamy-1.0-q4
+    file: occamy-1.0-Q4_K_M.gguf
+    sha256: ffb25f763ff9c27f5f4e2adcdef399c5654f9f840fdac33dffe7035ba8266a87
+    vision_file: mmproj-occamy-1.0-F16.gguf
+    vision_sha256: 8f827a1e495f23e987686a7f55c26064270502a5b6ee954a828f1aec0b2fd400
+    context: 262144
+  muse_glimmer_q5:
+    repository: unsloth/Muse-Glimmer-30B-GGUF
+    revision: faa5b025c584459c13febfa5c59883516710ae39
+    directory: muse-glimmer-30b-q5
+    file: Muse-Glimmer-30B-UD-Q5_K_XL.gguf
+    sha256: 97a66c4b41d9e778af7cdfa43508e08dbf765fb5049b740c69ad815e5191c637
+    vision_file: mmproj-Muse-Glimmer-30B-BF16.gguf
+    vision_sha256: d08cdcfa0b41d8e20554b52df404ba4f7b440d0bc502a90038508b6407df8ee1
+    context: 131072
+  gptoss20_q6:
+    repository: unsloth/gpt-oss-20b-GGUF
+    revision: d449b42d93e1c2c7bda5312f5c25c8fb91dfa9b4
+    directory: gpt-oss-20b-q6
+    file: gpt-oss-20b-Q6_K.gguf
+    sha256: f2ead52a7842a556ea10d5edd91a88e5af974856d2485ecaad3aade679832935
+    context: 131072
+  gptoss20_native:
+    repository: openai/gpt-oss-20b
+    revision: 6cee5e81ee83917806bbde320786a8fb61efebee
+    directory: gpt-oss-20b-native-mxfp4
+    context: 131072
+    backend: vllm
+    quantization: native-MXFP4
+  ornith15_35b_q5:
+    repository: ornith-ai/Ornith-1.5-35B-A3B-GGUF
+    revision: 12393612fd4f730ff5aadc23e9b8f9648aa49ceb
+    directory: ornith-1.5-35b-gguf-q5
+    file: Ornith-1.5-35B-Q5_K_M.gguf
+    sha256: 91df97de5845100e850b4b5ec5ff35695382020b880fad6f7f51787b3a953bd0
+    vision_file: mmproj-Ornith-1.5-35B-BF16.gguf
+    vision_sha256: 1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d
+    context: 262144
+  qwen3_coder_q5:
+    repository: unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF
+    revision: b17cb02dd882d5b6ab62fc777ad2995f19668350
+    directory: qwen3-coder-30b-q5
+    file: Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf
+    sha256: 4b78837bbec5ee248e4a5642bf608b6793721af41b92589e40c8da0bce58b907
+    context: 262144
+    thinking: false
+    vision: false
+  glm47_flash_q5:
+    repository: unsloth/GLM-4.7-Flash-GGUF
+    revision: 0d32489ecb9db6d2a4fc93bd27ef01519f95474d
+    directory: glm47-flash-q5
+    file: GLM-4.7-Flash-Q5_K_M.gguf
+    sha256: 167848c4b460887d7a52c44c378d3996a0d38b3302ac2045494dc8b50869a893
+    context: 202752
+    vision: false
+  gemma4_26b_q5:
+    repository: unsloth/gemma-4-26B-A4B-it-GGUF
+    revision: c099eb48e663fd284577b04978a94ffccb261841
+    directory: gemma4-26b-q5
+    file: gemma-4-26B-A4B-it-UD-Q5_K_M.gguf
+    sha256: 769d386a69d43782321c1bad04d41d29a2e84b2c06e6a277cd99fd6265ec0e80
+    vision_file: mmproj-BF16.gguf
+    vision_sha256: 41926ed5f1403cf5add23b0684992805ea6f97253096132e769e65646b8cef9d
+    context: 262144
+  qwen36_35b_q4:
+    repository: unsloth/Qwen3.6-35B-A3B-GGUF
+    revision: a483e9e6cbd595906af30beda3187c2663a1118c
+    directory: qwen36-35b-q4
+    file: Qwen3.6-35B-A3B-UD-Q4_K_M.gguf
+    sha256: ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61
+    vision_file: mmproj-BF16.gguf
+    vision_sha256: 356dfaa3111376a4f7165e32e8749713378d1700b37cf52e0c50d9f23322334d
+    context: 262144
   ornith15_35b_gguf:
     repository: ornith-ai/Ornith-1.5-35B-A3B-GGUF
     revision: 12393612fd4f730ff5aadc23e9b8f9648aa49ceb
@@ -18,6 +126,7 @@ candidates:
     file: Qwen3.8-27B-UD-Q3_K_XL.gguf
     sha256: 8c2a45ff85e7674ca185ec8eb6cdeab0e617ed9d8018caed0b64380eb2a67a5e
     role: alternative-weight-quantization-benchmark
+    context: 262144
   qwen35_4b_helper:
     repository: unsloth/Qwen3.5-4B-GGUF
     revision: e87f176479d0855a907a41277aca2f8ee7a09523
@@ -30,6 +139,7 @@ candidates:
     repository: unsloth/Qwen3.8-27B-NVFP4
     revision: f0b7c9e722f5565102fff8481c99e4d86ae099c7
     directory: qwen3.8-27b-nvfp4
+    context: 163840
     image: docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9
   qwen38_gguf:
     repository: unsloth/Qwen3.8-27B-GGUF
@@ -37,6 +147,9 @@ candidates:
     directory: qwen3.8-27b-gguf
     file: Qwen3.8-27B-UD-Q4_K_XL.gguf
     vision_file: mmproj-BF16.gguf
+    sha256: 3f227079003add2511437e5b1e94812e363385225bf6a9b47b0054a72bc8b01e
+    vision_sha256: 83ee4f4f205fa514161778c41df1ea14144faa0f713510893b63c2395f5c2d53
+    context: 262144
     image_source: ghcr.io/ggml-org/llama.cpp:server-cuda
     image_version: b11960
     image_commit: 8642541b255bfb5dc39cd351a178be09013a55d6

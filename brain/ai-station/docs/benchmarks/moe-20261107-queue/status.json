@@ -1,0 +1,42 @@
+{
+  "created_utc": "2026-11-07T22:36:25.090343+00:00",
+  "control": "Qwen3.8-27B UD-Q4_K_XL precision",
+  "state": "complete",
+  "stages": {
+    "second": {
+      "state": "complete",
+      "models": [
+        "flint",
+        "nemotron35",
+        "devstral2",
+        "occamy",
+        "muse",
+        "gptoss"
+      ],
+      "output": "docs/benchmarks/moe-20261107-batch2",
+      "started_utc": "2026-11-08T00:14:06.764351+00:00",
+      "returncode": 0,
+      "restored": true,
+      "finished_utc": "2026-11-08T02:54:51.136213+00:00"
+    },
+    "tuning": {
+      "state": "complete",
+      "models": [
+        "qwen38-q3",
+        "qwen38-q4-128k",
+        "qwen38-q8-128k",
+        "qwen38-newengine",
+        "qwen38-nvfp4",
+        "ornith-q5",
+        "qwen3-coder-q4",
+        "gptoss-vllm"
+      ],
+      "output": "docs/benchmarks/moe-20261107-tuning",
+      "started_utc": "2026-11-08T02:54:51.136595+00:00",
+      "returncode": 0,
+      "restored": true,
+      "finished_utc": "2026-11-08T06:08:08.902869+00:00"
+    }
+  },
+  "finished_utc": "2026-11-08T06:08:08.903218+00:00"
+}

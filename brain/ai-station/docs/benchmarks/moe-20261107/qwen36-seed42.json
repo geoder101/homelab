@@ -1,0 +1,355 @@
+{
+  "label": "qwen36",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 5.054,
+      "elapsed_seconds": 7.462,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 5.054,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 212.62,
+      "answer": "Here is a comprehensive, step-by-step checklist for diagnosing and resolving memory leaks in a Python HTTP server during long-running integration tests. This guide assumes you are using a standard WSGI/ASGI framework (e.g., Flask, FastAPI, Django) and testing with tools like `pytest`, `requests`, or `httpx`.\n\n---\n\n## \ud83e\uddea Phase 1: Baseline & Reproduction\n\n### \u2705 1. Confirm the Leak\n- [ ] **Run a short test suite**: Verify that memory usage is stable after 1\u20132 requests.\n- [ ] **Run a long-running loop**: Simulate 10,000+ requests in a single process (not multiple processes).\n- [ ] **Plot memory over time**: Use `tracemalloc` or external monitoring to confirm linear or exponential growth.\n- [ ] **Isolate the server**: Run the server in a separate process from the test runner to avoid contamination by test fixtures.\n\n### \u2705 2. Reproduce in Isolation\n- [ ] Create a minimal script that:\n  - Starts the server.\n  - Sends a single request, waits for completion, and records memory.\n  - Repeats this 100 times.\n- [ ] If memory grows even with isolated requests, the leak is in the **server code** or **framework**.\n- [ ] If memory only grows when tests interact with databases/external services, the leak may be in **test setup/teardown**.\n\n---\n\n## \ud83d\udcca Phase 2: Profiling Memory Usage\n\n### \u2705 3. Use `tracemalloc` (Built-in Python)\n```python\nimport tracemalloc\n\n# In your test or server startup code\ntracemalloc.start()\n\n# After running tests\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics('lineno')\n\nfor stat in top_stats[:10]:\n    print(stat)\n```\n- [ ] Identify the top 5\u201310 files/lines consuming memory.\n- [ ] Check if objects are being retained (e.g., large lists, dicts, or cached responses).\n\n### \u2705 4. Use `memory_profiler` for Line-by-Line Analysis\nInstall: `pip install memory-profiler psutil`\n\n```python\n@profile\ndef my_function():\n    # Your server request handler or test loop\n    pass\n```\n- [ ] Run"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.051,
+      "elapsed_seconds": 2.419,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.051,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 216.2,
+      "answer": "Here is a comprehensive, step-by-step checklist for diagnosing and resolving memory leaks in a Python HTTP server during long-running integration tests. This guide assumes you are using a standard WSGI/ASGI framework (e.g., Flask, FastAPI, Django) and testing with tools like `pytest`, `requests`, or `httpx`.\n\n---\n\n## \ud83e\uddea Phase 1: Baseline & Reproduction\n\n### \u2705 1. Confirm the Leak\n- [ ] **Run a short test suite**: Verify that memory usage is stable after 1\u20132 requests.\n- [ ] **Run a long-running loop**: Simulate 10,000+ requests in a single process (not multiple processes).\n- [ ] **Plot memory over time**: Use `tracemalloc` or external monitoring to confirm linear or exponential growth.\n- [ ] **Isolate the server**: Run the server in a separate process from the test runner to avoid contamination by test fixtures.\n\n### \u2705 2. Reproduce in Isolation\n- [ ] Create a minimal script that:\n  - Starts the server.\n  - Sends a single request, waits for completion, and records memory.\n  - Repeats this 100 times.\n- [ ] If memory grows even with isolated requests, the leak is in the **server code** or **framework**.\n- [ ] If memory only grows when tests interact with databases/external services, the leak may be in **test setup/teardown**.\n\n---\n\n## \ud83d\udcca Phase 2: Profiling Memory Usage\n\n### \u2705 3. Use `tracemalloc` (Built-in Python)\n```python\nimport tracemalloc\n\n# In your test or server startup code\ntracemalloc.start()\n\n# After running tests\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics('lineno')\n\nfor stat in top_stats[:10]:\n    print(stat)\n```\n- [ ] Identify the top 5\u201310 files/lines consuming memory.\n- [ ] Check if objects are being retained (e.g., large lists, dicts, or cached responses).\n\n### \u2705 4. Use `memory_profiler` for Line-by-Line Analysis\nInstall: `pip install memory-profiler psutil`\n\n```python\n@profile\ndef my_function():\n    # Your server request handler or test loop\n    pass\n```\n- [ ] Run"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.027,
+      "elapsed_seconds": 2.397,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.027,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 216.06,
+      "answer": "Here is a comprehensive, step-by-step checklist for diagnosing and resolving memory leaks in a Python HTTP server during long-running integration tests. This guide assumes you are using a standard WSGI/ASGI framework (e.g., Flask, FastAPI, Django) and testing with tools like `pytest`, `requests`, or `httpx`.\n\n---\n\n## \ud83e\uddea Phase 1: Baseline & Reproduction\n\n### \u2705 1. Confirm the Leak\n- [ ] **Run a short test suite**: Verify that memory usage is stable after 1\u20132 requests.\n- [ ] **Run a long-running loop**: Simulate 10,000+ requests in a single process (not multiple processes).\n- [ ] **Plot memory over time**: Use `tracemalloc` or external monitoring to confirm linear or exponential growth.\n- [ ] **Isolate the server**: Run the server in a separate process from the test runner to avoid contamination by test fixtures.\n\n### \u2705 2. Reproduce in Isolation\n- [ ] Create a minimal script that:\n  - Starts the server.\n  - Sends a single request, waits for completion, and records memory.\n  - Repeats this 100 times.\n- [ ] If memory grows even with isolated requests, the leak is in the **server code** or **framework**.\n- [ ] If memory only grows when tests interact with databases/external services, the leak may be in **test setup/teardown**.\n\n---\n\n## \ud83d\udcca Phase 2: Profiling Memory Usage\n\n### \u2705 3. Use `tracemalloc` (Built-in Python)\n```python\nimport tracemalloc\n\n# In your test or server startup code\ntracemalloc.start()\n\n# After running tests\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics('lineno')\n\nfor stat in top_stats[:10]:\n    print(stat)\n```\n- [ ] Identify the top 5\u201310 files/lines consuming memory.\n- [ ] Check if objects are being retained (e.g., large lists, dicts, or cached responses).\n\n### \u2705 4. Use `memory_profiler` for Line-by-Line Analysis\nInstall: `pip install memory-profiler psutil`\n\n```python\n@profile\ndef my_function():\n    # Your server request handler or test loop\n    pass\n```\n- [ ] Run"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 9.847,
+      "usage": {
+        "completion_tokens": 2333,
+        "prompt_tokens": 98,
+        "total_tokens": 2431,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    \n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [sorted_intervals[0][:]]\n    \n    for current in sorted_intervals[1:]:\n        if current[0] <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], current[1])\n        else:\n            merged.append(current[:])\n            \n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 18.446,
+      "usage": {
+        "completion_tokens": 4364,
+        "prompt_tokens": 131,
+        "total_tokens": 4495,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    adj = {node: set() for node in nodes}\n    in_degree = {node: 0 for node in nodes}\n\n    for src, dst in set(edges):\n        adj[src].add(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        u = heapq.heappop(heap)\n        result.append(u)\n        for v in adj[u]:\n            in_degree[v] -= 1\n            if in_degree[v] == 0:\n                heapq.heappush(heap, v)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 18.131,
+      "usage": {
+        "completion_tokens": 4286,
+        "prompt_tokens": 260,
+        "total_tokens": 4546,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    batches = []\n    current_batch = []\n    current_weight = 0\n    for name, w in items:\n        if w <= 0 or w > limit:\n            raise ValueError\n        if current_weight + w > limit:\n            batches.append(current_batch)\n            current_batch = []\n            current_weight = 0\n        current_batch.append(name)\n        current_weight += w\n    if current_batch:\n        batches.append(current_batch)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 18.085,
+      "usage": {
+        "completion_tokens": 4275,
+        "prompt_tokens": 138,
+        "total_tokens": 4413,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    result = {}\n    key_pattern = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    \n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n            \n        if '=' not in line:\n            raise ValueError(f\"Invalid line: {line}\")\n            \n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        \n        if not key_pattern.fullmatch(key):\n            raise ValueError(f\"Invalid key: {key}\")\n            \n        if len(value) >= 2 and ((value[0] == '\"' and value[-1] == '\"') or (value[0] == \"'\" and value[-1] == \"'\")):\n            value = value[1:-1]\n            \n        result[key] = value\n        \n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 27.126,
+      "usage": {
+        "completion_tokens": 6354,
+        "prompt_tokens": 148,
+        "total_tokens": 6502,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    buffer = b\"\"\n    current_data = []\n    events = []\n    \n    for chunk in chunks:\n        buffer += chunk\n        while b\"\\n\" in buffer:\n            idx = buffer.find(b\"\\n\")\n            line_bytes = buffer[:idx]\n            if line_bytes.endswith(b\"\\r\"):\n                line_bytes = line_bytes[:-1]\n            buffer = buffer[idx+1:]\n            \n            line = line_bytes.decode(\"utf-8\")\n            \n            if not line:\n                if current_data:\n                    payload = \"\\n\".join(current_data)\n                    if payload == \"[DONE]\":\n                        return events\n                    events.append(payload)\n                    current_data = []\n            elif line.startswith(\"data:\"):\n                val = line[5:]\n                if val.startswith(\" \"):\n                    val = val[1:]\n                current_data.append(val)\n                \n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 26.826,
+      "usage": {
+        "completion_tokens": 6295,
+        "prompt_tokens": 106,
+        "total_tokens": 6401,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"Arguments must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n    \n    # base * 2**attempt >= cap  <=>  attempt >= log2(cap) - log2(base)\n    # Using difference of logs avoids overflow when cap/base is huge.\n    threshold = math.log2(cap) - math.log2(base)\n    \n    if attempt >= threshold:\n        return float(cap)\n    return float(base) * (2 ** attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 15.22,
+      "usage": {
+        "completion_tokens": 3597,
+        "prompt_tokens": 133,
+        "total_tokens": 3730,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(r > budget for r in queued):\n        raise ValueError(\"Reservation exceeds budget\")\n    used_tokens = sum(active)\n    used_slots = len(active)\n    admitted = []\n    for r in queued:\n        if used_tokens + r <= budget and used_slots + 1 <= slots:\n            admitted.append(r)\n            used_tokens += r\n            used_slots += 1\n        else:\n            break\n    return admitted, queued[len(admitted):]\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.887,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully with the following result:\n- **Status**: `dry-run-ok`\n- **Changed files**: 2\n\nThis confirms that `src/a.py` was created and `obsolete.txt` was scheduled for deletion in a dry-run mode, as requested."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 4.989,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool execution was successful. Here is the result:\n\n- **Status**: `dry-run-ok`\n- **Changed Files**: 2 (created `src/a.py` and deleted `obsolete.txt`)\n\nThe changes were simulated successfully with the specified metadata labels `[\"coding\", \"test\"]` and `dry_run` set to `true`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.752,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result is: `{\"status\":\"dry-run-ok\",\"changed_files\":2}`"
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 3.16,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 31880,
+        "total_tokens": 31929,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.143,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31952,
+        "total_tokens": 31960,
+        "prompt_tokens_details": {
+          "cached_tokens": 31928
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 15.627,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 121881,
+        "total_tokens": 121930,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.292,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121953,
+        "total_tokens": 121961,
+        "prompt_tokens_details": {
+          "cached_tokens": 121929
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 46.8,
+      "usage": {
+        "completion_tokens": 49,
+        "prompt_tokens": 252881,
+        "total_tokens": 252930,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.51,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 252953,
+        "total_tokens": 252961,
+        "prompt_tokens_details": {
+          "cached_tokens": 252929
+        }
+      }
+    }
+  ]
+}

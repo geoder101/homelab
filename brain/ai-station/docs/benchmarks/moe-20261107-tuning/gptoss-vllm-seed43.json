@@ -1,0 +1,293 @@
+{
+  "label": "gptoss-vllm",
+  "backend": "vllm",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": null,
+    "reasoning_budget_parameter_sent": false,
+    "max_tokens": 16384,
+    "seed": 43,
+    "sampling_profile": "gptoss",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": -1,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repetition_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": -1,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repetition_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": -1,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repetition_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.066,
+      "elapsed_seconds": 3.522,
+      "usage": {
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "completion_tokens": 1024,
+        "completion_tokens_details": {
+          "reasoning_tokens": 4
+        }
+      },
+      "first_generated_token_seconds": 0.032,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 293.37,
+      "answer": "## \ud83d\udccb Checklist \u2013 Diagnosing Memory Leaks in a Long\u2011Running Python HTTP Server  \n*(Designed for integration\u2011test scenarios that run the server for hours or days.)*  \n\n| Step | What to Check | Commands / Tools | Why It Matters |\n|------|---------------|------------------|----------------|\n| **1. Re\u2011produce the Leak in a Controlled Environment** | - Restart the test suite in isolation.<br>- Ensure no external caches or background workers are running. | ```bash\\npytest -k integration -vv --capture=no\\n``` | A fresh run eliminates \u201cnoise\u201d from unrelated processes. |\n| **2. Confirm the Leak is on the Server, Not the Client** | - Separate client and server logs.<br>- Verify a single server process is used for the whole test run. | ```ps aux | grep my_server\\n``` | If the client spawns new servers, the leak may be in the binding logic. |\n| **3. Enable Garbage\u2011Collection Diagnostics** | - Force GC and log counts before/after each test. | ```python\\nimport gc\\nprint('before', len(gc.get_objects()))\\n# run test\\nprint('after', len(gc.get_objects()))\\n``` | Helps see if Python GC is incorrectly retaining objects. |\n| **4. Take Heap Snapshots with `tracemalloc`** | - Capture before and after a long run.<br>- Compare snapshots for growth. | ```python\\nimport tracemalloc\\ntracemalloc.start()\\n# run server\\nsnapshot1 = tracemalloc.take_snapshot()\\n# after run\\nsnapshot2 = tracemalloc.take_snapshot()\\nsnapshot2.compare_to(snapshot1, 'lineno')\\n``` | Directly shows which lines allocate more memory over time. |\n| **5. Use `heapy`/`guppy` for Object\u2011Level Analysis** | - Identify the most prolific object types. | ```python\\nfrom guppy import hpy\\nh = hpy()\\nprint(h.heap())\\n``` | Spot zombies like large dicts or lists that never shrink. |\n| **6. Profile CPU + Memory with `memory_profiler`** | - Line\u2011level memory usage over time. | ```bash\\nmprof run -T server.py\\nmprof plot\\n``` | Visual timeline pins leaks to specific functions. |\n| **7. Employ `objgraph` to Detect Reference Loops** | - Spot objects that are unreachable but still referenced. | ```python\\nimport objgraph\\nobjgraph.show_referrers(patn, filename='referrers.png')\\n``` | Circular references can survive reference counting. |\n| **8. Inspect `asyncio` Loop Internals** | - Check for outstanding tasks, callbacks, or futures. | ```python\\nloop = asyncio.get_event_loop()\\nprint('pending tasks:', len(asyncio.all_tasks(loop)))\\n``` | Unfinished coroutines keep data alive. |\n| **9. Test Explicit Session / Connection Cleanup** | - Verify `aiohttp.ClientSession.close()` and `webhttp.Response.release()` are called. | ```python\\n# add finalizer in tests\\n@pytest.fixture(autouse=True)\\ndef close_sessions(request):\\n    yield\\n    for sess in request.session._client_sessions:\\n        sess.close()\\n``` | Unclosed connections hold buffers. |\n| **10. Verify Middleware and Signal Handlers** | - Ensure `request` \u2192 `response` lifecycle is finished before moving to the next request.<br>- No global state leaks. | Search for patterns like `global_state.append(request)` without removal. | Middleware can accumulate state across requests. |\n| **11. Audit Static File / Caching Logic** | - Check in\u2011memory caches (`lru_cache`, `functools.cache`).<br>- Ensure cache size limits are respected. | ```python\\nfrom cachetools import Cache\\nprint(cache.currsize)\\n``` | Infinite caches grow unboundedly. |\n| **12. Check for Open File Descriptors** | - Too many sockets / files left open depletes OS resources. | ```bash\\nlsof -p $(pgrep -f my_server) | wc -l\\n``` | Even if memory is fine, FD exhaustion can crash the server. |\n| **13. Use `psutil` to Monitor Live Process Metrics** | - Periodically log RSS, VMS, and active threads. | ```python\\nimport psutil\\np = psutil.Process(os.getpid())\\nprint(p.memory_info().rss)\\nprint(p.num_threads())\\n``` | Correlate memory spikes with specific event loops. |\n| **14. Run with `Valgrind` / `AddressSanitizer` for C Extensions** | - If using C libraries, check for native leaks. | ```bash\\nvalgrind --leak-check=full --show-leak-kinds"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.053,
+      "elapsed_seconds": 3.51,
+      "usage": {
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "completion_tokens": 1024,
+        "completion_tokens_details": {
+          "reasoning_tokens": 4
+        }
+      },
+      "first_generated_token_seconds": 0.019,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 293.34,
+      "answer": "## \ud83d\udccb Checklist \u2013 Diagnosing Memory Leaks in a Long\u2011Running Python HTTP Server  \n*(Designed for integration\u2011test scenarios that run the server for hours or days.)*  \n\n| Step | What to Check | Commands / Tools | Why It Matters |\n|------|---------------|------------------|----------------|\n| **1. Re\u2011produce the Leak in a Controlled Environment** | - Restart the test suite in isolation.<br>- Ensure no external caches or background workers are running. | ```bash\\npytest -k integration -vv --capture=no\\n``` | A fresh run eliminates \u201cnoise\u201d from unrelated processes. |\n| **2. Confirm the Leak is on the Server, Not the Client** | - Separate client and server logs.<br>- Verify a single server process is used for the whole test run. | ```ps aux | grep my_server\\n``` | If the client spawns new servers, the leak may be in the binding logic. |\n| **3. Enable Garbage\u2011Collection Diagnostics** | - Force GC and log counts before/after each test. | ```python\\nimport gc\\nprint('before', len(gc.get_objects()))\\n# run test\\nprint('after', len(gc.get_objects()))\\n``` | Helps see if Python GC is incorrectly retaining objects. |\n| **4. Take Heap Snapshots with `tracemalloc`** | - Capture before and after a long run.<br>- Compare snapshots for growth. | ```python\\nimport tracemalloc\\ntracemalloc.start()\\n# run server\\nsnapshot1 = tracemalloc.take_snapshot()\\n# after run\\nsnapshot2 = tracemalloc.take_snapshot()\\nsnapshot2.compare_to(snapshot1, 'lineno')\\n``` | Directly shows which lines allocate more memory over time. |\n| **5. Use `heapy`/`guppy` for Object\u2011Level Analysis** | - Identify the most prolific object types. | ```python\\nfrom guppy import hpy\\nh = hpy()\\nprint(h.heap())\\n``` | Spot zombies like large dicts or lists that never shrink. |\n| **6. Profile CPU + Memory with `memory_profiler`** | - Line\u2011level memory usage over time. | ```bash\\nmprof run -T server.py\\nmprof plot\\n``` | Visual timeline pins leaks to specific functions. |\n| **7. Employ `objgraph` to Detect Reference Loops** | - Spot objects that are unreachable but still referenced. | ```python\\nimport objgraph\\nobjgraph.show_referrers(patn, filename='referrers.png')\\n``` | Circular references can survive reference counting. |\n| **8. Inspect `asyncio` Loop Internals** | - Check for outstanding tasks, callbacks, or futures. | ```python\\nloop = asyncio.get_event_loop()\\nprint('pending tasks:', len(asyncio.all_tasks(loop)))\\n``` | Unfinished coroutines keep data alive. |\n| **9. Test Explicit Session / Connection Cleanup** | - Verify `aiohttp.ClientSession.close()` and `webhttp.Response.release()` are called. | ```python\\n# add finalizer in tests\\n@pytest.fixture(autouse=True)\\ndef close_sessions(request):\\n    yield\\n    for sess in request.session._client_sessions:\\n        sess.close()\\n``` | Unclosed connections hold buffers. |\n| **10. Verify Middleware and Signal Handlers** | - Ensure `request` \u2192 `response` lifecycle is finished before moving to the next request.<br>- No global state leaks. | Search for patterns like `global_state.append(request)` without removal. | Middleware can accumulate state across requests. |\n| **11. Audit Static File / Caching Logic** | - Check in\u2011memory caches (`lru_cache`, `functools.cache`).<br>- Ensure cache size limits are respected. | ```python\\nfrom cachetools import Cache\\nprint(cache.currsize)\\n``` | Infinite caches grow unboundedly. |\n| **12. Check for Open File Descriptors** | - Too many sockets / files left open depletes OS resources. | ```bash\\nlsof -p $(pgrep -f my_server) | wc -l\\n``` | Even if memory is fine, FD exhaustion can crash the server. |\n| **13. Use `psutil` to Monitor Live Process Metrics** | - Periodically log RSS, VMS, and active threads. | ```python\\nimport psutil\\np = psutil.Process(os.getpid())\\nprint(p.memory_info().rss)\\nprint(p.num_threads())\\n``` | Correlate memory spikes with specific event loops. |\n| **14. Run with `Valgrind` / `AddressSanitizer` for C Extensions** | - If using C libraries, check for native leaks. | ```bash\\nvalgrind --leak-check=full --show-leak-kinds"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.053,
+      "elapsed_seconds": 3.51,
+      "usage": {
+        "prompt_tokens": 100,
+        "total_tokens": 1124,
+        "completion_tokens": 1024,
+        "completion_tokens_details": {
+          "reasoning_tokens": 4
+        }
+      },
+      "first_generated_token_seconds": 0.019,
+      "max_tokens": 1024,
+      "decode_tokens_per_second": 293.38,
+      "answer": "## \ud83d\udccb Checklist \u2013 Diagnosing Memory Leaks in a Long\u2011Running Python HTTP Server  \n*(Designed for integration\u2011test scenarios that run the server for hours or days.)*  \n\n| Step | What to Check | Commands / Tools | Why It Matters |\n|------|---------------|------------------|----------------|\n| **1. Re\u2011produce the Leak in a Controlled Environment** | - Restart the test suite in isolation.<br>- Ensure no external caches or background workers are running. | ```bash\\npytest -k integration -vv --capture=no\\n``` | A fresh run eliminates \u201cnoise\u201d from unrelated processes. |\n| **2. Confirm the Leak is on the Server, Not the Client** | - Separate client and server logs.<br>- Verify a single server process is used for the whole test run. | ```ps aux | grep my_server\\n``` | If the client spawns new servers, the leak may be in the binding logic. |\n| **3. Enable Garbage\u2011Collection Diagnostics** | - Force GC and log counts before/after each test. | ```python\\nimport gc\\nprint('before', len(gc.get_objects()))\\n# run test\\nprint('after', len(gc.get_objects()))\\n``` | Helps see if Python GC is incorrectly retaining objects. |\n| **4. Take Heap Snapshots with `tracemalloc`** | - Capture before and after a long run.<br>- Compare snapshots for growth. | ```python\\nimport tracemalloc\\ntracemalloc.start()\\n# run server\\nsnapshot1 = tracemalloc.take_snapshot()\\n# after run\\nsnapshot2 = tracemalloc.take_snapshot()\\nsnapshot2.compare_to(snapshot1, 'lineno')\\n``` | Directly shows which lines allocate more memory over time. |\n| **5. Use `heapy`/`guppy` for Object\u2011Level Analysis** | - Identify the most prolific object types. | ```python\\nfrom guppy import hpy\\nh = hpy()\\nprint(h.heap())\\n``` | Spot zombies like large dicts or lists that never shrink. |\n| **6. Profile CPU + Memory with `memory_profiler`** | - Line\u2011level memory usage over time. | ```bash\\nmprof run -T server.py\\nmprof plot\\n``` | Visual timeline pins leaks to specific functions. |\n| **7. Employ `objgraph` to Detect Reference Loops** | - Spot objects that are unreachable but still referenced. | ```python\\nimport objgraph\\nobjgraph.show_referrers(patn, filename='referrers.png')\\n``` | Circular references can survive reference counting. |\n| **8. Inspect `asyncio` Loop Internals** | - Check for outstanding tasks, callbacks, or futures. | ```python\\nloop = asyncio.get_event_loop()\\nprint('pending tasks:', len(asyncio.all_tasks(loop)))\\n``` | Unfinished coroutines keep data alive. |\n| **9. Test Explicit Session / Connection Cleanup** | - Verify `aiohttp.ClientSession.close()` and `webhttp.Response.release()` are called. | ```python\\n# add finalizer in tests\\n@pytest.fixture(autouse=True)\\ndef close_sessions(request):\\n    yield\\n    for sess in request.session._client_sessions:\\n        sess.close()\\n``` | Unclosed connections hold buffers. |\n| **10. Verify Middleware and Signal Handlers** | - Ensure `request` \u2192 `response` lifecycle is finished before moving to the next request.<br>- No global state leaks. | Search for patterns like `global_state.append(request)` without removal. | Middleware can accumulate state across requests. |\n| **11. Audit Static File / Caching Logic** | - Check in\u2011memory caches (`lru_cache`, `functools.cache`).<br>- Ensure cache size limits are respected. | ```python\\nfrom cachetools import Cache\\nprint(cache.currsize)\\n``` | Infinite caches grow unboundedly. |\n| **12. Check for Open File Descriptors** | - Too many sockets / files left open depletes OS resources. | ```bash\\nlsof -p $(pgrep -f my_server) | wc -l\\n``` | Even if memory is fine, FD exhaustion can crash the server. |\n| **13. Use `psutil` to Monitor Live Process Metrics** | - Periodically log RSS, VMS, and active threads. | ```python\\nimport psutil\\np = psutil.Process(os.getpid())\\nprint(p.memory_info().rss)\\nprint(p.num_threads())\\n``` | Correlate memory spikes with specific event loops. |\n| **14. Run with `Valgrind` / `AddressSanitizer` for C Extensions** | - If using C libraries, check for native leaks. | ```bash\\nvalgrind --leak-check=full --show-leak-kinds"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 4.329,
+      "usage": {
+        "prompt_tokens": 154,
+        "total_tokens": 1416,
+        "completion_tokens": 1262,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1161
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_ints = sorted(intervals, key=lambda x: x[0])\n    merged = []\n    for start, end in sorted_ints:\n        if not merged or start > merged[-1][1]:\n            merged.append([start, end])\n        else:\n            merged[-1][1] = max(merged[-1][1], end)\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 2.493,
+      "usage": {
+        "prompt_tokens": 187,
+        "total_tokens": 913,
+        "completion_tokens": 726,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 459
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    # Build adjacency list and indegree map\n    adjacency = {node: set() for node in nodes}\n    indegree = {node: 0 for node in nodes}\n\n    for src, dst in edges:\n        if src == dst:\n            raise ValueError(\"Cycle detected: self-loop\")\n        if dst not in adjacency:\n            raise ValueError(\"Edge target not in node list\")\n        if src not in adjacency:\n            raise ValueError(\"Edge source not in node list\")\n        if dst not in adjacency[src]:\n            adjacency[src].add(dst)\n            indegree[dst] += 1\n\n    # Initialize min-heap with nodes having indegree 0\n    heap = [node for node in nodes if indegree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for nbr in adjacency[node]:\n            indegree[nbr] -= 1\n            if indegree[nbr] == 0:\n                heapq.heappush(heap, nbr)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Cycle detected\")\n\n    return result",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 1.74,
+      "usage": {
+        "prompt_tokens": 312,
+        "total_tokens": 818,
+        "completion_tokens": 506,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 374
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be positive\")\n    result = []\n    batch = []\n    batch_weight = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"invalid weight\")\n        if batch_weight + weight > limit:\n            if batch:\n                result.append(batch)\n            batch = [name]\n            batch_weight = weight\n        else:\n            batch.append(name)\n            batch_weight += weight\n    if batch:\n        result.append(batch)\n    return result",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 3.542,
+      "usage": {
+        "prompt_tokens": 193,
+        "total_tokens": 1226,
+        "completion_tokens": 1033,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 829
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text: str) -> dict:\n    env = {}\n    key_re = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for raw_line in text.splitlines():\n        line = raw_line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f'Invalid line: {raw_line!r}')\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n        if not key_re.fullmatch(key):\n            raise ValueError(f'Invalid key: {key!r} in line: {raw_line!r}')\n        env[key] = value\n    return env",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": false,
+      "elapsed_seconds": 7.086,
+      "usage": {
+        "prompt_tokens": 206,
+        "total_tokens": 2268,
+        "completion_tokens": 2062,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 1622
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import codecs\nfrom typing import List\n\ndef parse_sse(chunks: List[bytes]) -> List[str]:\n    decoder = codecs.getincrementaldecoder(\"utf-8\")()\n    buffer = \"\"\n    data_parts = []\n    had_data = False\n    result = []\n    stop = False\n\n    def dispatch_event():\n        nonlocal data_parts, had_data, result, stop\n        if had_data:\n            event = \"\\n\".join(data_parts)\n            if event == \"[DONE]\":\n                stop = True\n                # do not add [DONE] to result\n            else:\n                result.append(event)\n        data_parts = []\n        had_data = False\n\n    for chunk in chunks:\n        if stop:\n            break\n        buffer += decoder.decode(chunk, final=False)\n        while True:\n            if stop:\n                break\n            if \"\\n\" not in buffer:\n                break\n            line, buffer = buffer.split(\"\\n\", 1)\n            if line == \"\":\n                dispatch_event()\n                if stop:\n                    break\n            elif line.startswith(\":\"):\n                continue\n            elif line.startswith(\"data:\"):\n                payload = line[5:]\n                if payload.startswith(\" \"):\n                    payload = payload[1:]\n                data_parts.append(payload)\n                had_data = True\n            else:\n                # ignore other fields\n                continue\n\n    if stop:\n        return result\n\n    # Flush any remaining bytes to decoder\n    leftover = decoder.decode(b\"\", final=True)\n    buffer += leftover\n\n    # Process any complete lines after flushing\n    while not stop:\n        if \"\\n\" not in buffer:\n            break\n        line, buffer = buffer.split(\"\\n\", 1)\n        if line == \"\":\n            dispatch_event()\n            continue\n        if line.startswith(\":\"):\n            continue\n        if line.startswith(\"data:\"):\n            payload = line[5:]\n            if payload.startswith(\" \"):\n                payload = payload[1:]\n            data_parts.append(payload)\n            had_data = True\n        else:\n            continue\n\n    # At this point, any incomplete final event is discarded\n    return result\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 82, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "retry_delay",
+      "passed": false,
+      "elapsed_seconds": 4.716,
+      "usage": {
+        "prompt_tokens": 164,
+        "total_tokens": 1538,
+        "completion_tokens": 1374,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 947
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\nfrom numbers import Real\n\ndef retry_delay(attempt: int, base: Real, cap: Real) -> float:\n    \"\"\"\n    Return the retry delay for a given attempt.\n\n    The delay is defined as the smaller of ``cap`` and ``base * 2**attempt``.\n    The function works for very large ``attempt`` values without constructing\n    an enormous integer.\n\n    Parameters\n    ----------\n    attempt : int\n        Non\u2011negative integer attempt number.\n    base : float or int\n        Finite non\u2011negative base delay.\n    cap : float or int\n        Finite non\u2011negative cap on the delay.\n\n    Returns\n    -------\n    float\n        The computed retry delay.\n\n    Raises\n    ------\n    ValueError\n        If ``attempt`` is negative, or if ``base`` or ``cap`` are negative,\n        or if they are not real numbers.\n    \"\"\"\n    if not isinstance(attempt, int):\n        raise ValueError(\"attempt must be an integer\")\n    if attempt < 0:\n        raise ValueError(\"attempt must be non\u2011negative\")\n\n    if not isinstance(base, Real):\n        raise ValueError(\"base must be a real number\")\n    if not isinstance(cap, Real):\n        raise ValueValueError(\"cap must be a real number\")\n    if base < 0 or cap < 0:\n        raise ValueError(\"base and cap must be non\u2011negative\")\n\n    # Trivial cases\n    if base == 0 or cap == 0:\n        return 0.0\n\n    # Use logarithms to avoid large intermediary values.\n    log_base = math.log(base)\n    log_cap = math.log(cap)\n\n    # log(product) = log(base) + attempt * log(2)\n    product_log = log_base + attempt * math.log(2)\n\n    # If product would exceed or equal cap, return cap.\n    if product_log >= log_cap:\n        return float(cap)\n\n    # Otherwise compute the actual product safely.\n    return math.exp(product_log)\n",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 64, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 3.139,
+      "usage": {
+        "prompt_tokens": 188,
+        "total_tokens": 1102,
+        "completion_tokens": 914,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 628
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    \"\"\"\n    Admit queued reservation requests in FIFO order while respecting slot and token budgets.\n\n    Parameters\n    ----------\n    active : list[int]\n        List of active token reservations. Assumed to satisfy sum(active) <= budget\n        and len(active) <= slots.\n    queued : list[int]\n        List of pending reservation requests (FIFO order).\n    budget : int\n        Total token budget.\n    slots : int\n        Maximum number of simultaneous reservations.\n\n    Returns\n    -------\n    tuple[list[int], list[int]]\n        (admitted, remaining): admitted reservations and remaining queued ones.\n\n    Raises\n    ------\n    ValueError\n        If any queued reservation exceeds the total budget.\n    \"\"\"\n    # Reject any queued request that cannot possibly be admitted due to budget.\n    if queued and any(req > budget for req in queued):\n        raise ValueError(\"Queued request exceeds total budget\")\n\n    remaining_budget = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    index = 0\n    for req in queued:\n        if remaining_slots <= 0 or req > remaining_budget:\n            break\n        admitted.append(req)\n        remaining_slots -= 1\n        remaining_budget -= req\n        index += 1\n\n    remaining = queued[index:]\n    return admitted, remaining",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.047,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "**Tool Result**\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```\n\nThe dry\u2011run indicates that `src/a.py` would be created with the specified content, and `obsolete.txt` would be deleted. No actual file system modifications were performed."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 0.521,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The dry run was successful, indicating that the requested changes would be applied correctly.  \n- **2 files** would be affected: `src/a.py` created and `obsolete.txt` deleted."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.78,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "**Result of `apply_changes` (dry\u2011run)**  \n- **Status:** `dry-run-ok`  \n- **Files affected (2):**  \n  1. `src/a.py` \u2013 *created* with content  \n     ```python\n     print(42)\n     ```  \n  2. `obsolete.txt` \u2013 *deleted* (in dry\u2011run mode, no actual file system change)\n\nAll requested changes were processed successfully in dry\u2011run mode with labels `[\"coding\", \"test\"]`."
+    }
+  ]
+}

@@ -1,0 +1,355 @@
+{
+  "label": "nemotron35",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 4.798,
+      "elapsed_seconds": 6.423,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 4.798,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 315.1,
+      "answer": "This checklist is designed to diagnose memory leaks in Python HTTP servers. It is structured from the \"obvious\" suspects to the \"deep infrastructure\" analysis.\n\n### Phase 1: Baseline & Reproducibility\nBefore diving into code, ensure the environment is stable. A \"leak\" might actually be expected resource growth (e.g., loading large models) or a bug in a dependency.\n\n1.  **Establish a Baseline:**\n    *   Run the server with a single request cycle.\n    *   Record memory usage (`psutil` or `top`).\n    *   Run a second identical cycle. Memory should be stable or return to the baseline.\n2.  **Define the \"Leak Threshold\":**\n    *   Determine the exact metric that is growing. Is it RSS (Resident Set Size), VMS (Virtual Memory Size), or Python heap size?\n    *   *Command:* `psutil.Process().memory_info().rss` (Resident Memory) is usually the most reliable metric for \"leaking RAM\" visible to the OS.\n3.  **Reproduce the Trigger:**\n    *   Write a script that hits the specific endpoint(s) causing the leak repeatedly (e.g., 1000 requests) without restarting the server.\n    *   *Goal:* If memory grows linearly with requests, you have a leak. If it grows and stays flat, it might be GC overhead or a one-time initialization issue.\n\n### Phase 2: Code-Level Investigation (The \"Low Hanging Fruit\")\n\n#### 1. Check for Unclosed Resources (The #1 Cause)\nHTTP servers often leak memory via unclosed sockets, file handles, or database connections.\n\n*   **Check Handlers:** Inspect every request handler. Does it open a file, DB cursor, or socket?\n    *   *Anti-pattern:* `f = open('file.txt'); f.read()` without `f.close()` or `with open(...)`.\n    *   *Anti-pattern:* Database sessions created inside the handler but never committed or closed.\n*   **Verify `async` cleanup:** If using `asyncio` (FastAPI, aiohttp, Quart), ensure you are using `async with` or `await` properly for resources.\n*   **Check Middleware:** Middleware often wraps requests. Ensure middleware does not accumulate state across requests.\n\n#### 2. Inspect Object Retention (Reference Cycles)\nPython\u2019s Garbage Collector (GC) handles cycles,"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.023,
+      "elapsed_seconds": 1.559,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.023,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 333.35,
+      "answer": "This checklist is designed to diagnose memory leaks in Python HTTP servers. It is structured from the \"obvious\" suspects to the \"deep infrastructure\" analysis.\n\n### Phase 1: Baseline & Reproducibility\nBefore diving into code, ensure the environment is stable. A \"leak\" might actually be expected resource growth (e.g., loading large models) or a bug in a dependency.\n\n1.  **Establish a Baseline:**\n    *   Run the server with a single request cycle.\n    *   Record memory usage (`psutil` or `top`).\n    *   Run a second identical cycle. Memory should be stable or return to the baseline.\n2.  **Define the \"Leak Threshold\":**\n    *   Determine the exact metric that is growing. Is it RSS (Resident Set Size), VMS (Virtual Memory Size), or Python heap size?\n    *   *Command:* `psutil.Process().memory_info().rss` (Resident Memory) is usually the most reliable metric for \"leaking RAM\" visible to the OS.\n3.  **Reproduce the Trigger:**\n    *   Write a script that hits the specific endpoint(s) causing the leak repeatedly (e.g., 1000 requests) without restarting the server.\n    *   *Goal:* If memory grows linearly with requests, you have a leak. If it grows and stays flat, it might be GC overhead or a one-time initialization issue.\n\n### Phase 2: Code-Level Investigation (The \"Low Hanging Fruit\")\n\n#### 1. Check for Unclosed Resources (The #1 Cause)\nHTTP servers often leak memory via unclosed sockets, file handles, or database connections.\n\n*   **Check Handlers:** Inspect every request handler. Does it open a file, DB cursor, or socket?\n    *   *Anti-pattern:* `f = open('file.txt'); f.read()` without `f.close()` or `with open(...)`.\n    *   *Anti-pattern:* Database sessions created inside the handler but never committed or closed.\n*   **Verify `async` cleanup:** If using `asyncio` (FastAPI, aiohttp, Quart), ensure you are using `async with` or `await` properly for resources.\n*   **Check Middleware:** Middleware often wraps requests. Ensure middleware does not accumulate state across requests.\n\n#### 2. Inspect Object Retention (Reference Cycles)\nPython\u2019s Garbage Collector (GC) handles cycles,"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.018,
+      "elapsed_seconds": 1.554,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.018,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 333.26,
+      "answer": "This checklist is designed to diagnose memory leaks in Python HTTP servers. It is structured from the \"obvious\" suspects to the \"deep infrastructure\" analysis.\n\n### Phase 1: Baseline & Reproducibility\nBefore diving into code, ensure the environment is stable. A \"leak\" might actually be expected resource growth (e.g., loading large models) or a bug in a dependency.\n\n1.  **Establish a Baseline:**\n    *   Run the server with a single request cycle.\n    *   Record memory usage (`psutil` or `top`).\n    *   Run a second identical cycle. Memory should be stable or return to the baseline.\n2.  **Define the \"Leak Threshold\":**\n    *   Determine the exact metric that is growing. Is it RSS (Resident Set Size), VMS (Virtual Memory Size), or Python heap size?\n    *   *Command:* `psutil.Process().memory_info().rss` (Resident Memory) is usually the most reliable metric for \"leaking RAM\" visible to the OS.\n3.  **Reproduce the Trigger:**\n    *   Write a script that hits the specific endpoint(s) causing the leak repeatedly (e.g., 1000 requests) without restarting the server.\n    *   *Goal:* If memory grows linearly with requests, you have a leak. If it grows and stays flat, it might be GC overhead or a one-time initialization issue.\n\n### Phase 2: Code-Level Investigation (The \"Low Hanging Fruit\")\n\n#### 1. Check for Unclosed Resources (The #1 Cause)\nHTTP servers often leak memory via unclosed sockets, file handles, or database connections.\n\n*   **Check Handlers:** Inspect every request handler. Does it open a file, DB cursor, or socket?\n    *   *Anti-pattern:* `f = open('file.txt'); f.read()` without `f.close()` or `with open(...)`.\n    *   *Anti-pattern:* Database sessions created inside the handler but never committed or closed.\n*   **Verify `async` cleanup:** If using `asyncio` (FastAPI, aiohttp, Quart), ensure you are using `async with` or `await` properly for resources.\n*   **Check Middleware:** Middleware often wraps requests. Ensure middleware does not accumulate state across requests.\n\n#### 2. Inspect Object Retention (Reference Cycles)\nPython\u2019s Garbage Collector (GC) handles cycles,"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 3.599,
+      "usage": {
+        "completion_tokens": 1178,
+        "prompt_tokens": 98,
+        "total_tokens": 1276,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = []\n    for start, end in sorted_intervals:\n        if not merged or merged[-1][1] < start:\n            merged.append([start, end])\n        else:\n            merged[-1][1] = max(merged[-1][1], end)\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 6.089,
+      "usage": {
+        "completion_tokens": 1979,
+        "prompt_tokens": 131,
+        "total_tokens": 2110,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    # Deduplicate edges so they don't artificially inflate in-degrees\n    unique_edges = set(edges)\n\n    # Build in-degree and adjacency structures without mutating inputs\n    indeg = {n: 0 for n in nodes}\n    adj = {n: [] for n in nodes}\n\n    for src, dst in unique_edges:\n        adj[src].append(dst)\n        indeg[dst] += 1\n\n    # Min-heap to always pick the lexicographically smallest available node\n    heap = [n for n in nodes if indeg[n] == 0]\n    heapq.heapify(heap)\n\n    order = []\n    while heap:\n        node = heapq.heappop(heap)\n        order.append(node)\n        for neighbor in adj[node]:\n            indeg[neighbor] -= 1\n            if indeg[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(order) != len(nodes):\n        raise ValueError(\"Graph contains a cycle\")\n\n    return order\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 7.353,
+      "usage": {
+        "completion_tokens": 1655,
+        "prompt_tokens": 254,
+        "total_tokens": 1909,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    for _, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n    if not items:\n        return []\n    batches = []\n    current_names = []\n    current_weight = 0\n    for name, weight in items:\n        if current_weight + weight > limit:\n            batches.append(current_names)\n            current_names = [name]\n            current_weight = weight\n        else:\n            current_names.append(name)\n            current_weight += weight\n    if current_names:\n        batches.append(current_names)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 9.807,
+      "usage": {
+        "completion_tokens": 3178,
+        "prompt_tokens": 135,
+        "total_tokens": 3313,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env = {}\n    key_pat = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid environment line: {line!r}\")\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not key_pat.fullmatch(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2 and ((value[0] == '\"' and value[-1] == '\"') or (value[0] == \"'\" and value[-1] == \"'\")):\n            value = value[1:-1]\n        env[key] = value\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 20.076,
+      "usage": {
+        "completion_tokens": 6361,
+        "prompt_tokens": 151,
+        "total_tokens": 6512,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    data_bytes = b''.join(chunks)\n    text = data_bytes.decode('utf-8')\n    text = text.replace('\\r\\n', '\\n').replace('\\r', '\\n')\n\n    lines = text.split('\\n')\n\n    events = []\n    current_data = []\n    done = False\n\n    for line in lines:\n        if done:\n            break\n\n        if line == '':\n            if current_data:\n                event_text = '\\n'.join(current_data)\n                if event_text == '[DONE]':\n                    done = True\n                else:\n                    events.append(event_text)\n                current_data = []\n            continue\n\n        if line.lstrip().startswith(':'):\n            continue\n\n        if ':' not in line:\n            continue\n\n        field, _, value = line.partition(':')\n        field = field.strip()\n        if value.startswith(' '):\n            value = value[1:]\n\n        if field == 'data':\n            current_data.append(value)\n\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 20.408,
+      "usage": {
+        "completion_tokens": 6468,
+        "prompt_tokens": 114,
+        "total_tokens": 6582,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt: int, base: float, cap: float) -> float:\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n    if base >= cap:\n        return float(cap)\n    # 0 < base < cap\n    # We need to check if base * 2**attempt >= cap\n    # equivalent to attempt >= log2(cap / base)\n    try:\n        threshold = math.log2(cap / base)\n    except ValueError:\n        # cap / base could be negative if signs were weird, but we already checked nonnegative\n        return float(cap)\n    if attempt >= threshold:\n        return float(cap)\n    # attempt < threshold  =>  base * 2**attempt < cap\n    # at this point attempt is small enough that 2**attempt is safe to compute\n    # (if attempt were 10**9, threshold would be <= 10**9 only if cap/base >= 2**10**9,\n    #  which would make the product huge; but the problem asks to avoid constructing\n    #  such integers. In the uncapped branch, attempt is implicitly bounded by log2(cap/base),\n    #  and we can safely use Python's integer power then convert to float.)\n    return float(base * (2 ** attempt))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 9.61,
+      "usage": {
+        "completion_tokens": 3119,
+        "prompt_tokens": 138,
+        "total_tokens": 3257,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for r in queued:\n        if r > budget:\n            raise ValueError(\"Queued reservation exceeds budget\")\n\n    current_slots = len(active)\n    current_tokens = sum(active)\n    admitted = []\n    i = 0\n\n    while i < len(queued):\n        r = queued[i]\n        if current_slots + 1 <= slots and current_tokens + r <= budget:\n            admitted.append(r)\n            current_slots += 1\n            current_tokens += r\n            i += 1\n        else:\n            break\n\n    remaining = queued[i:]\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.323,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The\u202f`apply_changes`\u202ftool has been executed in dry\u2011run mode. It reported a successful dry\u2011run status with **2** files marked for change:\n\n- **Created** `src/a.py` containing `print(42)\\n`\n- **Deleted** `obsolete.txt`\n\nSince `metadata.dry_run` was set to `true`, no actual filesystem modifications were performed, but the operation plan is confirmed and ready to be applied for real when desired."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 0.851,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool ran successfully in dry\u2011run mode:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** 2 (created `src/a.py` with the specified content and deleted `obsolete.txt`)\n\nThe requested metadata (`dry_run: true`, `labels: [\"coding\", \"test\"]`) was applied, and no actual file modifications were performed because the operation was a dry run."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.692,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed a dry\u2011run and reported:\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```"
+    },
+    {
+      "name": "context_32000",
+      "passed": true,
+      "elapsed_seconds": 2.13,
+      "usage": {
+        "completion_tokens": 47,
+        "prompt_tokens": 31886,
+        "total_tokens": 31933,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.107,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 31956,
+        "total_tokens": 31964,
+        "prompt_tokens_details": {
+          "cached_tokens": 31932
+        }
+      }
+    },
+    {
+      "name": "context_122000",
+      "passed": true,
+      "elapsed_seconds": 10.05,
+      "usage": {
+        "completion_tokens": 47,
+        "prompt_tokens": 121887,
+        "total_tokens": 121934,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "answer": "{\n  \"START_KEY\": \"amber-7429\",\n  \"MIDDLE_KEY\": \"birch-5831\",\n  \"END_KEY\": \"cedar-9167\"\n}",
+      "followup_seconds": 0.23,
+      "followup_usage": {
+        "completion_tokens": 8,
+        "prompt_tokens": 121957,
+        "total_tokens": 121965,
+        "prompt_tokens_details": {
+          "cached_tokens": 121933
+        }
+      }
+    },
+    {
+      "name": "context_253000",
+      "passed": true,
+      "elapsed_seconds": 29.829,
+      "usage": {
+        "completion_tokens": 42,
+        "prompt_tokens": 252887,
+        "total_tokens": 252929,
+        "prompt_tokens_details": {
+          "cached_tokens": 5
+        }
+      },
+      "answer": "{\"START_KEY\": \"amber-7429\", \"MIDDLE_KEY\": \"birch-5831\", \"END_KEY\": \"cedar-9167\"}",
+      "followup_seconds": 0.485,
+      "followup_usage": {
+        "completion_tokens": 12,
+        "prompt_tokens": 252952,
+        "total_tokens": 252964,
+        "prompt_tokens_details": {
+          "cached_tokens": 252928
+        }
+      }
+    }
+  ]
+}

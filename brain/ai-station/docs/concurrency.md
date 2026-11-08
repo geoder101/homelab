@@ -1,14 +1,15 @@
 # Fully local capacity tuning — 2026-10-31
 
-**Current selection (2026-11-05):** Qwen Q4 precision, two fixed 256K slots and
-GPU vision. The [Ornith trial](benchmarks/ornith-20261105.md) ended with Qwen
-restored. This document records the earlier three-slot capacity study, whose
-profile remains available with `make profile-capacity`.
+**Current selection (2026-11-08):** Ornith Q5 on b12182, two fixed 256K slots
+and GPU vision; see [current settings and preserved history](model-profile.md).
+The earlier [Ornith Q4 trial](benchmarks/ornith-20261105.md) ended with Qwen
+restored at that time. This document records the three-slot capacity study, whose
+profile remains available with `make profile-qwen38-q3`.
 
 ## 2026-10-31 selection: three fixed 256K agents
 
 This is the **capacity** alternative. The persistent global **precision**
-profile is currently selected; `make profile-status` shows the selected and running
+profile remains available for rollback; `make profile-status` shows the selected and running
 configuration. See [switching profiles](#global-profile-switching).
 
 The capacity-study configuration uses Qwen3.8-27B Dynamic V3 **UD-Q3_K_XL weights**, GPU **Q4 K/V
@@ -219,8 +220,8 @@ was not edited; no remote requests participated in tuning.
 ## Global profile switching
 
 ```bash
-make profile-precision   # Q4 weights; two fixed 256K agents; GPU vision
-make profile-capacity    # Q3 weights; three fixed 256K agents; CPU vision
+make profile-qwen38-q4   # Qwen3.8 UD-Q4_K_XL; two fixed 256K agents; GPU vision
+make profile-qwen38-q3   # Qwen3.8 UD-Q3_K_XL; three fixed 256K agents; CPU vision
 make profile-status      # selected profile and actual running model/slots
 ```
 

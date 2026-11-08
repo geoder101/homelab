@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+"""Run batch 2 and tuning after batch 1, with persisted progress and recovery."""
+import datetime
+import fcntl
+import json
+import pathlib
+import subprocess
+import sys
+import time
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUTPUT = ROOT / 'docs/benchmarks/moe-20261107-queue'
+
+
+def now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def main():
+    config = yaml.safe_load((ROOT / 'config/benchmark-queue.yaml').read_text())
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    state = {'created_utc': now(), 'control': 'Qwen3.8-27B UD-Q4_K_XL precision',
+             'state': 'waiting-for-batch1', 'stages': {
+                 key: {'state': 'queued', 'models': batch['models'], 'output': batch['output']}
+                 for key, batch in config['batches'].items()}}
+    def persist():
+        temporary = OUTPUT / 'status.json.tmp'
+        temporary.write_text(json.dumps(state, indent=2) + '\n')
+        temporary.replace(OUTPUT / 'status.json')
+    def run(argv, filename):
+        with (OUTPUT / filename).open('w') as log:
+            return subprocess.run(argv, stdout=log, stderr=subprocess.STDOUT, cwd=ROOT).returncode
+    persist()
+    while subprocess.run(['systemctl', '--user', 'is-active', '--quiet', 'ai-station-moe-batch1']).returncode == 0:
+        time.sleep(10)
+    first = ROOT / 'docs/benchmarks/moe-20261107/status.json'
+    if not first.is_file():
+        state.update(state='blocked', error='Batch 1 produced no status file; inspect its journal')
+        persist()
+        return 1
+    first_state = json.loads(first.read_text())
+    finished = {'complete', 'unavailable', 'error'}
+    all_attempted = all(first_state.get('results', {}).get(name, {}).get('phase') in finished
+                        for name in first_state.get('requested', []))
+    control_finished = first_state.get('results', {}).get('baseline', {}).get('phase') == 'complete'
+    if (not first_state.get('restored') or first_state.get('restore_smoke_returncode') != 0
+            or not all_attempted or not control_finished):
+        state.update(state='blocked', error='Batch 1 did not finish its control/trials and verify restoration')
+        persist()
+        return 1
+    try:
+        for key, batch in config['batches'].items():
+            stage = state['stages'][key]
+            stage.update(state='downloading', started_utc=now())
+            state['state'] = key
+            persist()
+            # Downloads and GPU controllers use the same lock; no concurrent relabelling.
+            with (pathlib.Path.home() / '.local/share/ai-station/tune-concurrency.lock').open('a') as lock:
+                fcntl.flock(lock, fcntl.LOCK_EX)
+                code = run(['python3', str(ROOT / 'scripts/download-benchmark-queue'), key], f'{key}-download.log')
+            if code:
+                stage.update(state='blocked', error='Artifact preparation failed', returncode=code)
+                state['state'] = 'blocked'
+                persist()
+                return code
+            stage['state'] = 'benchmarking'
+            persist()
+            code = run(['python3', str(ROOT / 'scripts/benchmark-moe-candidates'), *batch['models'],
+                        '--output', str(ROOT / batch['output'])], f'{key}-benchmark.log')
+            result_path = ROOT / batch['output'] / 'status.json'
+            result = json.loads(result_path.read_text()) if result_path.is_file() else {}
+            stage.update(returncode=code, restored=result.get('restored', False), finished_utc=now())
+            if code or not result.get('restored') or result.get('restore_smoke_returncode') != 0:
+                stage['state'] = 'blocked'
+                state['state'] = 'blocked'
+                persist()
+                return code or 1
+            stage['state'] = 'complete'
+            persist()
+        state.update(state='complete', finished_utc=now())
+        persist()
+        return 0
+    except BaseException as error:
+        state.update(state='blocked', error=str(error), updated_utc=now())
+        persist()
+        raise
+
+
+if __name__ == '__main__':
+    sys.exit(main())

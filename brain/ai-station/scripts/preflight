@@ -40,6 +40,14 @@ def main():
                 raise ValueError(f"Selected profile {model['profile']} disagrees with model lock: {key}")
     template = yaml.safe_load((config / 'chat-templates.lock.yaml').read_text())[model.get('chat_template_key', 'qwen_fixed')]
     unit = (root / 'quadlets/llama-coder.container').read_text()
+    image_locks = yaml.safe_load((config / 'images.lock.yaml').read_text())['images']
+    profile_image = profiles[model['profile']].get('image', 'llama_cpp') if 'profile' in model else model.get('image_key', 'llama_cpp')
+    if model.get('image_key', profile_image) != profile_image:
+        raise ValueError('Selected model image key disagrees with profile')
+    image = image_locks[profile_image]
+    reference = image['source'].rsplit(':', 1)[0] + '@' + image['digest']
+    if values(unit, 'Image') != [reference]:
+        raise ValueError('llama Quadlet image disagrees with selected profile')
     model_mount = f"%h/.local/share/ai-station/models/{model['directory']}:/models/coder:ro,Z"
     template_mount = f"%h/.local/share/ai-station/{template['directory']}:/templates:ro,Z"
     if model_mount not in values(unit, 'Volume'):
@@ -87,7 +95,6 @@ def main():
         if not secret.is_file():
             raise ValueError(f'Missing secret file: {secret}; run make secrets for initial setup')
     images = set()
-    image_locks = yaml.safe_load((config / 'images.lock.yaml').read_text())['images']
     locked_digests = {entry['digest'] for entry in image_locks.values()}
     for path in (root / 'quadlets').glob('*.container'):
         text = path.read_text()

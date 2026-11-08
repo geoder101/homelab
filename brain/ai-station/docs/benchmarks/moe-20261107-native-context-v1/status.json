@@ -1,0 +1,418 @@
+{
+  "started_utc": "2026-11-07T21:54:48.961081+00:00",
+  "requested": [
+    "qwen3-coder",
+    "glm47",
+    "gemma4",
+    "qwen36",
+    "ornith"
+  ],
+  "results": {
+    "baseline": {
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+          "--mmproj",
+          "/models/coder/mmproj-BF16.gguf",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "524288",
+          "--parallel",
+          "2",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"reasoning_effort\":\"medium\",\"preserve_thinking\":true}",
+          "--temp",
+          "1.0",
+          "--top-p",
+          "0.95",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--presence-penalty",
+          "0.0",
+          "--repeat-penalty",
+          "1.0",
+          "--no-webui",
+          "--log-colors",
+          "off",
+          "--chat-template-file",
+          "/templates/chat_template.jinja"
+        ],
+        "model_path": "/models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf",
+        "total_slots": 2,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 1.0,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.949999988079071,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": true,
+          "supports_reasoning_effort": true,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": true,
+          "reasoning_effort_levels": [
+            "low",
+            "max"
+          ]
+        }
+      },
+      "phase": "complete",
+      "checks": {
+        "seed42": 0,
+        "seed43": 0,
+        "seed44": 0,
+        "screen": 0,
+        "full": 0,
+        "limit": 0,
+        "agent": 0,
+        "native1": 1,
+        "native2": 1
+      }
+    },
+    "qwen3-coder": {
+      "phase": "running",
+      "attempts": [
+        {
+          "context": 262144,
+          "slots": 2,
+          "kv": "q4_0",
+          "ready": false,
+          "log": "qwen3-coder-startup1.log"
+        },
+        {
+          "context": 262144,
+          "slots": 1,
+          "kv": "q4_0",
+          "ready": true,
+          "log": "qwen3-coder-startup2.log",
+          "actual_context": 262144,
+          "actual_slots": 1
+        }
+      ],
+      "runtime": {
+        "backend": "llama",
+        "server_command": [
+          "--model",
+          "/models/candidate/Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf",
+          "--alias",
+          "coder",
+          "--host",
+          "0.0.0.0",
+          "--port",
+          "8000",
+          "--n-gpu-layers",
+          "99",
+          "--ctx-size",
+          "262144",
+          "--parallel",
+          "1",
+          "--no-kv-unified",
+          "--cache-ram",
+          "16384",
+          "--flash-attn",
+          "on",
+          "--cache-type-k",
+          "q4_0",
+          "--cache-type-v",
+          "q4_0",
+          "--jinja",
+          "--reasoning-format",
+          "deepseek",
+          "--chat-template-kwargs",
+          "{\"enable_thinking\":false}",
+          "--temp",
+          "0.7",
+          "--top-p",
+          "0.8",
+          "--top-k",
+          "20",
+          "--min-p",
+          "0.0",
+          "--repeat-penalty",
+          "1.05",
+          "--no-webui",
+          "--log-colors",
+          "off"
+        ],
+        "model_path": "/models/candidate/Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf",
+        "total_slots": 1,
+        "default_generation_settings": {
+          "params": {
+            "seed": 4294967295,
+            "temperature": 0.699999988079071,
+            "dynatemp_range": 0.0,
+            "dynatemp_exponent": 1.0,
+            "top_k": 20,
+            "top_p": 0.800000011920929,
+            "min_p": 0.0,
+            "top_n_sigma": -1.0,
+            "xtc_probability": 0.0,
+            "xtc_threshold": 0.10000000149011612,
+            "typical_p": 1.0,
+            "repeat_last_n": 64,
+            "repeat_penalty": 1.0499999523162842,
+            "presence_penalty": 0.0,
+            "frequency_penalty": 0.0,
+            "dry_multiplier": 0.0,
+            "dry_base": 1.75,
+            "dry_allowed_length": 2,
+            "dry_penalty_last_n": 64,
+            "mirostat": 0,
+            "mirostat_tau": 5.0,
+            "mirostat_eta": 0.10000000149011612,
+            "adaptive_target": -1.0,
+            "adaptive_decay": 0.8999999761581421,
+            "max_tokens": -1,
+            "n_predict": -1,
+            "n_keep": 0,
+            "n_discard": 0,
+            "ignore_eos": false,
+            "stream": false,
+            "n_probs": 0,
+            "min_keep": 0,
+            "chat_format": "Content-only",
+            "reasoning_format": "none",
+            "reasoning_in_content": false,
+            "generation_prompt": "",
+            "samplers": [
+              "penalties",
+              "dry",
+              "top_n_sigma",
+              "top_k",
+              "typ_p",
+              "top_p",
+              "min_p",
+              "xtc",
+              "temperature"
+            ],
+            "speculative.types": "none",
+            "timings_per_token": false,
+            "post_sampling_probs": false,
+            "backend_sampling": false,
+            "lora": []
+          },
+          "n_ctx": 262144
+        },
+        "build_info": "b11960-8642541b2",
+        "chat_template_caps": {
+          "supports_object_arguments": true,
+          "supports_parallel_tool_calls": true,
+          "supports_preserve_reasoning": false,
+          "supports_reasoning_effort": false,
+          "supports_string_content": true,
+          "supports_system_role": true,
+          "supports_tool_calls": true,
+          "supports_tools": true,
+          "supports_typed_content": false,
+          "reasoning_effort_levels": []
+        }
+      },
+      "gpu": "name, memory.total [MiB], memory.used [MiB]\nNVIDIA GeForce RTX 5090, 32607 MiB, 28870 MiB\n"
+    }
+  },
+  "restored": true,
+  "artifacts": {
+    "qwen3-coder": {
+      "repository": "unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF",
+      "revision": "b17cb02dd882d5b6ab62fc777ad2995f19668350",
+      "directory": "qwen3-coder-30b-q5",
+      "file": "Qwen3-Coder-30B-A3B-Instruct-Q5_K_M.gguf",
+      "sha256": "4b78837bbec5ee248e4a5642bf608b6793721af41b92589e40c8da0bce58b907",
+      "context": 262144,
+      "thinking": false,
+      "vision": false,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 579,
+        "general.architecture": "qwen3moe",
+        "qwen3moe.context_length": 262144
+      }
+    },
+    "glm47": {
+      "repository": "unsloth/GLM-4.7-Flash-GGUF",
+      "revision": "0d32489ecb9db6d2a4fc93bd27ef01519f95474d",
+      "directory": "glm47-flash-q5",
+      "file": "GLM-4.7-Flash-Q5_K_M.gguf",
+      "sha256": "167848c4b460887d7a52c44c378d3996a0d38b3302ac2045494dc8b50869a893",
+      "context": 202752,
+      "vision": false,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 844,
+        "general.architecture": "deepseek2",
+        "deepseek2.context_length": 202752
+      }
+    },
+    "gemma4": {
+      "repository": "unsloth/gemma-4-26B-A4B-it-GGUF",
+      "revision": "c099eb48e663fd284577b04978a94ffccb261841",
+      "directory": "gemma4-26b-q5",
+      "file": "gemma-4-26B-A4B-it-UD-Q5_K_M.gguf",
+      "sha256": "769d386a69d43782321c1bad04d41d29a2e84b2c06e6a277cd99fd6265ec0e80",
+      "vision_file": "mmproj-BF16.gguf",
+      "vision_sha256": "41926ed5f1403cf5add23b0684992805ea6f97253096132e769e65646b8cef9d",
+      "context": 262144,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 658,
+        "general.architecture": "gemma4",
+        "gemma4.context_length": 262144
+      }
+    },
+    "qwen36": {
+      "repository": "unsloth/Qwen3.6-35B-A3B-GGUF",
+      "revision": "a483e9e6cbd595906af30beda3187c2663a1118c",
+      "directory": "qwen36-35b-q4",
+      "file": "Qwen3.6-35B-A3B-UD-Q4_K_M.gguf",
+      "sha256": "ac0e2c1189e055faa36eff361580e79c5bd6f8e76bffb4ce547f167d53e31a61",
+      "vision_file": "mmproj-BF16.gguf",
+      "vision_sha256": "356dfaa3111376a4f7165e32e8749713378d1700b37cf52e0c50d9f23322334d",
+      "context": 262144,
+      "gguf": {
+        "version": 3,
+        "tensor_count": 733,
+        "general.architecture": "qwen35moe",
+        "qwen35moe.context_length": 262144
+      }
+    },
+    "ornith": {
+      "repository": "ornith-ai/Ornith-1.5-35B-A3B-GGUF",
+      "revision": "12393612fd4f730ff5aadc23e9b8f9648aa49ceb",
+      "directory": "ornith-1.5-35b-gguf",
+      "file": "Ornith-1.5-35B-Q4_K_M.gguf",
+      "sha256": "42739874cc2ccfdb8523b23fbe52e29b2a7555c8176737ca9ca0b5d59859d41f",
+      "vision_file": "mmproj-Ornith-1.5-35B-BF16.gguf",
+      "vision_sha256": "1921a36a85aee56cd2abd27f46701802c9d85a33474792e600df6c3b282a135d",
+      "context": 262144,
+      "image": "ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99",
+      "gguf": {
+        "version": 3,
+        "tensor_count": 753,
+        "general.architecture": "qwen35moe",
+        "qwen35moe.context_length": 262144
+      }
+    }
+  },
+  "protected_sha256": {
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/config/models.lock.yaml": "e2201729199f5b89491618a797eb006d8e1b962627260ea8c505557fb2938e5c",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/quadlets/llama-coder.container": "88fe1d1b2b8f897e4f202236b360a3c6414942aaaaade0513a7fcba0b2ba9ae0",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/config/litellm-config.yaml": "c47572b72cf89d022e1e5cee5ef01a8dcebd8ebaadc16779e0e8499d3c84cf7a",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/README.md": "971a010f1e260769074ee122b232f35298c1aad53d947691138f06ef64b2cbb7",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/docs/model-profile.md": "58dc3261a80d344f182ab0d9b5e8937cfb8b5c8a71a8b5e64beb1a21a7aca370",
+    "/var/home/geoder101/dev/projects/geoder101/ai-station/docs/operations.md": "f2d92f939226df7667436623ec2845e3e0febd51332e7196901d5620a59656a7"
+  },
+  "harness_sha256": {
+    "benchmark-coder": "a2558272c2c4de936ff08ae2004095699df09d0f5b0f3453bd2a394aa2d91b92",
+    "benchmark-concurrency": "82b32d71ba80171fe5adc87d4dc44c23e2ee3b25d7c6166cb985556862a991ba",
+    "benchmark-agent-repair": "026849f82834b0296bfb4443b1855fb299e22b6ab1075627210bc22d7ac180d6",
+    "check-native-concurrency": "4a78b5cbbaebc4ba58af4442f2bd5623b0a5867101cbc0491fb9b3e2fcb9a98d"
+  },
+  "images": {
+    "llama_cpp_trial": {
+      "source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "version": "b12182",
+      "commit": "fd27b2034905f8dadd8bd6d2cc44595f4929d391",
+      "digest": "sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469"
+    },
+    "llama_cpp": {
+      "source": "ghcr.io/ggml-org/llama.cpp:server-cuda",
+      "version": "b11960",
+      "commit": "8642541b255bfb5dc39cd351a178be09013a55d6",
+      "digest": "sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99"
+    },
+    "vllm": {
+      "source": "docker.io/vllm/vllm-openai:v0.32.0",
+      "digest": "sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9"
+    },
+    "litellm": {
+      "source": "docker.litellm.ai/berriai/litellm:v1.106.5",
+      "digest": "sha256:471f48b56221afba5adde2502b39a2596d04fa4ba30f2a82f002dd170fff4913"
+    },
+    "open_webui": {
+      "source": "ghcr.io/open-webui/open-webui:v0.12.4",
+      "digest": "sha256:c5354e4a8e83ae6e0c75521c494e7ca0e66ccd88421dcd625d618518cab181f1"
+    }
+  },
+  "finished_utc": "2026-11-07T22:33:35.016989+00:00",
+  "restore_smoke_returncode": 0
+}

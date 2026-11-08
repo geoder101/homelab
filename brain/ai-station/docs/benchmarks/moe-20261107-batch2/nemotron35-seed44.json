@@ -1,0 +1,286 @@
+{
+  "label": "nemotron35",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "general",
+    "mtp": false,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.058,
+      "elapsed_seconds": 1.597,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.058,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 332.69,
+      "answer": "Here is a detailed checklist for diagnosing memory leaks in a long-running Python HTTP server. This guide assumes you are using a standard server framework (like FastAPI, Flask, Django, or a custom `asyncio`/`wsgiref` implementation) and running integration tests against it.\n\n---\n\n### Phase 1: Preparation & Baseline Metrics\n\nBefore introducing diagnostics, you must establish a baseline to prove a leak exists and measure its growth rate.\n\n**1. Establish the \"Leak Rate\"**\nRun your integration test suite for a set duration (e.g., 1 hour or until the test fails) without any diagnostic tools enabled.\n*   **Command:** Use `psutil` or `top` to record memory usage at the start and end.\n    ```python\n    import psutil\n    import os\n\n    process = psutil.Process(os.getpid())\n    mem_start = process.memory_info().rss / (1024 * 1024) # MB\n    # ... run tests ...\n    mem_end = process.memory_info().rss / (1024 * 1024)\n    print(f\"Memory growth: {mem_end - mem_start:.2f} MB\")\n    ```\n*   **Verification:** If `mem_end > mem_start` significantly (e.g., > 50MB growth per test run), you have a leak to investigate.\n\n**2. Enable Core Dumps (Optional but Recommended)**\nIf the server crashes or hits an MemoryError, you need to capture the state.\n*   **Check:** Ensure `ulimit -c unlimited` is set in your shell or Docker container to allow core dumps.\n\n---\n\n### Phase 2: The \"Poor Man's\" Profiler (Heap Snapshot)\n\nThe most common cause of memory leaks in Python HTTP servers is **reference cycles** or **global caches** that are never cleared between requests.\n\n**3. Run with `objgraph` to identify \"Big\" Objects**\n`objgraph` is a lightweight library that visualizes object growth.\n*   **Install:** `pip install objgraph`\n*   **Check:** Run your test suite once with this snippet inserted at the start and end:\n    ```python\n    import objgraph\n    objgraph.show_most_common_types(limit=20)\n    ```\n*   **Diagnosis:** Compare the output before and after the test run. If you see `dict`, `list`, or specific class names (e.g.,"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.024,
+      "elapsed_seconds": 1.558,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.024,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 333.59,
+      "answer": "Here is a detailed checklist for diagnosing memory leaks in a long-running Python HTTP server. This guide assumes you are using a standard server framework (like FastAPI, Flask, Django, or a custom `asyncio`/`wsgiref` implementation) and running integration tests against it.\n\n---\n\n### Phase 1: Preparation & Baseline Metrics\n\nBefore introducing diagnostics, you must establish a baseline to prove a leak exists and measure its growth rate.\n\n**1. Establish the \"Leak Rate\"**\nRun your integration test suite for a set duration (e.g., 1 hour or until the test fails) without any diagnostic tools enabled.\n*   **Command:** Use `psutil` or `top` to record memory usage at the start and end.\n    ```python\n    import psutil\n    import os\n\n    process = psutil.Process(os.getpid())\n    mem_start = process.memory_info().rss / (1024 * 1024) # MB\n    # ... run tests ...\n    mem_end = process.memory_info().rss / (1024 * 1024)\n    print(f\"Memory growth: {mem_end - mem_start:.2f} MB\")\n    ```\n*   **Verification:** If `mem_end > mem_start` significantly (e.g., > 50MB growth per test run), you have a leak to investigate.\n\n**2. Enable Core Dumps (Optional but Recommended)**\nIf the server crashes or hits an MemoryError, you need to capture the state.\n*   **Check:** Ensure `ulimit -c unlimited` is set in your shell or Docker container to allow core dumps.\n\n---\n\n### Phase 2: The \"Poor Man's\" Profiler (Heap Snapshot)\n\nThe most common cause of memory leaks in Python HTTP servers is **reference cycles** or **global caches** that are never cleared between requests.\n\n**3. Run with `objgraph` to identify \"Big\" Objects**\n`objgraph` is a lightweight library that visualizes object growth.\n*   **Install:** `pip install objgraph`\n*   **Check:** Run your test suite once with this snippet inserted at the start and end:\n    ```python\n    import objgraph\n    objgraph.show_most_common_types(limit=20)\n    ```\n*   **Diagnosis:** Compare the output before and after the test run. If you see `dict`, `list`, or specific class names (e.g.,"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.018,
+      "elapsed_seconds": 1.552,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 49,
+        "total_tokens": 561,
+        "prompt_tokens_details": {
+          "cached_tokens": 45
+        }
+      },
+      "first_generated_token_seconds": 0.018,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 333.71,
+      "answer": "Here is a detailed checklist for diagnosing memory leaks in a long-running Python HTTP server. This guide assumes you are using a standard server framework (like FastAPI, Flask, Django, or a custom `asyncio`/`wsgiref` implementation) and running integration tests against it.\n\n---\n\n### Phase 1: Preparation & Baseline Metrics\n\nBefore introducing diagnostics, you must establish a baseline to prove a leak exists and measure its growth rate.\n\n**1. Establish the \"Leak Rate\"**\nRun your integration test suite for a set duration (e.g., 1 hour or until the test fails) without any diagnostic tools enabled.\n*   **Command:** Use `psutil` or `top` to record memory usage at the start and end.\n    ```python\n    import psutil\n    import os\n\n    process = psutil.Process(os.getpid())\n    mem_start = process.memory_info().rss / (1024 * 1024) # MB\n    # ... run tests ...\n    mem_end = process.memory_info().rss / (1024 * 1024)\n    print(f\"Memory growth: {mem_end - mem_start:.2f} MB\")\n    ```\n*   **Verification:** If `mem_end > mem_start` significantly (e.g., > 50MB growth per test run), you have a leak to investigate.\n\n**2. Enable Core Dumps (Optional but Recommended)**\nIf the server crashes or hits an MemoryError, you need to capture the state.\n*   **Check:** Ensure `ulimit -c unlimited` is set in your shell or Docker container to allow core dumps.\n\n---\n\n### Phase 2: The \"Poor Man's\" Profiler (Heap Snapshot)\n\nThe most common cause of memory leaks in Python HTTP servers is **reference cycles** or **global caches** that are never cleared between requests.\n\n**3. Run with `objgraph` to identify \"Big\" Objects**\n`objgraph` is a lightweight library that visualizes object growth.\n*   **Install:** `pip install objgraph`\n*   **Check:** Run your test suite once with this snippet inserted at the start and end:\n    ```python\n    import objgraph\n    objgraph.show_most_common_types(limit=20)\n    ```\n*   **Diagnosis:** Compare the output before and after the test run. If you see `dict`, `list`, or specific class names (e.g.,"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 7.051,
+      "usage": {
+        "completion_tokens": 2301,
+        "prompt_tokens": 98,
+        "total_tokens": 2399,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_ivs = sorted([list(iv) for iv in intervals], key=lambda x: x[0])\n    merged = []\n    for start, end in sorted_ivs:\n        if not merged or start > merged[-1][1]:\n            merged.append([start, end])\n        else:\n            merged[-1][1] = max(merged[-1][1], end)\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 7.486,
+      "usage": {
+        "completion_tokens": 2439,
+        "prompt_tokens": 131,
+        "total_tokens": 2570,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    unique_edges = set(edges)\n\n    in_degree = {node: 0 for node in nodes}\n    adj = {node: [] for node in nodes}\n\n    for src, dst in unique_edges:\n        adj[src].append(dst)\n        in_degree[dst] += 1\n\n    heap = [node for node in nodes if in_degree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            in_degree[neighbor] -= 1\n            if in_degree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"Graph contains a cycle\")\n\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 4.195,
+      "usage": {
+        "completion_tokens": 1364,
+        "prompt_tokens": 254,
+        "total_tokens": 1618,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be a positive integer\")\n    for _, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"each weight must be positive and not exceed limit\")\n    \n    if not items:\n        return []\n    \n    batches = []\n    current_batch = []\n    current_weight = 0\n    \n    for name, weight in items:\n        if current_weight + weight <= limit:\n            current_batch.append(name)\n            current_weight += weight\n        else:\n            batches.append(current_batch)\n            current_batch = [name]\n            current_weight = weight\n    \n    if current_batch:\n        batches.append(current_batch)\n    \n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 8.479,
+      "usage": {
+        "completion_tokens": 2758,
+        "prompt_tokens": 135,
+        "total_tokens": 2893,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env = {}\n    key_pat = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')\n    for line in text.splitlines():\n        line = line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid line (no '='): {line!r}\")\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not key_pat.match(key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2:\n            if (value.startswith(\"'\") and value.endswith(\"'\")) or \\\n               (value.startswith('\"') and value.endswith('\"')):\n                value = value[1:-1]\n        env[key] = value\n    return env\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 20.174,
+      "usage": {
+        "completion_tokens": 6387,
+        "prompt_tokens": 151,
+        "total_tokens": 6538,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    # Join all byte chunks and decode as UTF-8\n    stream = b''.join(chunks).decode('utf-8')\n    lines = stream.splitlines()\n\n    events = []\n    current_data = []   # accumulate data values for the current event\n\n    for line in lines:\n        if line == '':\n            # Blank line dispatches the current event\n            if current_data:\n                event_data = '\\n'.join(current_data)\n                if event_data == '[DONE]':\n                    # Exclude [DONE] and stop processing further events\n                    return events\n                events.append(event_data)\n            current_data = []\n        elif line.lower().startswith('data:'):\n            # Extract the value after \"data:\", remove at most one leading space\n            value = line[5:]                # everything after the 5-char prefix\n            if value.startswith(' '):\n                value = value[1:]\n            current_data.append(value)\n        # All other lines (comments, event:, id:, retry:, etc.) are ignored\n\n    # Unterminated final event is silently dropped\n    return events\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 19.928,
+      "usage": {
+        "completion_tokens": 6319,
+        "prompt_tokens": 114,
+        "total_tokens": 6433,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"arguments must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n    # base > 0 and cap > 0\n    # Compare using logarithms to avoid overflow/huge integers\n    # base * 2**attempt >= cap  <=>  attempt >= log2(cap) - log2(base)\n    threshold = math.log2(cap) - math.log2(base)\n    if attempt >= threshold:\n        return float(cap)\n    else:\n        # The result is strictly less than cap and representable as float\n        return math.ldexp(base, attempt)\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 14.099,
+      "usage": {
+        "completion_tokens": 4531,
+        "prompt_tokens": 138,
+        "total_tokens": 4669,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(r > budget for r in queued):\n        raise ValueError(\"queued reservation exceeds budget\")\n    admitted = []\n    cur_tokens = sum(active)\n    cur_slots = len(active)\n    idx = 0\n    while idx < len(queued):\n        tokens = queued[idx]\n        if cur_tokens + tokens <= budget and cur_slots + 1 <= slots:\n            admitted.append(tokens)\n            cur_tokens += tokens\n            cur_slots += 1\n            idx += 1\n        else:\n            break\n    remaining = queued[idx:]\n    return (admitted, remaining)\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 0.704,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed a dry\u2011run and reported:\n\n```json\n{\n  \"status\": \"dry-run-ok\",\n  \"changed_files\": 2\n}\n```"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 0.868,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool reports a successful dry\u2011run:\n\n- **Status:** `dry-run-ok`  \n- **Changed files:** 2 (created `src/a.py` and deleted `obsolete.txt`)  \n\nThe requested operations were simulated without actually modifying the filesystem, as indicated by `metadata.dry_run: true`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 0.81,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The `apply_changes` tool ran successfully in dry\u2011run mode and reported:\n\n- **Status:** `dry-run-ok`\n- **Changed files:** `2` (created `src/a.py` and deleted `obsolete.txt`)\n\nAll requested operations were processed as a dry run."
+    }
+  ]
+}

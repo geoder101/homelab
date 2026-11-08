@@ -1,0 +1,6 @@
+{"fixture": "url_join", "seed": 42, "passed": true, "elapsed_seconds": 7.69}
+{"fixture": "greek_queue", "seed": 42, "passed": false, "error": "Expecting ',' delimiter: line 1 column 3390 (char 3389)", "elapsed_seconds": 10.462}
+{"fixture": "url_join", "seed": 43, "passed": true, "elapsed_seconds": 7.72}
+{"fixture": "greek_queue", "seed": 43, "passed": true, "elapsed_seconds": 8.928}
+{"fixture": "url_join", "seed": 44, "passed": false, "error": "Expecting ':' delimiter: line 1 column 4 (char 3)", "elapsed_seconds": 5.091}
+{"fixture": "greek_queue", "seed": 44, "passed": false, "error": "read_filecommentary", "elapsed_seconds": 0.656}

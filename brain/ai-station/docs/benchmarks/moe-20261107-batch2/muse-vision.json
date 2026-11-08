@@ -1,0 +1,137 @@
+{
+  "description": "Synthetic color and CI-screenshot extraction checks; not a vision leaderboard.",
+  "backend": "llama",
+  "settings": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "reasoning_budget_parameter_sent": true
+  },
+  "tests": [
+    {
+      "name": "red-square",
+      "seed": 42,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "red",
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 95,
+        "total_tokens": 138,
+        "prompt_tokens_details": {
+          "cached_tokens": 49
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 4.477
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 42,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "{\"passed\": 17, \"failed\": 3, \"skipped\": 2, \"failed_files\": [\"parser.py\", \"stream.py\"]}",
+      "usage": {
+        "completion_tokens": 237,
+        "prompt_tokens": 451,
+        "total_tokens": 688,
+        "prompt_tokens_details": {
+          "cached_tokens": 49
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 3.869
+    },
+    {
+      "name": "red-square",
+      "seed": 43,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "red",
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 95,
+        "total_tokens": 138,
+        "prompt_tokens_details": {
+          "cached_tokens": 90
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.692
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 43,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "{\n  \"passed\": 17,\n  \"failed\": 3,\n  \"skipped\": 2,\n  \"failed_files\": [\"parser.py\", \"stream.py\"]\n}",
+      "usage": {
+        "completion_tokens": 233,
+        "prompt_tokens": 451,
+        "total_tokens": 684,
+        "prompt_tokens_details": {
+          "cached_tokens": 446
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 3.623
+    },
+    {
+      "name": "red-square",
+      "seed": 44,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "red",
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 95,
+        "total_tokens": 138,
+        "prompt_tokens_details": {
+          "cached_tokens": 90
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.691
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 44,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "{\n  \"passed\": 17,\n  \"failed\": 3,\n  \"skipped\": 2,\n  \"failed_files\": [\"parser.py\", \"stream.py\"]\n}",
+      "usage": {
+        "completion_tokens": 233,
+        "prompt_tokens": 451,
+        "total_tokens": 684,
+        "prompt_tokens_details": {
+          "cached_tokens": 446
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 3.622
+    }
+  ]
+}

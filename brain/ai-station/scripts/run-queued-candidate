@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+"""Launch a pinned queued variant on the private network. Run on Brain."""
+import json
+import os
+import pathlib
+import subprocess
+import sys
+
+import yaml
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+
+def main():
+    name = sys.argv[1]
+    config = yaml.safe_load((ROOT / 'config/benchmark-queue.yaml').read_text())
+    variant = config['variants'][name]
+    model = config['artifacts'][variant['artifact']]
+    for unit in ('llama-coder', 'vllm-coder'):
+        if subprocess.run(['systemctl', '--user', 'is-active', '--quiet', unit]).returncode == 0:
+            raise RuntimeError(f'Stop {unit} before starting a GPU candidate')
+    images = yaml.safe_load((ROOT / 'config/images.lock.yaml').read_text())['images']
+    image = images[variant['image']]
+    reference = image['source'].rsplit(':', 1)[0] + '@' + image['digest']
+    home = pathlib.Path.home() / '.local/share/ai-station'
+    argv = ['podman', 'run', '--rm', '--pull', 'never', '--name', 'ai-station-coder-candidate',
+            '--ulimit', 'core=0',
+            '--network', 'ai-station', '--network-alias', 'coder-candidate',
+            '--device', 'nvidia.com/gpu=all', '--security-opt', 'label=disable', '--shm-size', '8g',
+            '--volume', f'{home / "models" / model["directory"]}:/models/candidate:ro,Z']
+    if os.environ.get('TRIAL_GATEWAY') == '1':
+        argv += ['--network-alias', 'llama-coder']
+    context = int(os.environ.get('TRIAL_CONTEXT', variant['context']))
+    slots = int(os.environ.get('TRIAL_SLOTS', variant.get('slots', 2)))
+    kv = os.environ.get('TRIAL_KV', variant.get('kv', 'q4_0'))
+    if variant.get('backend') == 'vllm':
+        argv += [reference, '/models/candidate', '--served-model-name', 'coder', '--host', '0.0.0.0',
+                 '--port', '8000', '--gpu-memory-utilization', str(variant.get('gpu_utilization', .94)),
+                 '--max-model-len', str(context), '--max-num-seqs', str(slots), '--kv-cache-dtype', kv,
+                 '--enable-auto-tool-choice', '--tool-call-parser', variant['tool_parser']]
+        if variant.get('reasoning_parser'):
+            argv += ['--reasoning-parser', variant['reasoning_parser']]
+        argv += ['--default-chat-template-kwargs', '{"reasoning_effort":"medium","preserve_thinking":true}']
+    else:
+        extra = []
+        vision = config['artifacts'].get(variant.get('vision_artifact'), model)
+        if 'vision_file' in vision:
+            target = '/models/candidate'
+            if vision['directory'] != model['directory']:
+                target = '/models/vision'
+                argv += ['--volume', f'{home / "models" / vision["directory"]}:{target}:ro,Z']
+            extra += ['--mmproj', f'{target}/{vision["vision_file"]}']
+        if variant.get('template'):
+            template = yaml.safe_load((ROOT / 'config/chat-templates.lock.yaml').read_text())[variant['template']]
+            argv += ['--volume', f'{home / template["directory"]}:/templates:ro,Z']
+            extra += ['--chat-template-file', '/templates/' + template['file']]
+        sampler = variant['sampling_profile']
+        temp, top_p, top_k = (.15, 1.0, 0) if sampler == 'devstral2' else (
+            (1.0, 1.0, 0) if sampler == 'gptoss' else (1.0, .95, 20))
+        repeat = 1.0
+        if sampler == 'qwen3-coder':
+            temp, top_p, top_k, repeat = .7, .8, 20, 1.05
+        kwargs = {'enable_thinking': sampler not in ('devstral2', 'qwen3-coder'),
+                  'preserve_thinking': sampler not in ('devstral2', 'qwen3-coder'),
+                  'reasoning_effort': 'medium'}
+        argv += [reference, '--model', '/models/candidate/' + model['file'], *extra,
+            '--alias', 'coder', '--host', '0.0.0.0', '--port', '8000', '--n-gpu-layers', '99',
+            '--ctx-size', str(context * slots), '--parallel', str(slots), '--no-kv-unified',
+            '--cache-ram', '16384', '--flash-attn', 'on', '--cache-type-k', kv, '--cache-type-v', kv,
+            '--jinja', '--reasoning-format', 'deepseek', '--chat-template-kwargs', json.dumps(kwargs),
+            '--temp', str(temp), '--top-p', str(top_p), '--top-k', str(top_k), '--min-p', '0.0',
+            '--repeat-penalty', str(repeat), '--no-webui', '--log-colors', 'off']
+    print(json.dumps({'variant': name, 'argv': argv}), flush=True)
+    os.execvp('podman', argv)
+
+
+if __name__ == '__main__':
+    main()

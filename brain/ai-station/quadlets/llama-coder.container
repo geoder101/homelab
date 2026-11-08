@@ -7,17 +7,17 @@ Requires=ai-station.network
 DefaultDependencies=false
 
 [Container]
-Image=ghcr.io/ggml-org/llama.cpp@sha256:ae676f2ecfdeb66db48b7c32f1f013c62cdbc3e380b1f6e8b425c981dd34ac99
+Image=ghcr.io/ggml-org/llama.cpp@sha256:859efa314dc34f1843a38ff28a4818aeac51a4cce125bdea4d2678aceba95469
 ContainerName=ai-station-llama-coder
 Network=ai-station.network
 NetworkAlias=llama-coder
 AddDevice=nvidia.com/gpu=all
 SecurityLabelDisable=true
-Volume=%h/.local/share/ai-station/models/qwen3.8-27b-gguf:/models/coder:ro,Z
-Volume=%h/.local/share/ai-station/chat-templates/855bffc49448e299789730ff92c9b8d834d6cc14:/templates:ro,Z
-# Selected coder profile: precision; 2 fixed 256K slots.
+Volume=%h/.local/share/ai-station/models/ornith-1.5-35b-gguf-q5:/models/coder:ro,Z
+Volume=%h/.local/share/ai-station/chat-templates/10fbf86fed7ecee4a061f8b499a618f46001cac1-ornith-history-v1:/templates:ro,Z
+# Selected coder profile: ornith-q5; 2 fixed 256K slots.
 # GPU weights/cache; projector placement is selected by the profile. MTP is disabled.
-Exec=--model /models/coder/Qwen3.8-27B-UD-Q4_K_XL.gguf --mmproj /models/coder/mmproj-BF16.gguf --alias coder --host 0.0.0.0 --port 8000 --n-gpu-layers 99 --ctx-size 524288 --parallel 2 --no-kv-unified --cache-ram 16384 --flash-attn on --cache-type-k q4_0 --cache-type-v q4_0 --jinja --reasoning-format deepseek --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":true}' --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --presence-penalty 0.0 --repeat-penalty 1.0 --no-webui --log-colors off --chat-template-file /templates/chat_template.jinja
+Exec=--model /models/coder/Ornith-1.5-35B-Q5_K_M.gguf --mmproj /models/coder/mmproj-Ornith-1.5-35B-BF16.gguf --alias coder --host 0.0.0.0 --port 8000 --n-gpu-layers 99 --ctx-size 524288 --parallel 2 --no-kv-unified --cache-ram 16384 --flash-attn on --cache-type-k q4_0 --cache-type-v q4_0 --jinja --reasoning-format deepseek --chat-template-kwargs '{"reasoning_effort":"medium","preserve_thinking":true}' --temp 1.0 --top-p 0.95 --top-k 20 --min-p 0.0 --presence-penalty 0.0 --repeat-penalty 1.0 --no-webui --log-colors off --chat-template-file /templates/chat_template.jinja
 Pull=never
 StopTimeout=120
 

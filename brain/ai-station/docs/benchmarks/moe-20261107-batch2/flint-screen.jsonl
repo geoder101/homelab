@@ -1,0 +1,9 @@
+{"name": "runtime", "passed": true, "slots": 2, "build": "b12182-fd27b2034", "n_ctx_slot": 262144}
+{"name": "single_0", "passed": false, "error": "", "wall_seconds": 2.136}
+{"name": "pair_0", "passed": false, "error": "", "wall_seconds": 2.717}
+{"name": "single_1", "passed": false, "error": "", "wall_seconds": 2.137}
+{"name": "pair_1", "passed": false, "error": "", "wall_seconds": 2.612}
+{"name": "single_2", "passed": false, "error": "", "wall_seconds": 2.137}
+{"name": "pair_2", "passed": false, "error": "", "wall_seconds": 2.58}
+{"name": "reasoning_tool_history", "passed": true, "reasoning_preserved": true, "followup": {"ttft_seconds": 0.4214, "elapsed_seconds": 0.5311, "decode_tps": 186.4, "first_generated_token_seconds": 0.0427, "usage": {"completion_tokens": 91, "prompt_tokens": 79, "total_tokens": 170, "prompt_tokens_details": {"cached_tokens": 0}}, "timings": {"cache_n": 0, "prompt_n": 79, "prompt_ms": 31.076, "prompt_per_token_ms": 0.39336708860759495, "prompt_per_second": 2542.1547174668553, "predicted_n": 91, "predicted_ms": 494.889, "predicted_per_token_ms": 5.498766666666667, "predicted_per_second": 181.85896231276107}, "answer": "The file `src/main.py` contains the unique value:\n\n`LOCAL_TOOL_OK_5819`", "started_monotonic": 16830.579279587, "first_monotonic": 16831.000673871, "finished_monotonic": 16831.1103981}, "wall_seconds": 0.968}
+{"name": "complete", "passed": false}

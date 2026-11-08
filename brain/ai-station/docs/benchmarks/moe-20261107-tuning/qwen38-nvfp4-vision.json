@@ -1,0 +1,143 @@
+{
+  "description": "Synthetic color and CI-screenshot extraction checks; not a vision leaderboard.",
+  "backend": "vllm",
+  "settings": {
+    "temperature": 0,
+    "max_tokens": 2048,
+    "reasoning_budget_parameter_sent": false
+  },
+  "tests": [
+    {
+      "name": "red-square",
+      "seed": 42,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "Red",
+      "usage": {
+        "prompt_tokens": 90,
+        "total_tokens": 92,
+        "completion_tokens": 2,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.091
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 42,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "```json\n{\n  \"passed\": 17,\n  \"failed\": 3,\n  \"skipped\": 2,\n  \"failed_files\": [\n    \"parser.py\",\n    \"stream.py\"\n  ]\n}\n```",
+      "usage": {
+        "prompt_tokens": 315,
+        "total_tokens": 372,
+        "completion_tokens": 57,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.869
+    },
+    {
+      "name": "red-square",
+      "seed": 43,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "Red",
+      "usage": {
+        "prompt_tokens": 90,
+        "total_tokens": 92,
+        "completion_tokens": 2,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.058
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 43,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "```json\n{\n  \"passed\": 17,\n  \"failed\": 3,\n  \"skipped\": 2,\n  \"failed_files\": [\n    \"parser.py\",\n    \"stream.py\"\n  ]\n}\n```",
+      "usage": {
+        "prompt_tokens": 315,
+        "total_tokens": 372,
+        "completion_tokens": 57,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.862
+    },
+    {
+      "name": "red-square",
+      "seed": 44,
+      "passed": true,
+      "image_sha256": "6e878563d76d793249e4bfd4c4f854ef26d9d03c17d9e2107fd4cad31532602f",
+      "dimensions": [
+        128,
+        128
+      ],
+      "answer": "Red",
+      "usage": {
+        "prompt_tokens": 90,
+        "total_tokens": 92,
+        "completion_tokens": 2,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.058
+    },
+    {
+      "name": "greek-ci-screenshot",
+      "seed": 44,
+      "passed": true,
+      "image_sha256": "f956ce64a484da4ff01ba9c6c658e5545084fa79cc6fa497c8bb5bd03123830f",
+      "dimensions": [
+        720,
+        360
+      ],
+      "answer": "```json\n{\n  \"passed\": 17,\n  \"failed\": 3,\n  \"skipped\": 2,\n  \"failed_files\": [\n    \"parser.py\",\n    \"stream.py\"\n  ]\n}\n```",
+      "usage": {
+        "prompt_tokens": 315,
+        "total_tokens": 372,
+        "completion_tokens": 57,
+        "prompt_tokens_details": null,
+        "completion_tokens_details": {
+          "reasoning_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "elapsed_seconds": 0.862
+    }
+  ]
+}

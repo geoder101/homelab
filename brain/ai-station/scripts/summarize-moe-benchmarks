@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+"""Publish progress/scorecards without touching GPU services or test inputs."""
+import argparse
+import datetime
+import json
+import os
+import pathlib
+import statistics
+import subprocess
+import time
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+BASE = ROOT / 'docs/benchmarks'
+DIRECTORIES = ('moe-20261107', 'moe-20261107-batch2', 'moe-20261107-tuning')
+
+
+def load(path, default=None):
+    try:
+        return json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return default
+
+
+def summarize():
+    rows = []
+    for directory in DIRECTORIES:
+        folder = BASE / directory
+        state = load(folder / 'status.json', {})
+        for name, entry in state.get('results', {}).items():
+            suites = [load(folder / f'{name}-seed{seed}.json', {}) for seed in (42, 43, 44)]
+            tests = [test for suite in suites for test in suite.get('tests', [])]
+            code = [test for test in tests if not test['name'].startswith(('streaming_', 'nested_tool_', 'context_'))]
+            tools = [test for test in tests if test['name'].startswith('nested_tool_')]
+            warm = [test['decode_tokens_per_second'] for test in tests
+                    if test['name'] in ('streaming_speed_2', 'streaming_speed_3')
+                    and test.get('passed') and test.get('decode_tokens_per_second')]
+            repairs = load(folder / f'{name}-agent.json', {}).get('tests', [])
+            native = [test for repeat in (1, 2)
+                      for test in load(folder / f'{name}-native{repeat}.json', [])]
+            vision = load(folder / f'{name}-vision.json', {}).get('tests', [])
+            artifact = state.get('artifacts', {}).get(name, {})
+            variant = artifact.get('variant', {})
+            vision_capable = (name == 'baseline' or 'vision_file' in artifact
+                              or variant.get('vision_artifact') or variant.get('vision'))
+            vision_enrolled = vision_capable and 'benchmark-vision-contracts' in state.get('harness_sha256', {})
+            runtime = entry.get('runtime', {})
+            command = runtime.get('server_command', [])
+            kv = next((command[command.index(flag) + 1] for flag in ('--cache-type-k', '--kv-cache-dtype')
+                       if flag in command), None)
+            row = {'batch': directory, 'model': name, 'phase': entry.get('phase'),
+                   'backend': runtime.get('backend'), 'build': runtime.get('build_info'),
+                   'context_per_request': runtime.get('default_generation_settings', {}).get('n_ctx'),
+                   'slots': runtime.get('total_slots'), 'kv': kv,
+                   'warm_tokens_per_second': round(statistics.median(warm), 2) if warm else None,
+                   'coding_total_seconds': round(sum(t.get('elapsed_seconds', 0) for t in code), 2)
+                        if len(code) == 21 else None,
+                   'coding': {'passed': sum(t.get('passed', False) for t in code), 'seen': len(code), 'expected': 21},
+                   'nested_tools': {'passed': sum(t.get('passed', False) for t in tools), 'seen': len(tools), 'expected': 9},
+                   'repair_agents': {'passed': sum(t.get('passed', False) for t in repairs), 'seen': len(repairs), 'expected': 6},
+                   'native': {'passed': sum(t.get('passed', False) for t in native), 'seen': len(native), 'expected': 6},
+                   'vision': {'passed': sum(t.get('passed', False) for t in vision), 'seen': len(vision), 'expected': 6}
+                        if vision_enrolled else None,
+                   'check_returncodes': entry.get('checks', {}), 'error': entry.get('error'),
+                   'batch_restored': state.get('restored'), 'restore_smoke': state.get('restore_smoke_returncode')}
+            row['all_recorded_checks_passed'] = entry.get('phase') == 'complete' and bool(entry.get('checks')) \
+                and all(code == 0 for code in entry['checks'].values()) \
+                and all(row[field]['passed'] == row[field]['expected']
+                        for field in ('coding', 'nested_tools', 'repair_agents', 'native')) \
+                and (row['vision'] is None or row['vision']['passed'] == 6)
+            rows.append(row)
+    queue = load(BASE / 'moe-20261107-queue/status.json', {})
+    result = {'updated_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+              'queue': queue, 'configurations': rows,
+              'note': 'Partial counts are shown against full expected totals. Passing these small tests is not automatic promotion.'}
+    target = BASE / 'moe-20261107-queue'
+    target.mkdir(exist_ok=True)
+    temporary = target / f'SUMMARY.{os.getpid()}.json.tmp'
+    temporary.write_text(json.dumps(result, indent=2) + '\n')
+    temporary.replace(target / 'SUMMARY.json')
+    text = ['# Live model/configuration benchmark scorecard', '', f"Updated: {result['updated_utc']}", '',
+            f"Queue state: **{queue.get('state', 'not started')}**", '',
+            '| Batch | Model / variant | State | Context × slots | KV | Warm tok/s | Code time (s) | Code | Tools | Repairs | Native | Vision |',
+            '| --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |']
+    for row in rows:
+        scores = [f"{row[key]['passed']}/{row[key]['expected']}" for key in
+                  ('coding', 'nested_tools', 'repair_agents', 'native')]
+        scores.append(f"{row['vision']['passed']}/6" if row['vision'] else '—')
+        text.append('| ' + ' | '.join([row['batch'].replace('moe-20261107', '').strip('-') or 'first',
+            row['model'], row['phase'] or 'pending',
+            f"{row['context_per_request'] or '—'} × {row['slots'] or '—'}", row['kv'] or '—',
+            str(row['warm_tokens_per_second'] or '—'), str(row['coding_total_seconds'] or '—'), *scores]) + ' |')
+    text += ['', 'Counts remain partial while a configuration is running. Startup failures and incomplete',
+             'runs are not silently counted as passes. Different context/slot capacities, sampling',
+             'recipes, output budgets and formats must be considered before comparing throughput.',
+             'These are local fixtures and read-only native-agent probes, not SWE-bench scores.',
+             'The original Qwen precision selection is restored after each candidate; final promotion',
+             'requires review and deployed API verification.', '']
+    temporary = target / f'SUMMARY.{os.getpid()}.md.tmp'
+    temporary.write_text('\n'.join(text))
+    temporary.replace(target / 'SUMMARY.md')
+    return result
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--watch', action='store_true', help='Update every minute until both queue units finish')
+    args = parser.parse_args()
+    while True:
+        result = summarize()
+        if not args.watch:
+            print(json.dumps(result, indent=2))
+            return
+        if not any(subprocess.run(['systemctl', '--user', 'is-active', '--quiet', name]).returncode == 0
+                   for name in ('ai-station-moe-batch1', 'ai-station-benchmark-queue')):
+            return
+        time.sleep(60)
+
+
+if __name__ == '__main__':
+    main()
