@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Temporarily hand coding inference to the CPU fallback so the GPU can be
+# reassigned to another GPU task (e.g. a video game), and back again.
+#
+# This does NOT change the selected profile, the model files, or the routing in
+# config/litellm-config.yaml — it only stops and starts the two running
+# backends and restarts LiteLLM so routing reads cleanly. Each client alias
+# routes order=1 to the GPU backend and order=2 to the CPU fallback, so the
+# aliases keep answering the whole time: with the GPU backend stopped requests
+# fall through to CPU, and once the GPU backend is healthy again it serves
+# directly.
+#
+#   ./swap-active-backend cpu   # stop llama-coder (GPU), start llama-fallback
+#   ./swap-active-backend gpu   # stop llama-fallback, start llama-coder (GPU)
+#
+# Run on the host; from toolbox prefix with flatpak-spawn --host.
+set -euo pipefail
+
+target="${1:-}"
+root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+case "${target}" in
+  cpu)
+    echo "Handing inference to the CPU fallback (freeing the GPU)..."
+    # swap-coder-standby waits for :8001 before returning, so the GPU backend is
+    # never cut without a ready failover target.
+    bash "${root}/scripts/swap-coder-standby" on
+    systemctl --user stop llama-coder
+    systemctl --user restart litellm
+    echo "GPU backend stopped; CPU fallback serving."
+    ;;
+  gpu)
+    echo "Restoring inference to the GPU backend..."
+    bash "${root}/scripts/swap-coder-standby" off
+    systemctl --user start llama-coder
+    systemctl --user restart litellm
+    ;;
+  *)
+    printf 'Usage: %s cpu|gpu\n' "$0" >&2
+    exit 2
+    ;;
+esac
+
+echo "Verifying the coder alias answers via smoke-test..."
+bash "${root}/scripts/smoke-test"
+echo "Done."

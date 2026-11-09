@@ -12,6 +12,8 @@ API_URL := $(patsubst %/,%,$(BASE_URL))/v1
         start restart status logs smoke verify verify-stress verify-budgets \
         verify-history verify-concurrency audit validate-home client-check client-smoke client-concurrency backup-webui deploy bootstrap \
         profile-qwen38-q3 profile-qwen38-q4 profile-ornith-q4 profile-ornith-q5 profile-status \
+        backend-status \
+        swap-active-cpu swap-active-gpu \
         download-qwen38-q3 download-qwen38-q4 download-ornith-q4 download-ornith-q5 benchmark-status
 
 help:
@@ -26,6 +28,9 @@ help:
 	  '  make profile-ornith-q4 Experimental Ornith 1.5-35B-A3B Q4_K_M, b11960, two 256K agents' \
 	  '  make profile-ornith-q5 Select Ornith 1.5-35B-A3B Q5_K_M, b12182, two 256K agents' \
 	  '  make profile-status    Show selected and running profile' \
+	  '  make backend-status    Show which backend is serving (GPU profile / CPU fallback)' \
+	  '  make swap-active-cpu   Hand inference to the CPU fallback (free the GPU for another task)' \
+	  '  make swap-active-gpu   Restore inference to the GPU backend' \
 	  '  make download-qwen38-q3 Prepare Q3 weights/projector/template for offline switching' \
 	  '  make download-qwen38-q4 Prepare Q4 weights/projector/template for offline switching' \
 	  '  make download-ornith-q4 Prepare pinned Ornith Q4_K_M weights/projector/template' \
@@ -78,6 +83,12 @@ profile-ornith-q5:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" ornith-q5 --base-url "$(BASE_URL)"
 profile-status:
 	$(HOST) python3 "$(ROOT)/scripts/switch-coder-profile" --status
+backend-status:
+	$(HOST) "$(ROOT)/scripts/backend-status"
+swap-active-cpu:
+	$(HOST) "$(ROOT)/scripts/swap-active-backend" cpu
+swap-active-gpu:
+	$(HOST) "$(ROOT)/scripts/swap-active-backend" gpu
 benchmark-status:
 	$(HOST) python3 "$(ROOT)/scripts/summarize-moe-benchmarks"
 preflight:

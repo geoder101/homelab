@@ -150,6 +150,40 @@ user-initiated stop, and `Restart=on-failure` only fires on crashes. The
 fallback cannot survive loss of the whole machine; it is a swap-time bridge,
 not a second-host backstop.
 
+### Temporarily reassign the GPU
+
+`scripts/swap-active-backend <cpu|gpu>` hands inference to the CPU fallback so
+the GPU can be used for another GPU task (e.g. a video game), and back again. It
+does **not** change the selected profile, the model files, or the routing in
+`config/litellm-config.yaml` — it only stops and starts the two running
+backends and restarts LiteLLM so routing reads cleanly. Because every alias
+routes order 1 to the GPU backend and order 2 to the CPU fallback, the clients
+keep answering the whole time: with the GPU backend stopped requests fall
+through to CPU, and once it is healthy again it serves directly.
+
+```bash
+scripts/swap-active-backend cpu   # stop llama-coder (GPU), start llama-fallback
+scripts/swap-active-backend gpu   # stop llama-fallback, start llama-coder (GPU)
+```
+
+The `cpu` direction is safe by construction: `scripts/swap-coder-standby on`
+starts the CPU fallback and waits for `:8001` before the GPU backend is cut, so
+there is never a moment with no backend, and a trailing `scripts/smoke-test`
+proves the `coder` alias still answers end-to-end. Run it between coding tasks
+(it briefly interrupts the warm GPU slots). To restore, `gpu` stops the
+fallback and restarts the GPU backend; if it does not come back, re-run `cpu`
+to fall back to CPU and inspect with `journalctl --user -u llama-coder -f`.
+
+### Check the active backend
+
+`make backend-status` (or `scripts/backend-status`) reports which backend is
+currently serving, without changing anything: `GPU: ornith-q5` when the
+`llama-coder` backend is up (showing the selected profile), `CPU: fallback` when
+only the CPU fallback is running, or `DOWN: no active backend` when both are
+stopped. It reads `systemctl --user is-active` and the selected model lock, so
+it is the right check after a `swap-active-backend` flip, where `make
+profile-status` would instead fail because the GPU backend is temporarily down.
+
 ## API use
 
 LAN:

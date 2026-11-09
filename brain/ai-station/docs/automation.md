@@ -60,6 +60,9 @@ services. Individual steps remain available:
 | `reload` | User systemd daemon reload |
 | `start` / `restart` | Readiness-ordered stack start/restart |
 | `status` / `logs` | Service status / follow backend journal |
+| `backend-status` | Active backend: GPU + profile, or CPU fallback |
+| `swap-active-cpu` | Hand inference to the CPU fallback, free the GPU |
+| `swap-active-gpu` | Restore inference to the GPU backend |
 | `backup-webui` | Consistent private archive of persistent UI data |
 | `smoke` | Quick real inference through LiteLLM |
 | `audit` | Installed LiteLLM serialization checks, with mocked HTTP transport |
