@@ -12,7 +12,7 @@ API_URL := $(patsubst %/,%,$(BASE_URL))/v1
         start restart status logs smoke verify verify-stress verify-budgets \
         verify-history verify-concurrency audit validate-home client-check client-smoke client-concurrency backup-webui deploy bootstrap \
         profile-qwen38-q3 profile-qwen38-q4 profile-ornith-q4 profile-ornith-q5 profile-status \
-        download-precision download-ornith download-ornith-q5 benchmark-status
+        download-qwen38-q3 download-qwen38-q4 download-ornith-q4 download-ornith-q5 benchmark-status
 
 help:
 	@printf '%s\n' \
@@ -26,8 +26,9 @@ help:
 	  '  make profile-ornith-q4 Experimental Ornith 1.5-35B-A3B Q4_K_M, b11960, two 256K agents' \
 	  '  make profile-ornith-q5 Select Ornith 1.5-35B-A3B Q5_K_M, b12182, two 256K agents' \
 	  '  make profile-status    Show selected and running profile' \
-	  '  make download-precision Prepare Q4 weights/projector for offline switching' \
-	  '  make download-ornith   Prepare pinned Ornith Q4_K_M weights/projector' \
+	  '  make download-qwen38-q3 Prepare Q3 weights/projector/template for offline switching' \
+	  '  make download-qwen38-q4 Prepare Q4 weights/projector/template for offline switching' \
+	  '  make download-ornith-q4 Prepare pinned Ornith Q4_K_M weights/projector/template' \
 	  '  make download-ornith-q5 Prepare pinned Ornith Q5_K_M weights/projector/template' \
 	  '  make benchmark-status Refresh the live model/configuration scorecard (JSON)' \
 	  '  make preflight         Verify artifact hashes, image presence, secret files' \
@@ -56,10 +57,14 @@ download:
 	$(HOST) "$(ROOT)/scripts/download-coder-candidate"
 download-template:
 	$(HOST) "$(ROOT)/scripts/download-chat-template"
-download-precision:
+download-qwen38-q3:
+	$(HOST) "$(ROOT)/scripts/download-qwen38-q3-model"
+	$(HOST) "$(ROOT)/scripts/download-qwen38-candidates" vision
+	$(HOST) "$(ROOT)/scripts/download-chat-template" qwen_fixed
+download-qwen38-q4:
 	$(HOST) "$(ROOT)/scripts/download-qwen38-candidates" gguf
 	$(HOST) "$(ROOT)/scripts/download-chat-template" qwen_fixed
-download-ornith:
+download-ornith-q4:
 	$(HOST) bash "$(ROOT)/scripts/download-ornith-candidate"
 download-ornith-q5:
 	$(HOST) bash "$(ROOT)/scripts/download-ornith-candidate" q5

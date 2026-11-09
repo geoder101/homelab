@@ -4,3 +4,5 @@ config/*.env
 config/*.secret
 runtime/
 state/
+__pycache__/
+*.pyc

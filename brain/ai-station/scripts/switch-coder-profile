@@ -39,6 +39,19 @@ def active(name):
     return subprocess.run(['systemctl', '--user', 'is-active', '--quiet', name]).returncode == 0
 
 
+def standby(on: bool) -> None:
+    """Start (on) or stop (off) the CPU fallback via scripts/swap-coder-standby."""
+    run('bash', str(ROOT / 'scripts/swap-coder-standby'), 'on' if on else 'off')
+
+
+def drop_standby() -> None:
+    """Stop the fallback after a verified switch; a stop failure is not fatal."""
+    try:
+        standby(False)
+    except Exception as error:  # best effort: an idle fallback is harmless, just holds RAM
+        print(f"Warning: could not stop CPU fallback: {error}", file=sys.stderr, flush=True)
+
+
 def backend(path):
     # Only aggregate status/properties are printed, never slot prompt contents.
     code = '''import json,sys,urllib.request
@@ -225,8 +238,8 @@ def main():
             print(run(sys.executable, str(stage / 'scripts/preflight')), end='', flush=True)
             run('bash', str(stage / 'scripts/validate-quadlets'))
         except RuntimeError as error:
-            preparation = {'precision': 'make download-precision', 'capacity': 'scripts/download-capacity-model',
-                           'ornith': 'make download-ornith', 'ornith-q5': 'make download-ornith-q5'}.get(args.profile, 'make download')
+            preparation = {'precision': 'make download-qwen38-q4', 'capacity': 'make download-qwen38-q3',
+                           'ornith': 'make download-ornith-q4', 'ornith-q5': 'make download-ornith-q5'}.get(args.profile, 'make download')
             raise RuntimeError(f'{error}\nNo deployment changes made. Missing artifacts can be prepared with: {preparation}') from error
     print('Staged Quadlet generator validation: PASS', flush=True)
     if args.check:
@@ -244,6 +257,11 @@ def main():
         return 0
     if backend('/slots')['active']:
         raise RuntimeError('Inference is active. Retry between tasks; no deployment changes made.')
+    # Bring the CPU fallback online before cutting the GPU backend, so the coding
+    # aliases keep answering across the swap. Abort if it cannot come up, so the
+    # GPU backend is never cut without a ready failover target.
+    print('Bringing CPU fallback online for the swap...', flush=True)
+    standby(True)
     backup = state / 'backups' / ('coder-profile-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ-') + uuid.uuid4().hex[:8])
     backup.mkdir(parents=True, mode=0o700)
     files = {ROOT / MODEL: (ROOT / MODEL).read_bytes(), ROOT / UNIT: (ROOT / UNIT).read_bytes(), installed: installed.read_bytes()}
@@ -266,6 +284,7 @@ def main():
         run('systemctl', '--user', 'restart', 'llama-coder')
         wait_ready(target_unit)
         run(str(ROOT / 'scripts/smoke-test'), args.base_url)
+        drop_standby()
     except (Exception, KeyboardInterrupt) as error:
         for sig in (signal.SIGINT, signal.SIGTERM):
             signal.signal(sig, signal.SIG_IGN)
@@ -280,6 +299,7 @@ def main():
         except Exception as recovery:
             raise RuntimeError(f'Rollback needs attention: {recovery}. Snapshot: {backup}') from error
         print('Previous profile restored and inference verified.', file=sys.stderr, flush=True)
+        drop_standby()
         return 1
     print(f'{args.profile} selected, persisted and verified; existing coder aliases remain available.', flush=True)
     return 0

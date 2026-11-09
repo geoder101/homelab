@@ -111,6 +111,7 @@ It uses NVIDIA CDI, the GPU-only SELinux exception, `Pull=never` and
   configuration comparisons; raw results remain alongside it.
 - Declarative sources: `config/models.lock.yaml`, `config/coder-profiles.yaml`,
   `config/images.lock.yaml`, `config/chat-templates.lock.yaml` and the llama Quadlet.
+- CPU failover: `quadlets/llama-fallback.container` serves as the `order: 2` failover target for every `coder-*` alias; routing and the GPU-swap procedure are documented in [operations.md](operations.md#cpu-warm-standby-fallback-backend).
 
 ```bash
 make profile-status       # Selected model, live arguments and image match

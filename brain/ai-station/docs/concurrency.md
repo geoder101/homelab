@@ -253,8 +253,8 @@ switch or the concurrency tuner.
 
 Switching is offline and does not automatically download missing artifacts.
 Both weight files are already present on Brain. For a new installation, prepare
-Q4 artifacts with `make download-precision` before selecting precision; prepare
-Q3 with `scripts/download-capacity-model` before selecting capacity. The
+Q4 artifacts with `make download-qwen38-q4` before selecting qwen38-q4; prepare
+Q3 with `make download-qwen38-q3` before selecting qwen38-q3. The
 projector/template must also exist (`make download` prepares the currently
 selected profile). Finish preparation before switching or benchmarking.
 

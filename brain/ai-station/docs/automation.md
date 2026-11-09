@@ -76,15 +76,18 @@ services. Individual steps remain available:
 | `profile-ornith-q4` | Experimental Ornith Q4_K_M, b11960, two 256K slots (internal ID `ornith`) |
 | `profile-ornith-q5` | Current Ornith Q5_K_M selection, b12182 engine, two 256K slots and GPU vision |
 | `profile-status` | Show selected and actual running profile |
-| `download-precision` | Prepare Q4 weights/projector before offline precision switching |
-| `download-ornith` | Prepare pinned Ornith weights/projector and history-fixed template |
+| `download-qwen38-q3` | Prepare Q3 weights/projector/template before offline switching |
+| `download-qwen38-q4` | Prepare Q4 weights/projector/template before offline switching |
+| `download-ornith-q4` | Prepare pinned Ornith Q4_K_M weights/projector and history-fixed template |
 | `download-ornith-q5` | Prepare the selected Q5 weights/projector and history-fixed template |
 | `validate-home` | Validate the two separate offline Downloads copies |
 
 The model-specific `profile-*` targets are the canonical selection commands.
 The earlier targets have been removed: replace `profile-capacity` with
 `profile-qwen38-q3`, `profile-precision` with `profile-qwen38-q4`, and
-`profile-ornith` with `profile-ornith-q4`.
+`profile-ornith` with `profile-ornith-q4`. Each `profile-*` now has a matching
+`download-*` target with the same name (`download-qwen38-q3`, `download-qwen38-q4`,
+`download-ornith-q4`, `download-ornith-q5`), so no profile lacks a download target.
 The internal profile IDs in existing model records stay `capacity`, `precision`
 and `ornith`, so historical selections and direct script commands remain valid.
 
@@ -133,6 +136,41 @@ deliberate embedded-template rollback, set the model lock's `chat_template` to
 `embedded` and remove the explicit template arguments/volume from the llama
 Quadlet. Other model/hash checks continue to apply. See the more complete
 [rollback instructions](reasoning-profiles.md#rollback).
+
+## Benchmark and candidate tooling
+
+The `scripts/` directory holds an experiment pipeline that runs on `brain`
+against the live GPU to benchmark candidate models and measure properties
+(concurrency, reasoning, vision). These scripts are **not** wired into the
+default `make` workflow (that targets the deployed llama.cpp backend); they run
+while inference is idle or in disposable containers and restore the active
+backend afterward. They follow three conventions: bounded and reproducible,
+explicitly **not** SWE-bench or a leaderboard, and they return the GPU to the
+production backend on completion.
+
+**Benchmark harnesses** — run a bounded test against a backend and write their own results:
+
+- `benchmark-coder` — coding-agent comparison in a disposable CPU container.
+- `benchmark-concurrency` — synthetic local concurrency client on the private Podman network (JSON lines, no code execution, no keys).
+- `benchmark-agent-repair` — multi-turn repair fixtures in the same disposable CPU container.
+- `benchmark-vision-contracts` — synthetic color and CI-screenshot extraction checks.
+- `benchmark-coder-concurrency` — wrapper running the concurrency harness against a running Brain backend (`URL LABEL`).
+- `benchmark-coder-repeats` — CPU-only client against a ready backend (`URL LABEL [SEEDS …]`).
+
+**Candidate pipeline** — download, run, and summarize a candidate experiment on Brain, restoring production:
+
+- `download-benchmark-queue` — prepare one queued batch's immutable artifacts before GPU trials.
+- `run-benchmark-queue` — run batch 2 and tuning after batch 1, with persisted progress and recovery.
+- `run-queued-candidate` — launch a pinned queued variant on the private network.
+- `download-moe-candidates` — download candidate repos on Brain (finish downloads before mounting candidate dirs).
+- `run-coder-candidate` — run a GPU candidate; aborts if `llama-coder`/`vllm-coder` is already active.
+- `evaluate-ornith-candidate` — run after downloading/verifying Ornith; restores the active backend on exit.
+- `gpu-smoke-test` — container + NVIDIA GPU smoke test.
+
+**Summaries** — publish results without rerunning inference:
+
+- `summarize-moe-benchmarks` — publish progress/scorecards (the only benchmark script wired to `make`, via `make benchmark-status`).
+- `summarize-concurrency` — summarize saved concurrency results.
 
 ## What belongs in Git, downloads, or backups
 

@@ -86,6 +86,70 @@ Restart LiteLLM after changing backend routing or context limits to clear cached
 
 The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4, selected llama.cpp b12182 (`fd27b2034905f8dadd8bd6d2cc44595f4929d391`) and retained b11960 (`8642541b255bfb5dc39cd351a178be09013a55d6`). The lock file and Quadlets pin linux/amd64 manifest digests. Before starting an upgraded Open WebUI, stop it and back up its data directory (including SQLite WAL files); the new release can migrate the database.
 
+## CPU warm-standby fallback backend
+
+`llama-fallback` is a CPU-only fallback that is started on demand before a GPU
+model swap and stopped afterwards to free RAM, keeping the coding agents
+running across the swap without switching the client. It is a second
+`llama.cpp` Quadlet (`quadlets/llama-fallback.container`) with no `[Install]`
+section, so it does not autostart at boot. It serves the Qwen3.8-27B **Q3**
+weights from the already-downloaded
+`~/.local/share/ai-station/models/qwen3.8-27b-gguf-q3`, on the private
+`ai-station` network as `llama-fallback:8001`. It loads one 262,144-token slot
+and runs with no GPU, so it is never in contention with the selected profile's
+GPU work.
+
+It does not replace the selected GPU backend; it is a failover target only.
+Every `coder-*` alias in `config/litellm-config.yaml` lists two deployments
+under the same model name: the GPU `llama-coder:8000` backend at `order: 1`
+and this CPU backend at `order: 2`. When the GPU backend is unreachable,
+LiteLLM tries order 2 and a live model keeps answering; once the GPU backend
+is healthy, order 1 serves again. Reload LiteLLM after editing the config.
+
+### Riding through a GPU model swap
+
+`make profile-*` (the common path for experimenting with new models) does this
+automatically: it starts the fallback before restarting the GPU backend and
+drops it once the switch is verified, leaving it up if the swap fails. The
+manual procedure below is for the lower-level upgrade flow — i.e. manually
+pulling images, downloading weights, and installing Quadlets (selecting or
+upgrading the GGUF backend) rather than going through `make profile-*`.
+
+Start the fallback before the swap so failover has a ready target, then stop
+it afterwards to free RAM.
+
+1. `scripts/swap-coder-standby on` — starts `llama-fallback` and waits until
+   it serves `:8001`, so a ready target exists before the GPU backend is cut.
+2. `systemctl --user stop llama-coder` — graceful stop; in-flight requests
+   drain, the port closes, and new requests fail over to the CPU backend.
+3. Perform the swap (download the pinned weights/template, reinstall the
+   Quadlet, `daemon-reload`).
+4. `systemctl --user start llama-coder` — traffic returns to the GPU backend.
+5. `scripts/swap-coder-standby off` — stops `llama-fallback` to free RAM.
+
+`scripts/swap-coder-standby on` and `off` are idempotent. `on` is a no-op when
+the fallback already serves `:8001`; `off` clears the failed-state flag only
+when present, so repeating either call is a harmless no-op.
+
+During steps 1-5 the agents run on the local CPU fallback with no OpenCode
+client change and no external provider. The fallback serves plain,
+non-thinking output (its froggeric template does not carry the ornith
+history-fixed template) and caps output at 16,384 tokens like the other
+aliases. It is a degraded local model — measured roughly 200 tok/s in an early
+probe — adequate as a fallback path, not a replacement for the Ornith Q5
+profile.
+
+Keep it running (skip step 5) if the swap fails: it keeps the agents alive as
+a degraded local model until you repair the GPU backend. The fallback coexists
+with the GPU backend under the order-based routing (GPU at order 1, fallback at
+order 2, served only when the GPU is unreachable), so the two never race.
+
+For instant failover instead of waiting on the graceful stop, `podman stop -t 0
+ai-station-llama-coder` is acceptable: systemd does not restart a
+user-initiated stop, and `Restart=on-failure` only fires on crashes. The
+fallback cannot survive loss of the whole machine; it is a swap-time bridge,
+not a second-host backstop.
+
 ## API use
 
 LAN:
@@ -100,7 +164,7 @@ Tailscale:
 http://brain.tail1fe190.ts.net:4000/v1
 ```
 
-Use model `coder-medium` (or `coder-off`, `coder-low`, `coder-xhigh`, legacy `coder`) and the `LITELLM_MASTER_KEY` as the bearer token. Home clients use `http://brain.local:4000/v1`. Open WebUI is available on port 3000 at the same hostname. No remote model fallback is configured.
+Use model `coder-medium` (or `coder-off`, `coder-low`, `coder-xhigh`, legacy `coder`) and the `LITELLM_MASTER_KEY` as the bearer token. Home clients use `http://brain.local:4000/v1`. Open WebUI is available on port 3000 at the same hostname. No **remote** model fallback is configured; a **local CPU backend** (`llama-fallback`) provides automatic failover across GPU swaps, documented under [CPU warm-standby fallback backend](#cpu-warm-standby-fallback-backend).
 
 ## Systemd commands
 

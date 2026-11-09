@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# CPU fallback controller for GPU model swaps.
+#
+# 'on'  starts llama-fallback and waits until it serves :8001, so a ready
+#       failover target exists before you stop llama-coder.
+# 'off' stops llama-fallback to free the RAM it holds while resident.
+#
+# Run on the host; from toolbox prefix with flatpak-spawn --host.
+set -euo pipefail
+
+cmd="${1:-}"
+case "${cmd}" in
+  on)
+    systemctl --user start llama-fallback
+    echo "waiting for llama-fallback to serve :8001..."
+    for _ in $(seq 1 60); do
+      if podman exec ai-station-llama-fallback \
+           curl -s --max-time 3 http://localhost:8001/v1/models >/dev/null 2>&1; then
+        echo "llama-fallback is ready."
+        exit 0
+      fi
+      sleep 2
+    done
+    echo "llama-fallback did not become ready in time" >&2
+    exit 1
+    ;;
+  off)
+    systemctl --user stop llama-fallback
+    # A clean systemd stop of this Quadlet container can time out and leave the
+    # unit classified "failed" (podman stop-timeout quirk). Clear it so the
+    # on-demand state reads inactive instead. reset-failed only clears a failed
+    # unit; ignore its non-zero exit when the unit is already clean, so 'off' is
+    # safe to run repeatedly.
+    systemctl --user reset-failed llama-fallback || true
+    echo "llama-fallback stopped."
+    ;;
+  *)
+    printf 'Usage: %s on|off\n' "$0" >&2
+    exit 2
+    ;;
+esac

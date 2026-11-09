@@ -3,6 +3,13 @@
 # Budgets are per-alias hard thinking ceilings; max_tokens bounds thinking + answer.
 # Effort additionally steers templates that support it (Qwen froggeric, not the
 # selected Ornith-based history-fixed template). Clients may override defaults.
+#
+# CPU failover (llama-fallback, :8001) rides through GPU model swaps: each alias
+# lists the GPU backend as order=1 and the CPU backend as order=2 (same model
+# name). When the GPU backend is unreachable, litellm tries order=2 so a live
+# model keeps answering; once the GPU is healthy, order=1 serves again. Reload
+# LiteLLM after editing this file. CPU output is plain (non-thinking); max_tokens
+# caps it at the OpenCode client limit (16384).
 model_list:
   - model_name: coder
     litellm_params:
@@ -10,45 +17,88 @@ model_list:
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
       reasoning_effort: medium
+      order: 1
       extra_body:
         chat_template_kwargs: {enable_thinking: true, reasoning_effort: medium, preserve_thinking: true}
         reasoning_budget_tokens: 6144
+  - model_name: coder
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-fallback:8001/v1
+      api_key: not-used-by-private-backend
+      order: 2
+      max_tokens: 16384
   - model_name: coder-off
     litellm_params:
       model: openai/coder
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
       reasoning_effort: none
+      order: 1
       temperature: 0.7
       top_p: 0.8
       presence_penalty: 1.5
       extra_body:
         chat_template_kwargs: {enable_thinking: false, preserve_thinking: true}
         reasoning_budget_tokens: 0
+  - model_name: coder-off
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-fallback:8001/v1
+      api_key: not-used-by-private-backend
+      order: 2
+      temperature: 0.7
+      top_p: 0.8
+      presence_penalty: 1.5
+      max_tokens: 16384
   - model_name: coder-low
     litellm_params:
       model: openai/coder
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
       reasoning_effort: low
+      order: 1
       extra_body:
         chat_template_kwargs: {enable_thinking: true, reasoning_effort: low, preserve_thinking: true}
         reasoning_budget_tokens: 2048
+  - model_name: coder-low
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-fallback:8001/v1
+      api_key: not-used-by-private-backend
+      order: 2
+      max_tokens: 16384
   - model_name: coder-medium
     litellm_params:
       model: openai/coder
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
       reasoning_effort: medium
+      order: 1
       extra_body:
         chat_template_kwargs: {enable_thinking: true, reasoning_effort: medium, preserve_thinking: true}
         reasoning_budget_tokens: 6144
+  - model_name: coder-medium
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-fallback:8001/v1
+      api_key: not-used-by-private-backend
+      order: 2
+      max_tokens: 16384
   - model_name: coder-xhigh
     litellm_params:
       model: openai/coder
       api_base: http://llama-coder:8000/v1
       api_key: not-used-by-private-backend
       reasoning_effort: xhigh
+      order: 1
       extra_body:
         chat_template_kwargs: {enable_thinking: true, reasoning_effort: xhigh, preserve_thinking: true}
         reasoning_budget_tokens: 12288
+  - model_name: coder-xhigh
+    litellm_params:
+      model: openai/coder
+      api_base: http://llama-fallback:8001/v1
+      api_key: not-used-by-private-backend
+      order: 2
+      max_tokens: 16384

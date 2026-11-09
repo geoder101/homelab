@@ -5,7 +5,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 profile="$(python3 -c 'import pathlib,sys,yaml; print(yaml.safe_load(pathlib.Path(sys.argv[1]).read_text())["models"]["coder"].get("profile", "capacity"))' "${script_dir}/../config/models.lock.yaml")"
 case "${profile}" in
   capacity)
-    "${script_dir}/download-capacity-model"
+    "${script_dir}/download-qwen38-q3-model"
     "${script_dir}/download-qwen38-candidates" vision
     ;;
   precision) "${script_dir}/download-qwen38-candidates" gguf ;;
