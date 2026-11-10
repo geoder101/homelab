@@ -23,7 +23,6 @@ LAN clients need a stable router DNS or DHCP reservation for `brain`. Tailscale 
   models/qwen3.8-27b-gguf/   CPU vision projector + retained Q4 comparison weights
   models/qwen35-4b-helper/   optional local helper experiment, not deployed
   models/qwen3.8-27b-nvfp4/  optional vLLM profile
-  models/qwen3.6-27b-nvfp4/  previous checkpoint, retained for rollback
   models/coder/             original AWQ checkpoint
   huggingface/         Hugging Face cache
   open-webui/          Open WebUI SQLite data, uploads, and settings

@@ -16,6 +16,9 @@ case "${1:-q4}" in
 esac
 model_dir="${HOME}/.local/share/ai-station/models/${directory}"
 install -d -m 700 "${model_dir}"
+# The download harness reuses the pinned vLLM image only for its `hf` CLI; it
+# never serves a backend here. `make deploy`/`pull` fetch it up front, but run
+# `scripts/pull-images` first if invoking this script standalone.
 podman run --rm --pull never --name ai-station-ornith-download \
   --entrypoint /usr/local/bin/hf \
   --volume "${model_dir}:/models/candidate:Z" \
