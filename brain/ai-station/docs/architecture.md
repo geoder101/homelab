@@ -18,7 +18,8 @@ LAN clients need a stable router DNS or DHCP reservation for `brain`. Tailscale 
 
 ```text
 ~/.local/share/ai-station/
-  models/qwen3.8-27b-gguf-q3/ active Qwen3.8 Dynamic Q3_K_XL weights
+  models/qwen3.8-27b-gguf-q3/  Qwen3.8 Dynamic Q3_K_XL (the capacity 3-agent profile)
+  models/qwen3-coder-30b-q4/   CPU fallback backend (Qwen3 Coder 30B-A3B Q4_K_M)
   models/qwen3.8-27b-gguf/   CPU vision projector + retained Q4 comparison weights
   models/qwen35-4b-helper/   optional local helper experiment, not deployed
   models/qwen3.8-27b-nvfp4/  optional vLLM profile

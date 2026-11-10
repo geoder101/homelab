@@ -92,12 +92,16 @@ The image locks contain vLLM 0.32.0, LiteLLM 1.106.5, Open WebUI 0.12.4, selecte
 model swap and stopped afterwards to free RAM, keeping the coding agents
 running across the swap without switching the client. It is a second
 `llama.cpp` Quadlet (`quadlets/llama-fallback.container`) with no `[Install]`
-section, so it does not autostart at boot. It serves the Qwen3.8-27B **Q3**
-weights from the already-downloaded
-`~/.local/share/ai-station/models/qwen3.8-27b-gguf-q3`, on the private
-`ai-station` network as `llama-fallback:8001`. It loads one 262,144-token slot
-and runs with no GPU, so it is never in contention with the selected profile's
-GPU work.
+section, so it does not autostart at boot. It serves the Qwen3 Coder 30B-A3B
+**Q4_K_M** MoE weights from the already-downloaded
+`~/.local/share/ai-station/models/qwen3-coder-30b-q4`, on the private
+`ai-station` network as `llama-fallback:8001`. It loads a single 65536-token
+slot and runs with no GPU (`--n-gpu-layers 0`, `--ctx-size 65536`);
+`--flash-attn on` speeds prefill and `--cache-ram 8192` keeps the RAM cache
+modest. The MoE exposes only ~3B active params per token, so it holds 30B of
+capacity while running CPU-only. Measured decode throughput on this host is
+~4.8 tok/s — adequate for a degraded fallback, but far slower than the GPU
+backend's ~215 tok/s.
 
 It does not replace the selected GPU backend; it is a failover target only.
 Every `coder-*` alias in `config/litellm-config.yaml` lists two deployments
@@ -135,9 +139,19 @@ During steps 1-5 the agents run on the local CPU fallback with no OpenCode
 client change and no external provider. The fallback serves plain,
 non-thinking output (its froggeric template does not carry the ornith
 history-fixed template) and caps output at 16,384 tokens like the other
-aliases. It is a degraded local model — measured roughly 200 tok/s in an early
-probe — adequate as a fallback path, not a replacement for the Ornith Q5
-profile.
+aliases. It is a degraded local model — 30B of capacity but lower quality than
+the Ornith Q5 profile — adequate as a fallback path.
+
+It now has a modest footprint: ~18.5 GB weights plus an 8 GiB RAM cache and a
+65536-token KV cache (about 29 GB total), a big reduction from the 262K config
+so it is far less likely to stall loading under memory pressure. The intended
+handoff still stops the GPU backend first, freeing enough RAM for the fallback
+to load cleanly. The 64K context (down from 262K) was a deliberate footprint
+cut for a degraded fallback — a request longer than 64K will not fit while the
+fallback is up. Measure decode tok/s with the GPU backend stopped, the intended
+state, for a clean number.
+
+Decode is bandwidth-bound, not compute-bound: measured ~4.8 tok/s on a single-shot ~160-token response (GPU backend stopped, the intended state), and flat across `--threads` 8/12/16/24/32. So `--threads` is left at its llama.cpp default, already at the RAM-bandwidth ceiling — tuning it will not change decode speed, and only a smaller/faster model (fewer active params or a lighter quant, i.e. fewer bytes read per token) would raise it.
 
 Keep it running (skip step 5) if the swap fails: it keeps the agents alive as
 a degraded local model until you repair the GPU backend. The fallback coexists
@@ -173,6 +187,9 @@ proves the `coder` alias still answers end-to-end. Run it between coding tasks
 (it briefly interrupts the warm GPU slots). To restore, `gpu` stops the
 fallback and restarts the GPU backend; if it does not come back, re-run `cpu`
 to fall back to CPU and inspect with `journalctl --user -u llama-coder -f`.
+Both directions wait for the restarted LiteLLM (and, on the GPU side, for
+`llama-coder` to finish loading its model) to be ready before the final
+`smoke-test`, so the verification never races a half-started backend.
 
 ### Check the active backend
 

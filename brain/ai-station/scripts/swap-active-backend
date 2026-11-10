@@ -19,6 +19,33 @@ set -euo pipefail
 target="${1:-}"
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# LiteLLM binds its port before its router is ready; wait for liveness so the
+# trailing smoke-test never hits a half-started gateway (connection reset).
+wait_litellm_ready() {
+    for _ in $(seq 1 60); do
+        if curl --fail --silent --max-time 2 -o /dev/null "http://127.0.0.1:4000/health/liveliness"; then
+            return 0
+        fi
+        sleep 2
+    done
+    echo "LiteLLM did not become ready" >&2
+    return 1
+}
+
+# The GPU backend keeps loading its model after systemd starts it; wait for its
+# /health so the smoke-test hits a serving backend, not a mid-load reset.
+wait_gpu_ready() {
+    for _ in $(seq 1 90); do
+        if podman exec ai-station-llama-coder curl --fail --silent --max-time 3 \
+             http://127.0.0.1:8000/health >/dev/null 2>&1; then
+            return 0
+        fi
+        sleep 3
+    done
+    echo "llama-coder did not become ready" >&2
+    return 1
+}
+
 case "${target}" in
   cpu)
     echo "Handing inference to the CPU fallback (freeing the GPU)..."
@@ -27,13 +54,16 @@ case "${target}" in
     bash "${root}/scripts/swap-coder-standby" on
     systemctl --user stop llama-coder
     systemctl --user restart litellm
+    wait_litellm_ready
     echo "GPU backend stopped; CPU fallback serving."
     ;;
   gpu)
     echo "Restoring inference to the GPU backend..."
     bash "${root}/scripts/swap-coder-standby" off
     systemctl --user start llama-coder
+    wait_gpu_ready
     systemctl --user restart litellm
+    wait_litellm_ready
     ;;
   *)
     printf 'Usage: %s cpu|gpu\n' "$0" >&2
