@@ -1,5 +1,5 @@
 # brain
 
-The home of the `brain.local` system projects.
+The collection of system projects that run on the single home workstation, `brain.local`.
 
-`brain` is a public, MIT-licensed home for the software that runs on a single home workstation, `brain.local`. Each project lives in its own subdirectory so the repositories share one history, one license, and one committing policy.
+- [ai-station/](ai-station/) — a declarative, rootless Podman deployment for the local AI workstation.

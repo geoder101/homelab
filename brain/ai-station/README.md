@@ -1,6 +1,6 @@
 # AI Station
 
-Declarative, rootless Podman deployment for the local AI workstation `brain`.
+Declarative, rootless Podman deployment that turns the local AI workstation `brain` into a private, OpenAI-compatible inference endpoint.
 
 ## Current deployment
 
