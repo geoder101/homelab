@@ -1,0 +1,287 @@
+{
+  "label": "ornith-control",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "qwen",
+    "mtp": false,
+    "temperature_override": null,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 0.95,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 0.7,
+        "top_p": 0.8,
+        "top_k": 20,
+        "min_p": 0.0,
+        "presence_penalty": 1.5,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.053,
+      "elapsed_seconds": 2.344,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.053,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 223.5,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist is organized into phases. Work through them sequentially\u2014many issues become obvious once you confirm the leak exists and can reproduce it deterministically.\n\n---\n\n## Phase 1: Confirm and Characterize the Leak\n\nBefore hunting for a root cause, prove the leak exists and understand its shape.\n\n- [ ] **Establish a memory baseline**\n  - Record RSS (resident set size) at startup under controlled conditions.\n  ```bash\n  ps -o pid,rss,vsz,etime -p <PID>\n  # or sample continuously\n  while true; do echo \"$(date +%s) $(ps -o rss= -p <PID>)\"; sleep 5; done > mem_baseline.log\n  ```\n\n- [ ] **Verify the leak is real (not OS caching)**\n  - RSS includes page cache, so watch for a sustained upward trend across many cycles, not transient spikes.\n  - Confirm memory doesn't plateau after enough requests.\n\n- [ ] **Determine leak rate and pattern**\n  - Plot RSS vs. request count / time. Linear growth suggests a per-request leak; step-wise growth suggests allocation-once bugs.\n  - [ ] Is growth proportional to number of requests, or wall-clock time?\n  - [ ] Does it grow with connection count, payload size, or specific endpoints?\n\n- [ ] **Reproduce deterministically**\n  - [ ] Capture the exact test command and invocation pattern.\n  - [ ] Confirm reproducibility across at least 2 runs.\n\n---\n\n## Phase 2: Isolate the Process (Monolith vs. Workers)\n\nMemory leaks in HTTP servers often hide behind worker/thread pools.\n\n- [ ] **Identify your server architecture**\n  ```bash\n  # For Gunicorn / uWSGI, check worker count and PIDs\n  pgrep -f gunicorn\n  ps --ppid <MASTER_PID>   # list child workers\n  ```\n\n- [ ] **Measure per-worker memory** (leak may be in one worker, not all)\n  ```bash\n  for pid in $(pgrep -f gunicorn); do\n    echo \"$pid $(ps -o rss= -p $pid)\"\n  done | sort -k2 -n\n  ```\n\n- [ ] **Test with a single worker** to see if the leak persists. If it disappears, you likely have per-worker"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.027,
+      "elapsed_seconds": 2.313,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.027,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 223.99,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist is organized into phases. Work through them sequentially\u2014many issues become obvious once you confirm the leak exists and can reproduce it deterministically.\n\n---\n\n## Phase 1: Confirm and Characterize the Leak\n\nBefore hunting for a root cause, prove the leak exists and understand its shape.\n\n- [ ] **Establish a memory baseline**\n  - Record RSS (resident set size) at startup under controlled conditions.\n  ```bash\n  ps -o pid,rss,vsz,etime -p <PID>\n  # or sample continuously\n  while true; do echo \"$(date +%s) $(ps -o rss= -p <PID>)\"; sleep 5; done > mem_baseline.log\n  ```\n\n- [ ] **Verify the leak is real (not OS caching)**\n  - RSS includes page cache, so watch for a sustained upward trend across many cycles, not transient spikes.\n  - Confirm memory doesn't plateau after enough requests.\n\n- [ ] **Determine leak rate and pattern**\n  - Plot RSS vs. request count / time. Linear growth suggests a per-request leak; step-wise growth suggests allocation-once bugs.\n  - [ ] Is growth proportional to number of requests, or wall-clock time?\n  - [ ] Does it grow with connection count, payload size, or specific endpoints?\n\n- [ ] **Reproduce deterministically**\n  - [ ] Capture the exact test command and invocation pattern.\n  - [ ] Confirm reproducibility across at least 2 runs.\n\n---\n\n## Phase 2: Isolate the Process (Monolith vs. Workers)\n\nMemory leaks in HTTP servers often hide behind worker/thread pools.\n\n- [ ] **Identify your server architecture**\n  ```bash\n  # For Gunicorn / uWSGI, check worker count and PIDs\n  pgrep -f gunicorn\n  ps --ppid <MASTER_PID>   # list child workers\n  ```\n\n- [ ] **Measure per-worker memory** (leak may be in one worker, not all)\n  ```bash\n  for pid in $(pgrep -f gunicorn); do\n    echo \"$pid $(ps -o rss= -p $pid)\"\n  done | sort -k2 -n\n  ```\n\n- [ ] **Test with a single worker** to see if the leak persists. If it disappears, you likely have per-worker"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.022,
+      "elapsed_seconds": 2.314,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 46,
+        "total_tokens": 558,
+        "prompt_tokens_details": {
+          "cached_tokens": 42
+        }
+      },
+      "first_generated_token_seconds": 0.022,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 223.39,
+      "answer": "# Python HTTP Server Memory Leak Diagnosis Checklist\n\nThis checklist is organized into phases. Work through them sequentially\u2014many issues become obvious once you confirm the leak exists and can reproduce it deterministically.\n\n---\n\n## Phase 1: Confirm and Characterize the Leak\n\nBefore hunting for a root cause, prove the leak exists and understand its shape.\n\n- [ ] **Establish a memory baseline**\n  - Record RSS (resident set size) at startup under controlled conditions.\n  ```bash\n  ps -o pid,rss,vsz,etime -p <PID>\n  # or sample continuously\n  while true; do echo \"$(date +%s) $(ps -o rss= -p <PID>)\"; sleep 5; done > mem_baseline.log\n  ```\n\n- [ ] **Verify the leak is real (not OS caching)**\n  - RSS includes page cache, so watch for a sustained upward trend across many cycles, not transient spikes.\n  - Confirm memory doesn't plateau after enough requests.\n\n- [ ] **Determine leak rate and pattern**\n  - Plot RSS vs. request count / time. Linear growth suggests a per-request leak; step-wise growth suggests allocation-once bugs.\n  - [ ] Is growth proportional to number of requests, or wall-clock time?\n  - [ ] Does it grow with connection count, payload size, or specific endpoints?\n\n- [ ] **Reproduce deterministically**\n  - [ ] Capture the exact test command and invocation pattern.\n  - [ ] Confirm reproducibility across at least 2 runs.\n\n---\n\n## Phase 2: Isolate the Process (Monolith vs. Workers)\n\nMemory leaks in HTTP servers often hide behind worker/thread pools.\n\n- [ ] **Identify your server architecture**\n  ```bash\n  # For Gunicorn / uWSGI, check worker count and PIDs\n  pgrep -f gunicorn\n  ps --ppid <MASTER_PID>   # list child workers\n  ```\n\n- [ ] **Measure per-worker memory** (leak may be in one worker, not all)\n  ```bash\n  for pid in $(pgrep -f gunicorn); do\n    echo \"$pid $(ps -o rss= -p $pid)\"\n  done | sort -k2 -n\n  ```\n\n- [ ] **Test with a single worker** to see if the leak persists. If it disappears, you likely have per-worker"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 0.832,
+      "usage": {
+        "completion_tokens": 207,
+        "prompt_tokens": 98,
+        "total_tokens": 305,
+        "prompt_tokens_details": {
+          "cached_tokens": 94
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(intervals, key=lambda x: x[0])\n    merged = [list(sorted_intervals[0])]\n    for start, end in sorted_intervals[1:]:\n        last = merged[-1]\n        if start <= last[1] + 1:\n            last[1] = max(last[1], end)\n        else:\n            merged.append([start, end])\n    return merged\n",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 4.616,
+      "usage": {
+        "completion_tokens": 1167,
+        "prompt_tokens": 131,
+        "total_tokens": 1298,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\n\ndef toposort(nodes, edges):\n    adj = {n: set() for n in nodes}\n    indeg = {n: 0 for n in nodes}\n\n    for src, dst in edges:\n        if src in adj and dst in adj:\n            if dst not in adj[src]:\n                adj[src].add(dst)\n                indeg[dst] += 1\n\n    heap = [n for n in nodes if indeg[n] == 0]\n    heapq.heapify(heap)\n\n    order = []\n    while heap:\n        node = heapq.heappop(heap)\n        order.append(node)\n        for nxt in adj[node]:\n            indeg[nxt] -= 1\n            if indeg[nxt] == 0:\n                heapq.heappush(heap, nxt)\n\n    if len(order) != len(nodes):\n        raise ValueError(\"Graph contains a cycle\")\n\n    return order\n",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 2.162,
+      "usage": {
+        "completion_tokens": 534,
+        "prompt_tokens": 260,
+        "total_tokens": 794,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError\n    for _, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError\n    batches = []\n    current = []\n    current_weight = 0\n    for name, weight in items:\n        if current and current_weight + weight > limit:\n            batches.append(current)\n            current = []\n            current_weight = 0\n        current.append(name)\n        current_weight += weight\n    if current:\n        batches.append(current)\n    return batches\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 12.623,
+      "usage": {
+        "completion_tokens": 3212,
+        "prompt_tokens": 138,
+        "total_tokens": 3350,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\n_ENV_KEY_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n\n\ndef _strip_quotes(value):\n    if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n        return value[1:-1]\n    return value\n\n\ndef parse_env(text):\n    result = {}\n    for raw_line in text.splitlines():\n        line = raw_line.strip()\n        if not line or line.startswith('#'):\n            continue\n        idx = line.find('=')\n        if idx == -1:\n            raise ValueError(f'Invalid environment assignment (no \"=\"): {raw_line!r}')\n        key = line[:idx].strip()\n        value = line[idx + 1:].strip()\n        if not _ENV_KEY_RE.fullmatch(key):\n            raise ValueError(f'Invalid environment key: {key!r}')\n        result[key] = _strip_quotes(value)\n    return result\n",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 25.559,
+      "usage": {
+        "completion_tokens": 6417,
+        "prompt_tokens": 148,
+        "total_tokens": 6565,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b''.join(chunks).decode('utf-8')\n    results = []\n    event_data = []\n    i = 0\n    n = len(text)\n    while i < n:\n        j = i\n        while j < n and text[j] != '\\n':\n            j += 1\n        line = text[i:j]\n        if line.endswith('\\r'):\n            line = line[:-1]\n        i = j + 1\n\n        if not line:\n            # blank line dispatches the accumulated event\n            if event_data:\n                value = '\\n'.join(event_data)\n                if value == '[DONE]':\n                    return results\n                results.append(value)\n            event_data = []\n        elif not line.startswith(':') and line.startswith('data:'):\n            # data field: drop at most one leading space after the colon\n            value = line[5:]\n            if value[:1] == ' ':\n                value = value[1:]\n            event_data.append(value)\n        # comments (':...') and other fields (id/retry/event/...) are ignored\n\n    # unterminated final event is ignored\n    return results\n",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 25.968,
+      "usage": {
+        "completion_tokens": 6513,
+        "prompt_tokens": 106,
+        "total_tokens": 6619,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0:\n        raise ValueError(\"attempt must be a nonnegative integer\")\n    if base < 0:\n        raise ValueError(\"base must be a nonnegative number\")\n    if cap < 0:\n        raise ValueError(\"cap must be a nonnegative number\")\n\n    # Any zero makes base * 2**attempt == 0, and min(0, cap>=0) == 0.\n    if base == 0.0 or cap == 0.0:\n        return 0.0\n\n    # base > 0 and cap > 0.\n    # base * 2**attempt >= cap  <=>  attempt >= log2(cap) - log2(base).\n    # Splitting log2(cap/base) into log2(cap) - log2(base) avoids\n    # cap/base overflowing to inf, keeping the threshold finite\n    # (within roughly [-1074, 2098] for finite nonnegative floats).\n    threshold = math.log2(cap) - math.log2(base)\n\n    if attempt >= threshold:\n        # The true product is >= cap (attempt is a nonnegative integer and\n        # threshold is finite), so we never form 2**attempt explicitly.\n        return float(cap)\n\n    # attempt < threshold guarantees base * 2**attempt < cap <= max float,\n    # so the exact result is a finite float. math.ldexp(base, attempt)\n    # applies the binary exponent directly and does not build a huge int.\n    value = math.ldexp(base, attempt)\n    return float(min(cap, value))\n",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 7.95,
+      "usage": {
+        "completion_tokens": 2017,
+        "prompt_tokens": 133,
+        "total_tokens": 2150,
+        "prompt_tokens_details": {
+          "cached_tokens": 17
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    if any(reservation > budget for reservation in queued):\n        raise ValueError(\"queued reservation exceeds the whole budget\")\n\n    remaining_tokens = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    for reservation in queued:\n        if reservation <= remaining_tokens and remaining_slots > 0:\n            admitted.append(reservation)\n            remaining_tokens -= reservation\n            remaining_slots -= 1\n        else:\n            break\n\n    remaining = list(queued[len(admitted):])\n    return admitted, remaining\n",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 1.38,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool completed successfully. Here's the result:\n\n- **Status:** `dry-run-ok` (changes were not actually applied since `dry_run` was set to `true`)\n- **Changed files:** 2\n\nThe pending changes were:\n1. **Create** `src/a.py` with content `\"print(42)\\n\"`\n2. **Delete** `obsolete.txt`"
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 1.647,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool completed successfully. Here's the result:\n\n- **Status**: `dry-run-ok` (dry run mode - no actual changes were made to the filesystem)\n- **Changed files**: 2\n  - Created `src/a.py` with content `\"print(42)\\n\"`\n  - Deleted `obsolete.txt`\n\nSince `dry_run` was set to `true`, these operations were simulated and no actual files were modified on disk."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 1.137,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool executed successfully. Here is the result:\n\n- **Status**: `dry-run-ok` (the changes were simulated, not actually applied to disk)\n- **Changed files**: 2\n  - Created `src/a.py` with content `print(42)\\n`\n  - Deleted `obsolete.txt`\n\nSince this was a dry run, no actual changes were made to the filesystem."
+    }
+  ]
+}

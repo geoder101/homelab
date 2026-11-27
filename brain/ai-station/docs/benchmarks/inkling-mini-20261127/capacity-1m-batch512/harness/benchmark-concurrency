@@ -1,0 +1,277 @@
+#!/usr/bin/env python3
+"""Synthetic local concurrency client; execute inside the private Podman network.
+
+Prints JSON lines, including errors. Does not execute generated code or use keys.
+"""
+import argparse
+import concurrent.futures
+import json
+import os
+import random
+import threading
+import time
+import urllib.error
+import urllib.request
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--url', default='http://coder-candidate:8000')
+    parser.add_argument('--mode', choices=['screen', 'long', 'full', 'boundary', 'limit'], default='screen')
+    parser.add_argument('--repeats', type=int, default=1)
+    parser.add_argument('--slots', type=int, default=2)
+    parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
+    parser.add_argument('--context-a', type=int, default=253000, help='First full-mode probe size')
+    parser.add_argument('--context-b', type=int, default=253000, help='Second full-mode probe size')
+    parser.add_argument('--mandatory-reasoning', action='store_true', help='Allow low-effort analysis before visible answers')
+    parser.add_argument('--gateway', help='Optional LiteLLM URL; key comes only from container environment')
+    parser.add_argument('--model', default='coder')
+    parser.add_argument('--sampling-profile', choices=['qwen', 'inkling'], default='qwen')
+    args = parser.parse_args()
+    opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
+    def request(path, body=None, timeout=1200):
+        url = args.url
+        headers = {'Content-Type': 'application/json'}
+        if args.gateway and path == '/v1/chat/completions':
+            url = args.gateway.rstrip('/')
+            headers['Authorization'] = 'Bearer ' + os.environ['LITELLM_MASTER_KEY']
+        req = urllib.request.Request(url + path,
+            data=None if body is None else json.dumps(body).encode(),
+            headers=headers)
+        try:
+            return opener.open(req, timeout=timeout)
+        except urllib.error.HTTPError as error:
+            raise RuntimeError(f'HTTP {error.code}: {error.read().decode()[:2000]}') from error
+
+    def get(path, body=None):
+        with request(path, body) as response:
+            return json.load(response)
+
+    def emit(name, fn):
+        start = time.monotonic()
+        try:
+            result = {'name': name, 'passed': True, **fn()}
+        except Exception as error:
+            result = {'name': name, 'passed': False, 'error': str(error)}
+        result['wall_seconds'] = round(time.monotonic() - start, 3)
+        print(json.dumps(result), flush=True)
+        return result
+
+    props = get('/props') if args.backend == 'llama' else {
+        'total_slots': args.slots, 'build_info': 'vllm-pinned-0.32.0',
+        'default_generation_settings': {'n_ctx': 262144}}
+    print(json.dumps({'name': 'runtime', 'passed': True,
+        'slots': props['total_slots'], 'build': props['build_info'],
+        'n_ctx_slot': props['default_generation_settings']['n_ctx']}), flush=True)
+
+    def chat(messages, *, stream=False, max_tokens=384, **kwargs):
+        if args.mandatory_reasoning:
+            max_tokens = max(1024, max_tokens)
+        body = {
+            'model': args.model, 'messages': messages, 'stream': stream,
+            **({'stream_options': {'include_usage': True}} if stream else {}),
+            'seed': 42, 'temperature': 0.7, 'top_p': 0.8, 'top_k': 20,
+            'min_p': 0.0, 'presence_penalty': 1.5, 'repeat_penalty': 1.0,
+            'max_tokens': max_tokens,
+            'chat_template_kwargs': {'enable_thinking': False, 'preserve_thinking': True},
+            **kwargs}
+        if args.mandatory_reasoning:
+            body['chat_template_kwargs'].setdefault('reasoning_effort', 'low')
+            body['reasoning_effort'] = body['chat_template_kwargs']['reasoning_effort']
+        if args.backend == 'llama':
+            body['cache_prompt'] = True
+            if args.sampling_profile == 'inkling':
+                body.update(temperature=1.0, top_p=1.0, top_k=0, presence_penalty=0.0)
+                if not kwargs.get('tools') and not args.mandatory_reasoning:
+                    body['chat_template_kwargs']['reasoning_effort'] = 'none'
+                    body['reasoning_budget_tokens'] = 0
+        else:
+            body['repetition_penalty'] = body.pop('repeat_penalty')
+            body.pop('reasoning_budget_tokens', None)
+        return request('/v1/chat/completions', body)
+
+    def stream(messages, marker=None, max_tokens=384):
+        start = time.monotonic()
+        first = None
+        first_generated = None
+        last_content = None
+        last_generated = None
+        pieces, usage = [], {}
+        timings = {}
+        with chat(messages, stream=True, max_tokens=max_tokens) as response:
+            for raw in response:
+                if not raw.startswith(b'data: ') or raw.strip() == b'data: [DONE]':
+                    continue
+                event = json.loads(raw[6:])
+                if 'error' in event:
+                    raise RuntimeError(event['error'])
+                usage = event.get('usage') or usage
+                timings = event.get('timings') or timings
+                for choice in event.get('choices', []):
+                    text = choice.get('delta', {}).get('content')
+                    reason = choice.get('delta', {}).get('reasoning_content') or choice.get('delta', {}).get('reasoning')
+                    if text or reason:
+                        first_generated = first_generated or time.monotonic()
+                        last_generated = time.monotonic()
+                    if text:
+                        first = first or time.monotonic()
+                        last_content = time.monotonic()
+                        pieces.append(text)
+        end = time.monotonic()
+        answer = ''.join(pieces)
+        assert first is not None and usage.get('completion_tokens'), answer
+        if marker:
+            assert marker in answer, answer
+        return {'ttft_seconds': round(first-start, 4), 'elapsed_seconds': round(end-start, 4),
+            'decode_tps': round(max(0, usage['completion_tokens']-1) / max(0.001, last_generated-first_generated), 2),
+            'first_generated_token_seconds': round(first_generated-start, 4),
+            'usage': usage, 'timings': timings, 'answer': answer,
+            'started_monotonic': start, 'first_monotonic': first, 'finished_monotonic': end}
+
+    def count(text):
+        payload = {'content': text, 'add_special': False} if args.backend == 'llama' else {
+            'model': 'coder', 'prompt': text, 'add_special_tokens': False}
+        value = get('/tokenize', payload)
+        return value.get('count', len(value.get('tokens', [])))
+
+    def archive(target, tag):
+        rng = random.Random(tag)
+        values = [f'{tag}-{rng.randrange(100000, 999999)}' for _ in range(3)]
+        sample = ''.join(f'// {tag} source record {i:06d}: unchanged.\n' for i in range(500))
+        per_line = count(sample) / 500
+        n = max(0, int((target-160) / per_line))
+        def render(lines):
+            filler = [f'// {tag} source record {i:06d}: unchanged.\n' for i in range(lines)]
+            return (f'Archive {tag}. Retrieve only its START, MIDDLE and END values.\nSTART={values[0]}\n'
+                + ''.join(filler[:lines//2]) + f'MIDDLE={values[1]}\n'
+                + ''.join(filler[lines//2:]) + f'END={values[2]}\n'
+                + 'Return just a JSON object with those three exact values.')
+        text = render(n)
+        actual = count(text)
+        if actual > target or actual < target-300:
+            n = max(0, n + int((target-100-actual) / per_line))
+            text = render(n)
+            actual = count(text)
+        assert target-500 <= actual <= target, (target, actual)
+        return [{'role': 'user', 'content': text}], values
+
+    def pair(jobs):
+        barrier = threading.Barrier(len(jobs))
+        stop = threading.Event()
+        active = []
+        def observe():
+            while not stop.wait(0.15):
+                try:
+                    if args.backend == 'llama':
+                        active.append(sum(bool(s['is_processing']) for s in get('/slots')))
+                    else:
+                        with request('/metrics') as response:
+                            metrics = response.read().decode()
+                        active.append(int(sum(float(line.split()[-1]) for line in metrics.splitlines()
+                            if line.startswith('vllm:num_requests_running{'))))
+                except Exception:
+                    pass
+        def run(job):
+            barrier.wait(timeout=20)
+            return stream(*job)
+        observer = threading.Thread(target=observe, daemon=True)
+        observer.start()
+        try:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=len(jobs)) as pool:
+                outputs = list(pool.map(run, jobs))
+        finally:
+            stop.set()
+            observer.join(timeout=10)
+        duration = max(o['finished_monotonic'] for o in outputs)-min(o['started_monotonic'] for o in outputs)
+        overlap = min(o['finished_monotonic'] for o in outputs)-max(o['first_monotonic'] for o in outputs)
+        return {'requests': outputs, 'max_active_slots': max(active, default=0),
+            'stream_overlap_seconds': round(max(0, overlap), 3),
+            'aggregate_tps': round(sum(o['usage']['completion_tokens'] for o in outputs)/duration, 2)}
+
+    def tool_test():
+        tools = [{'type': 'function', 'function': {'name': 'lookup',
+            'description': 'Look up a file.', 'parameters': {'type': 'object',
+                'properties': {'path': {'type': 'string'}}, 'required': ['path']}}}]
+        history = [{'role': 'user', 'content': 'Use lookup to inspect src/main.py. Then report its result.'}]
+        with chat(history, tools=tools, max_tokens=1024,
+                  chat_template_kwargs={'enable_thinking': True, 'reasoning_effort': 'low', 'preserve_thinking': True},
+                  reasoning_budget_tokens=256) as response:
+            message = json.load(response)['choices'][0]['message']
+        calls = message['tool_calls']
+        assert len(calls) == 1 and calls[0]['function']['name'] == 'lookup', calls
+        assert json.loads(calls[0]['function']['arguments']) == {'path': 'src/main.py'}, calls
+        history += [message, {'role': 'tool', 'tool_call_id': calls[0]['id'],
+            'content': 'The file contains the unique value LOCAL_TOOL_OK_5819.'}]
+        result = stream(history, 'LOCAL_TOOL_OK_5819', 128)
+        return {'reasoning_preserved': bool(message.get('reasoning_content')), 'followup': result}
+
+    checks = []
+    if args.mode == 'screen':
+        if args.sampling_profile == 'inkling' and args.mandatory_reasoning:
+            def control(effort, budget):
+                messages, wanted = archive(32000, 'control')
+                kwargs = {'chat_template_kwargs': {'reasoning_effort': effort}}
+                if budget is not None:
+                    kwargs['reasoning_budget_tokens'] = budget
+                with chat(messages, max_tokens=1024, **kwargs) as response:
+                    value = json.load(response)
+                message = value['choices'][0]['message']
+                answer = message.get('content') or ''
+                return {'passed': all(v in answer for v in wanted), 'answer': answer,
+                        'usage': value.get('usage'), 'finish_reason': value['choices'][0]['finish_reason'],
+                        'reasoning_effort': effort, 'budget': budget,
+                        'reasoning_content': message.get('reasoning_content')}
+            for effort, budget in (('none', 0), ('none', None), ('low', None)):
+                checks.append(emit(f'control_{effort}_budget_{budget}',
+                                   lambda effort=effort, budget=budget: control(effort, budget)))
+        for repeat in range(args.repeats):
+            def job(tag):
+                return ([{'role': 'user', 'content': f'Start with RUN_ID={tag}. Then write a detailed 30-item '
+                    'checklist for investigating a Python HTTP memory leak, with commands and verification steps.'}], f'RUN_ID={tag}', 384)
+            checks.append(emit(f'single_{repeat}', lambda: stream(*job(f'single{repeat}'))))
+            checks.append(emit(f'pair_{repeat}', lambda: pair([job(f'alpha{repeat}'), job(f'beta{repeat}')])) )
+            if args.slots > 2:
+                checks.append(emit(f'group_{repeat}', lambda: pair([job(f'worker{i}-{repeat}') for i in range(args.slots)])))
+        checks.append(emit('reasoning_tool_history', tool_test))
+    elif args.mode == 'limit':
+        def reject_oversized():
+            messages, _ = archive(265000, 'oversized')
+            try:
+                stream(messages, max_tokens=16)
+            except RuntimeError as error:
+                assert 'HTTP 400' in str(error), str(error)
+                return {'rejected': True, 'error': str(error)}
+            raise AssertionError('Oversized context was accepted')
+        checks.append(emit('reject_oversized_context', reject_oversized))
+        checks.append(emit('recovery', lambda: stream([{'role': 'user', 'content': 'Reply exactly READY.'}], 'READY', 16)))
+    else:
+        sizes = {'long': [(160000, 16000), (250000, 6000)],
+                 'full': [(args.context_a, args.context_b)], 'boundary': [(200000, 100000)]}[args.mode]
+        for a, b in sizes:
+            def workload(a=a, b=b):
+                first, va = archive(a, f'a{a}')
+                second, vb = archive(b, f'b{b}')
+                messages, values = [first, second], [va, vb]
+                if args.mode == 'full' and args.slots == 3:
+                    third, vc = archive(b, f'c{b}')
+                    messages.append(third)
+                    values.append(vc)
+                result = pair([(m, v[0], 128) for m, v in zip(messages, values)])
+                for index, (output, wanted) in enumerate(zip(result['requests'], values)):
+                    unwanted = [v for i, group in enumerate(values) if i != index for v in group]
+                    assert all(v in output['answer'] for v in wanted), output
+                    assert not any(v in output['answer'] for v in unwanted), output
+                resumed = stream(first + [{'role': 'assistant', 'content': result['requests'][0]['answer']},
+                    {'role': 'user', 'content': 'Return only the MIDDLE value from this archive.'}], va[1], 64)
+                result['resumed'] = resumed
+                return result
+            checks.append(emit(f'contexts_{a}_{b}', workload))
+        checks.append(emit('recovery', lambda: stream([{'role': 'user', 'content': 'Reply exactly READY.'}], 'READY', 16)))
+    passed = all(c['passed'] for c in checks)
+    print(json.dumps({'name': 'complete', 'passed': passed}), flush=True)
+    raise SystemExit(0 if passed else 1)
+
+
+if __name__ == '__main__':
+    main()

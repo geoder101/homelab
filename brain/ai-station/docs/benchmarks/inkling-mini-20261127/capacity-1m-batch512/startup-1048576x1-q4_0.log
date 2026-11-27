@@ -1,0 +1,15 @@
+0.00.161.844 I srv  llama_server: initializing ...
+0.00.161.855 I cmn  common_param: common_params_print_info: verbosity = 3 (adjust with the `-lv N` CLI arg)
+0.00.161.969 I srv  init_listene: The UI is disabled
+0.00.161.970 I srv  init_listene: Use --ui/--no-ui (or deprecated --webui/--no-webui) to enable/disable
+0.00.162.034 W srv  server_setup: security: no API key is set and CORS allows all origins (see https://github.com/ggml-org/llama.cpp/pull/25655)
+0.00.164.004 I srv    load_model: loading model '/models/Inkling-2-Mini-UD-Q4_K_XL.gguf'
+0.01.939.761 E ggml_backend_cuda_buffer_type_alloc_buffer: allocating 9167.93 MiB on device 0: cudaMalloc failed: out of memory
+0.01.939.767 E ggml_gallocr_reserve_n_impl: failed to allocate CUDA0 buffer of size 9613267968
+0.01.939.769 E graph_reserve: failed to allocate compute buffers
+0.01.945.736 E llama_init_from_model: failed to initialize the context: failed to allocate compute pp buffers
+0.01.945.757 E cmn  common_init_: failed to create context with model '/models/Inkling-2-Mini-UD-Q4_K_XL.gguf'
+0.01.945.764 E cmn  common_init_: failed to create context with model '/models/Inkling-2-Mini-UD-Q4_K_XL.gguf'
+0.01.945.771 E srv    load_model: failed to create_context with model '/models/Inkling-2-Mini-UD-Q4_K_XL.gguf'
+0.01.945.805 I srv    operator(): operator(): cleaning up before exit...
+0.01.946.921 E srv  server_run_i: exiting due to model loading error

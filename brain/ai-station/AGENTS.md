@@ -14,6 +14,8 @@ The [docs/](docs/README.md) directory is the index — read it for how-to. This 
 
 ## Changes and verification
 
+- Inkling Mini isolated trial: `scripts/prepare-inkling-mini-trial` verifies pinned downloads; `scripts/benchmark-inkling-mini` measures capacity/quality with CPU standby and Ornith recovery. Tuned result: 512K single / 2×256K, Q4 KV + microbatch 128, 21/21 coding, ~126 tok/s; Ornith retained. Pins, effort/vision diagnostics and rerun flags: [trial notes](docs/benchmarks/inkling-mini-20261127/README.md). Benchmark clients support the `inkling` sampling profile.
+
 - Keep [docs/model-profile.md](docs/model-profile.md) as current config first, dated history below; append rather than replace on model/engine changes.
 - Before committing, document any near-significant change — a new or renamed script, any Quadlet `Exec` argument, a lockfile record (model/chat-template/image selection), or anything that changes how a command switches or verifies a backend — with a one-line note here and a fuller write-up in docs/ (see docs/README.md). Trivial edits (whitespace, comments) need not be documented.
 - `make help` lists workflows (host commands auto-wrap `flatpak-spawn --host`); `make deploy` backs up WebUI, pulls/downloads, installs/reloads, waits for readiness (backend→gateway→UI) and smoke-tests: [docs/automation.md](docs/automation.md).

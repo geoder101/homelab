@@ -1,0 +1,287 @@
+{
+  "label": "inkling-q4-tuned",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 44,
+    "sampling_profile": "inkling",
+    "mtp": false,
+    "temperature_override": null,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 0.142,
+      "elapsed_seconds": 4.195,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 0.142,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.32,
+      "answer": "Below is a practical checklist you can use during long-running integration tests. The goal is to confirm whether the leak is in Python-managed objects, native memory, OS file descriptors/sockets, or test infrastructure.\n\n## 1. Establish a baseline\n\n- [ ] Record the exact Python version and runtime environment.\n  - `python --version`\n  - `sys.version`\n- [ ] Record the test runner used, e.g. `pytest`, `unittest`, `nose2`, etc.\n- [ ] Identify the server stack, e.g. Flask, Django, FastAPI, aiohttp, Tornado, Gunicorn/Uvicorn.\n- [ ] Run a short smoke test first to ensure the test harness is working.\n- [ ] Capture a \u201cclean\u201d memory baseline before the long test starts.\n- [ ] Capture a second baseline after several clean test iterations.\n\nCommands/checks:\n\n```bash\npython -m pytest --collect-only\npython -m pytest -x test_server.py\n```\n\nPython-side snapshot:\n\n```python\nimport sys\nimport os\n\nprint(sys.version)\nprint(\"PyTorch/etc loaded:\", os.environ.get(\"TEST_VARIANT\"))\n```\n\n## 2. Observe memory growth\n\n- [ ] Track RSS memory over time.\n- [ ] Track process count and thread count.\n- [ ] Track open file descriptors.\n- [ ] Track network connections/sockets.\n- [ ] Track CPU usage to distinguish leaks from work.\n\nCommands:\n\n```bash\ntop -p <pid>\nps -o pid,ppid,rss,vsz,nlwp,threads,cmd -p <pid>\nls -l /proc/<pid>/fd | wc -l\ncat /proc/<pid>/status | grep -E 'VmRSS|VmSize|Threads'\n```\n\nFor cgroups/containers:\n\n```bash\ncat /sys/fs/cgroup/memory/memory.usage_in_bytes\ncat /sys/fs/cgroup/pids/pids.current\n```\n\nPython-side memory tracking:\n\n```python\nimport tracemalloc\n\ntracemalloc.start()\n\n# after test iterations:\ncurrent,"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.074,
+      "elapsed_seconds": 4.125,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.074,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.37,
+      "answer": "Below is a practical checklist you can use during long-running integration tests. The goal is to confirm whether the leak is in Python-managed objects, native memory, OS file descriptors/sockets, or test infrastructure.\n\n## 1. Establish a baseline\n\n- [ ] Record the exact Python version and runtime environment.\n  - `python --version`\n  - `sys.version`\n- [ ] Record the test runner used, e.g. `pytest`, `unittest`, `nose2`, etc.\n- [ ] Identify the server stack, e.g. Flask, Django, FastAPI, aiohttp, Tornado, Gunicorn/Uvicorn.\n- [ ] Run a short smoke test first to ensure the test harness is working.\n- [ ] Capture a \u201cclean\u201d memory baseline before the long test starts.\n- [ ] Capture a second baseline after several clean test iterations.\n\nCommands/checks:\n\n```bash\npython -m pytest --collect-only\npython -m pytest -x test_server.py\n```\n\nPython-side snapshot:\n\n```python\nimport sys\nimport os\n\nprint(sys.version)\nprint(\"PyTorch/etc loaded:\", os.environ.get(\"TEST_VARIANT\"))\n```\n\n## 2. Observe memory growth\n\n- [ ] Track RSS memory over time.\n- [ ] Track process count and thread count.\n- [ ] Track open file descriptors.\n- [ ] Track network connections/sockets.\n- [ ] Track CPU usage to distinguish leaks from work.\n\nCommands:\n\n```bash\ntop -p <pid>\nps -o pid,ppid,rss,vsz,nlwp,threads,cmd -p <pid>\nls -l /proc/<pid>/fd | wc -l\ncat /proc/<pid>/status | grep -E 'VmRSS|VmSize|Threads'\n```\n\nFor cgroups/containers:\n\n```bash\ncat /sys/fs/cgroup/memory/memory.usage_in_bytes\ncat /sys/fs/cgroup/pids/pids.current\n```\n\nPython-side memory tracking:\n\n```python\nimport tracemalloc\n\ntracemalloc.start()\n\n# after test iterations:\ncurrent,"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.068,
+      "elapsed_seconds": 4.123,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.068,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.26,
+      "answer": "Below is a practical checklist you can use during long-running integration tests. The goal is to confirm whether the leak is in Python-managed objects, native memory, OS file descriptors/sockets, or test infrastructure.\n\n## 1. Establish a baseline\n\n- [ ] Record the exact Python version and runtime environment.\n  - `python --version`\n  - `sys.version`\n- [ ] Record the test runner used, e.g. `pytest`, `unittest`, `nose2`, etc.\n- [ ] Identify the server stack, e.g. Flask, Django, FastAPI, aiohttp, Tornado, Gunicorn/Uvicorn.\n- [ ] Run a short smoke test first to ensure the test harness is working.\n- [ ] Capture a \u201cclean\u201d memory baseline before the long test starts.\n- [ ] Capture a second baseline after several clean test iterations.\n\nCommands/checks:\n\n```bash\npython -m pytest --collect-only\npython -m pytest -x test_server.py\n```\n\nPython-side snapshot:\n\n```python\nimport sys\nimport os\n\nprint(sys.version)\nprint(\"PyTorch/etc loaded:\", os.environ.get(\"TEST_VARIANT\"))\n```\n\n## 2. Observe memory growth\n\n- [ ] Track RSS memory over time.\n- [ ] Track process count and thread count.\n- [ ] Track open file descriptors.\n- [ ] Track network connections/sockets.\n- [ ] Track CPU usage to distinguish leaks from work.\n\nCommands:\n\n```bash\ntop -p <pid>\nps -o pid,ppid,rss,vsz,nlwp,threads,cmd -p <pid>\nls -l /proc/<pid>/fd | wc -l\ncat /proc/<pid>/status | grep -E 'VmRSS|VmSize|Threads'\n```\n\nFor cgroups/containers:\n\n```bash\ncat /sys/fs/cgroup/memory/memory.usage_in_bytes\ncat /sys/fs/cgroup/pids/pids.current\n```\n\nPython-side memory tracking:\n\n```python\nimport tracemalloc\n\ntracemalloc.start()\n\n# after test iterations:\ncurrent,"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 4.487,
+      "usage": {
+        "completion_tokens": 550,
+        "prompt_tokens": 110,
+        "total_tokens": 660,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    merged = []\n    for start, end in sorted(intervals, key=lambda iv: (iv[0], iv[1])):\n        if merged and start <= merged[-1][1]:\n            if end > merged[-1][1]:\n                merged[-1][1] = end\n        else:\n            merged.append([start, end])\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 8.748,
+      "usage": {
+        "completion_tokens": 1076,
+        "prompt_tokens": 140,
+        "total_tokens": 1216,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    unique_edges = set(edges)\n    adj = {node: [] for node in nodes}\n    indegree = {node: 0 for node in nodes}\n    for source, destination in unique_edges:\n        adj[source].append(destination)\n        indegree[destination] += 1\n\n    heap = [node for node in nodes if indegree[node] == 0]\n    heapq.heapify(heap)\n\n    result = []\n    while heap:\n        node = heapq.heappop(heap)\n        result.append(node)\n        for neighbor in adj[node]:\n            indegree[neighbor] -= 1\n            if indegree[neighbor] == 0:\n                heapq.heappush(heap, neighbor)\n\n    if len(result) != len(nodes):\n        raise ValueError(\"cycle detected\")\n    return result",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 4.706,
+      "usage": {
+        "completion_tokens": 571,
+        "prompt_tokens": 256,
+        "total_tokens": 827,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be positive\")\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"invalid weight\")\n    batches = []\n    current = []\n    current_sum = 0\n    for name, weight in items:\n        if current and current_sum + weight > limit:\n            batches.append(current)\n            current = []\n            current_sum = 0\n        current.append(name)\n        current_sum += weight\n    if current:\n        batches.append(current)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 12.492,
+      "usage": {
+        "completion_tokens": 1535,
+        "prompt_tokens": 155,
+        "total_tokens": 1690,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    env = {}\n    key_re = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n    for raw_line in text.splitlines():\n        line = raw_line.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError('invalid line: %r' % line)\n        key, value = line.split('=', 1)\n        key = key.strip()\n        value = value.strip()\n        if not key_re.fullmatch(key):\n            raise ValueError('invalid key: %r' % key)\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in \"'\\\"\":\n            value = value[1:-1]\n        env[key] = value\n    return env",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 23.314,
+      "usage": {
+        "completion_tokens": 2858,
+        "prompt_tokens": 162,
+        "total_tokens": 3020,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b''.join(chunks).decode('utf-8')\n    events = []\n    data_lines = []\n    i = 0\n    n = len(text)\n    while i < n:\n        nl = text.find('\\n', i)\n        if nl == -1:\n            line = text[i:]\n            i = n\n        else:\n            line = text[i:nl]\n            if line.endswith('\\r'):\n                line = line[:-1]\n            i = nl + 1\n\n        if line == '':\n            if data_lines:\n                data = '\\n'.join(data_lines)\n                if data == '[DONE]':\n                    return events\n                events.append(data)\n                data_lines = []\n            continue\n\n        if line.startswith(':'):\n            continue\n\n        if ':' in line:\n            field, _, value = line.partition(':')\n            if value.startswith(' '):\n                value = value[1:]\n        else:\n            field, value = line, ''\n\n        if field == 'data':\n            data_lines.append(value)\n\n    return events",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 32.865,
+      "usage": {
+        "completion_tokens": 4029,
+        "prompt_tokens": 115,
+        "total_tokens": 4144,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0:\n        raise ValueError(\"attempt must be nonnegative\")\n    if base < 0 or cap < 0:\n        raise ValueError(\"base and cap must be nonnegative\")\n    try:\n        b = float(base)\n        c = float(cap)\n    except (OverflowError, ValueError) as e:\n        raise ValueError(\"base and cap must be finite\") from e\n    if not (math.isfinite(b) and math.isfinite(c)):\n        raise ValueError(\"base and cap must be finite\")\n    if b == 0.0 or c == 0.0:\n        return 0.0\n    if attempt <= 1000:\n        p = b * (2.0 ** float(attempt))\n    else:\n        log_p = math.log(b) + float(attempt) * math.log(2.0)\n        if log_p >= 709.782712893384:\n            return c\n        p = math.exp(log_p)\n    return min(c, p)",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 9.31,
+      "usage": {
+        "completion_tokens": 1142,
+        "prompt_tokens": 152,
+        "total_tokens": 1294,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for reservation in queued:\n        if reservation > budget:\n            raise ValueError(\"queued reservation exceeds budget\")\n\n    remaining_tokens = budget - sum(active)\n    remaining_slots = slots - len(active)\n    admitted = []\n    index = 0\n\n    for reservation in queued:\n        if remaining_slots > 0 and reservation <= remaining_tokens:\n            admitted.append(reservation)\n            remaining_tokens -= reservation\n            remaining_slots -= 1\n            index += 1\n        else:\n            break\n\n    return admitted, queued[index:]",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 2.369,
+      "arguments": {
+        "changes": [
+          {
+            "operation": "create",
+            "path": "src/a.py",
+            "content": "print(42)\n"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The apply_changes call completed with status `dry-run-ok` and `changed_files: 2`.\n\nBecause `metadata.dry_run` was set to `true`, no files were actually created or deleted. The planned changes were:\n- Create `src/a.py` with content `print(42)\\n`\n- Delete `obsolete.txt`\n\nLabels applied: `[\"coding\", \"test\"]`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 3.912,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Tool result:\n\n- status: `dry-run-ok`\n- changed_files: `2`\n\nBecause `dry_run` was set to `true`, no files were actually created or deleted. It reported that 2 changes would be made: create `src/a.py` (with content `print(42)\\n`) and delete `obsolete.txt`. Labels `[\"coding\", \"test\"]` were applied to the dry-run metadata. To actually apply these changes, run the same call with `metadata.dry_run` set to `false`."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.423,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Tool result:\n\n- status: `dry-run-ok`\n- changed_files: 2\n\nNote this was a dry run, so no files were actually created or deleted. The simulated changes were:\n- create `src/a.py` with content `print(42)\\n`\n- delete `obsolete.txt`\n\nLabels applied: `[\"coding\", \"test\"]`, dry_run: true."
+    }
+  ]
+}

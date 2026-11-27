@@ -1,0 +1,302 @@
+{
+  "label": "inkling",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "inkling",
+    "mtp": false,
+    "temperature_override": null,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.324,
+      "elapsed_seconds": 6.4,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 2.324,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 125.62,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration test suite shows memory growth or leakage in an HTTP server.\n\n1) Confirm the symptom\n- Note whether memory grows steadily or only after certain tests.\n- Compare baseline vs. after repeated requests.\n- Distinguish server-side growth from client-side test growth.\n- Check whether growth occurs on every request, every test, or only after restarts.\n\nUseful commands/checks:\n- `ps -o pid,rss,vsz,%mem,cmd -C python`\n- `top` or `htop`\n- `/usr/bin/time -v python app.py`\n- `/usr/bin/time -v pytest`\n- `free -m`\n- `ls -l /proc/<pid>/status`\n\nQuestions to answer:\n- Is RSS growing?\n- Does VSZ grow but RSS remains stable?\n- Does growth come from the server process or the test runner?\n- Does reducing request volume reduce growth?\n- Does growth stop shortly after requests stop?\n\n2) Establish a controlled baseline\n- Run a minimal reproduction.\n- Use a small number of requests and confirm the memory trend.\n- Keep the test environment as stable as possible.\n\nExample:\n```bash\npython -m pytest tests/integration/test_basic_http.py -k \"health_check\"\n```\n\nIf possible, add a simple endpoint such as `/health` that does no work, and request it many times:\n```bash\nfor i in $(seq 1 1000); do curl -s localhost:8000/health >/dev/null; done\n```\n\n3) Profile the Python process\nCheck whether memory growth is caused by application objects, object retention, or external resources.\n\nUse:\n```bash\npip install memory-profiler\n```\n\nThen wrap critical test paths or loops.\n\nExample:\n```bash\npython -m memory_profiler tests/integration/test_memory_probe.py\n```\n\nOr use `tracemalloc` from the standard library:\n```python\nimport tracemalloc\ntracemalloc.start()\n# ... run test ...\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics(\"lineno\")\n"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.075,
+      "elapsed_seconds": 4.141,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.075,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 125.93,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration test suite shows memory growth or leakage in an HTTP server.\n\n1) Confirm the symptom\n- Note whether memory grows steadily or only after certain tests.\n- Compare baseline vs. after repeated requests.\n- Distinguish server-side growth from client-side test growth.\n- Check whether growth occurs on every request, every test, or only after restarts.\n\nUseful commands/checks:\n- `ps -o pid,rss,vsz,%mem,cmd -C python`\n- `top` or `htop`\n- `/usr/bin/time -v python app.py`\n- `/usr/bin/time -v pytest`\n- `free -m`\n- `ls -l /proc/<pid>/status`\n\nQuestions to answer:\n- Is RSS growing?\n- Does VSZ grow but RSS remains stable?\n- Does growth come from the server process or the test runner?\n- Does reducing request volume reduce growth?\n- Does growth stop shortly after requests stop?\n\n2) Establish a controlled baseline\n- Run a minimal reproduction.\n- Use a small number of requests and confirm the memory trend.\n- Keep the test environment as stable as possible.\n\nExample:\n```bash\npython -m pytest tests/integration/test_basic_http.py -k \"health_check\"\n```\n\nIf possible, add a simple endpoint such as `/health` that does no work, and request it many times:\n```bash\nfor i in $(seq 1 1000); do curl -s localhost:8000/health >/dev/null; done\n```\n\n3) Profile the Python process\nCheck whether memory growth is caused by application objects, object retention, or external resources.\n\nUse:\n```bash\npip install memory-profiler\n```\n\nThen wrap critical test paths or loops.\n\nExample:\n```bash\npython -m memory_profiler tests/integration/test_memory_probe.py\n```\n\nOr use `tracemalloc` from the standard library:\n```python\nimport tracemalloc\ntracemalloc.start()\n# ... run test ...\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics(\"lineno\")\n"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.068,
+      "elapsed_seconds": 4.143,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.068,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 125.64,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration test suite shows memory growth or leakage in an HTTP server.\n\n1) Confirm the symptom\n- Note whether memory grows steadily or only after certain tests.\n- Compare baseline vs. after repeated requests.\n- Distinguish server-side growth from client-side test growth.\n- Check whether growth occurs on every request, every test, or only after restarts.\n\nUseful commands/checks:\n- `ps -o pid,rss,vsz,%mem,cmd -C python`\n- `top` or `htop`\n- `/usr/bin/time -v python app.py`\n- `/usr/bin/time -v pytest`\n- `free -m`\n- `ls -l /proc/<pid>/status`\n\nQuestions to answer:\n- Is RSS growing?\n- Does VSZ grow but RSS remains stable?\n- Does growth come from the server process or the test runner?\n- Does reducing request volume reduce growth?\n- Does growth stop shortly after requests stop?\n\n2) Establish a controlled baseline\n- Run a minimal reproduction.\n- Use a small number of requests and confirm the memory trend.\n- Keep the test environment as stable as possible.\n\nExample:\n```bash\npython -m pytest tests/integration/test_basic_http.py -k \"health_check\"\n```\n\nIf possible, add a simple endpoint such as `/health` that does no work, and request it many times:\n```bash\nfor i in $(seq 1 1000); do curl -s localhost:8000/health >/dev/null; done\n```\n\n3) Profile the Python process\nCheck whether memory growth is caused by application objects, object retention, or external resources.\n\nUse:\n```bash\npip install memory-profiler\n```\n\nThen wrap critical test paths or loops.\n\nExample:\n```bash\npython -m memory_profiler tests/integration/test_memory_probe.py\n```\n\nOr use `tracemalloc` from the standard library:\n```python\nimport tracemalloc\ntracemalloc.start()\n# ... run test ...\nsnapshot = tracemalloc.take_snapshot()\ntop_stats = snapshot.statistics(\"lineno\")\n"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 5.533,
+      "usage": {
+        "completion_tokens": 677,
+        "prompt_tokens": 110,
+        "total_tokens": 787,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    sorted_intervals = sorted((list(interval) for interval in intervals), key=lambda interval: (interval[0], interval[1]))\n    merged = []\n    for start, end in sorted_intervals:\n        if merged and start <= merged[-1][1]:\n            if end > merged[-1][1]:\n                merged[-1][1] = end\n        else:\n            merged.append([start, end])\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 6.164,
+      "usage": {
+        "completion_tokens": 757,
+        "prompt_tokens": 140,
+        "total_tokens": 897,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    adjacency = {node: [] for node in nodes}\n    indegree = {node: 0 for node in nodes}\n\n    for source, destination in set(edges):\n        adjacency[source].append(destination)\n        indegree[destination] += 1\n\n    available = [node for node in nodes if indegree[node] == 0]\n    heapq.heapify(available)\n\n    order = []\n    while available:\n        node = heapq.heappop(available)\n        order.append(node)\n        for neighbor in adjacency[node]:\n            indegree[neighbor] -= 1\n            if indegree[neighbor] == 0:\n                heapq.heappush(available, neighbor)\n\n    if len(order) != len(nodes):\n        raise ValueError(\"cycle detected\")\n\n    return order",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 6.041,
+      "usage": {
+        "completion_tokens": 740,
+        "prompt_tokens": 256,
+        "total_tokens": 996,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be positive\")\n    batches = []\n    current = []\n    total = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"invalid weight\")\n        if current and total + weight > limit:\n            batches.append(current)\n            current = []\n            total = 0\n        current.append(name)\n        total += weight\n    if current:\n        batches.append(current)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 11.829,
+      "usage": {
+        "completion_tokens": 1453,
+        "prompt_tokens": 155,
+        "total_tokens": 1608,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    result = {}\n    for line in text.splitlines():\n        line = line.strip()\n        if not line:\n            continue\n        if line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f\"Invalid line: {line!r}\")\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*', key):\n            raise ValueError(f\"Invalid key: {key!r}\")\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in ('\"', \"'\"):\n            value = value[1:-1]\n        result[key] = value\n    return result",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 34.327,
+      "usage": {
+        "completion_tokens": 4238,
+        "prompt_tokens": 162,
+        "total_tokens": 4400,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b\"\".join(chunks).decode(\"utf-8\")\n    events = []\n    data_lines = []\n    pos = 0\n    n = len(text)\n\n    while pos < n:\n        idx_lf = text.find('\\n', pos)\n        idx_cr = text.find('\\r', pos)\n\n        if idx_lf == -1 and idx_cr == -1:\n            line = text[pos:]\n            pos = n\n        else:\n            if idx_lf == -1:\n                idx = idx_cr\n            elif idx_cr == -1:\n                idx = idx_lf\n            else:\n                idx = min(idx_lf, idx_cr)\n            line = text[pos:idx]\n            ch = text[idx]\n            pos = idx + 1\n            if ch == '\\r' and pos < n and text[pos] == '\\n':\n                pos += 1\n\n        if line == '':\n            if data_lines:\n                data = \"\\n\".join(data_lines)\n                data_lines = []\n                if data == \"[DONE]\":\n                    return events\n                events.append(data)\n            continue\n\n        if line.startswith(':'):\n            continue\n\n        if ':' in line:\n            field, value = line.split(':', 1)\n            if value.startswith(' '):\n                value = value[1:]\n        else:\n            field, value = line, ''\n\n        if field == 'data':\n            data_lines.append(value)\n\n    return events",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": false,
+      "elapsed_seconds": 21.315,
+      "usage": {
+        "completion_tokens": 2644,
+        "prompt_tokens": 115,
+        "total_tokens": 2759,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if isinstance(attempt, bool) or not isinstance(attempt, int):\n        raise ValueError(\"attempt must be a nonnegative integer\")\n    if attempt < 0:\n        raise ValueError(\"attempt must be nonnegative\")\n    try:\n        base = float(base)\n        cap = float(cap)\n    except Exception as e:\n        raise ValueError(\"base and cap must be finite nonnegative numbers\") from e\n    if not math.isfinite(base) or base < 0.0:\n        raise ValueError(\"base must be finite and nonnegative\")\n    if not math.isfinite(cap) or cap < 0.0:\n        raise ValueError(\"cap must be finite and nonnegative\")\n    if base == 0.0 or cap == 0.0:\n        return 0.0\n    t = attempt * math.log(2.0)\n    if not math.isfinite(t):\n        return cap\n    log_product = math.log(base) + t\n    if log_product >= math.log(cap):\n        return cap\n    return math.exp(log_product)",
+      "test_error": "Traceback (most recent call last):\n  File \"<string>\", line 28, in <module>\nAssertionError\n"
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 10.297,
+      "usage": {
+        "completion_tokens": 1271,
+        "prompt_tokens": 152,
+        "total_tokens": 1423,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for r in queued:\n        if r > budget:\n            raise ValueError(\"queued reservation exceeds budget\")\n    admitted = []\n    token_left = budget - sum(active)\n    slot_left = slots - len(active)\n    idx = 0\n    for r in queued:\n        if slot_left > 0 and token_left >= r:\n            admitted.append(r)\n            token_left -= r\n            slot_left -= 1\n            idx += 1\n        else:\n            break\n    remaining = list(queued[idx:])\n    return admitted, remaining",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 2.944,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool returned:\n\n```json\n{\"status\":\"dry-run-ok\",\"changed_files\":2}\n```\n\nIn dry-run mode it did not actually modify anything; it reports that 2 changes would be applied: create `src/a.py` (with `print(42)\\n`) and delete `obsolete.txt`, with labels `[\"coding\", \"test\"]`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 2.872,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool reported:\n\n- status: `dry-run-ok`\n- changed_files: `2`\n\nIt was a dry run, so the planned changes (create `src/a.py` with `print(42)` and delete `obsolete.txt`) were validated but not applied. No files were actually changed."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 3.088,
+      "arguments": {
+        "changes": [
+          {
+            "content": "print(42)\n",
+            "operation": "create",
+            "path": "src/a.py"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The apply_changes call succeeded. Tool result:\n\n- status: `dry-run-ok`\n- changed_files: `2`\n\nNote that because `metadata.dry_run` was set to `true`, this was a dry run only \u2014 no files were actually created or deleted. The planned changes were:\n- create `src/a.py` with content `print(42)\\n`\n- delete `obsolete.txt`\n\nlabels: `[\"coding\", \"test\"]` were passed through in the metadata."
+    },
+    {
+      "name": "context_32000",
+      "passed": false,
+      "error": "<|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|>"
+    },
+    {
+      "name": "context_122000",
+      "passed": false,
+      "error": "<|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|>"
+    },
+    {
+      "name": "context_253000",
+      "passed": false,
+      "error": "<|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|><|end_message|><|message_model|><|content_thinking|>"
+    }
+  ]
+}

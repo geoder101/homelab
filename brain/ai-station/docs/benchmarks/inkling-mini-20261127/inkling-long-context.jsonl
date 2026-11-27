@@ -1,0 +1,4 @@
+{"name": "runtime", "passed": true, "slots": 1, "build": "b12649-189f431bf", "n_ctx_slot": 524288}
+{"name": "contexts_515288_2000", "passed": false, "error": "", "wall_seconds": 278.692}
+{"name": "recovery", "passed": true, "ttft_seconds": 0.167, "elapsed_seconds": 0.1832, "decode_tps": 10000.0, "first_generated_token_seconds": 0.167, "usage": {"completion_tokens": 11, "prompt_tokens": 17, "total_tokens": 28, "prompt_tokens_details": {"cached_tokens": 10}}, "timings": {"cache_n": 10, "prompt_n": 7, "prompt_ms": 87.842, "prompt_per_token_ms": 12.548857142857143, "prompt_per_second": 79.68853168188338, "predicted_n": 11, "predicted_ms": 87.531, "predicted_per_token_ms": 8.7531, "predicted_per_second": 114.24523882967178}, "answer": "READY", "started_monotonic": 284213.568685981, "first_monotonic": 284213.735731985, "finished_monotonic": 284213.751838291, "wall_seconds": 0.183}
+{"name": "complete", "passed": false}

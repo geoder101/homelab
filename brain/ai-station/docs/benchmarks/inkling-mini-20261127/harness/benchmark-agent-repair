@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""Small multi-turn repair fixtures, not a repository/SWE-bench evaluation.
+
+Run in the same disposable CPU-only container as benchmark-coder. Model edits
+stay in memory; generated Python runs in a resource-limited child process.
+"""
+import argparse
+import json
+import resource
+import subprocess
+import sys
+import time
+import urllib.request
+
+
+FIXTURES = [
+    ('url_join', 'client.py', '''def endpoint(base_url, path):
+    return base_url.rstrip('/') + '/v1/' + path.lstrip('/')
+''', '''Fix client.py. endpoint(base_url, path) must construct a request URL for an
+OpenAI-compatible gateway. The base can end with /v1 or /v1/ or have no version
+suffix, including a deployment prefix such as https://example.test/proxy/v1/.
+The path is a relative resource name such as models or /chat/completions.
+Preserve the deployment prefix and include exactly one /v1 before the resource.
+Do not use network access. Inspect the file, edit it, run the tests, and report the result.''', '''
+assert endpoint('https://example.test', 'models') == 'https://example.test/v1/models'
+assert endpoint('https://example.test/v1/', '/chat/completions') == 'https://example.test/v1/chat/completions'
+assert endpoint('https://example.test/proxy/v1', '/models') == 'https://example.test/proxy/v1/models'
+assert endpoint('https://example.test/proxy/', 'models') == 'https://example.test/proxy/v1/models'
+assert endpoint('https://example.test/v10', 'models') == 'https://example.test/v10/v1/models'
+'''),
+    ('greek_queue', 'queueing.py', '''def admit(active, waiting, budget, slots):
+    admitted = []
+    for value in waiting:
+        if sum(active) + sum(admitted) + value <= budget:
+            admitted.append(value)
+    return admitted, [v for v in waiting if v not in admitted]
+''', '''Διόρθωσε το queueing.py. Η admit(active, waiting, budget, slots) είναι FIFO:
+οι ενεργές και αναμένουσες κρατήσεις είναι θετικοί ακέραιοι. Οι ενεργές είναι έγκυρες.
+Να επιστρέφει (admitted, remaining), χωρίς μεταβολή των εισόδων. Σταμάτα μόλις η πρώτη
+αναμένουσα κράτηση δεν χωρά είτε στο budget είτε στον αριθμό slots. Μην προσπερνάς
+την πρώτη. Αν οποιαδήποτε αναμένουσα κράτηση ξεπερνά το συνολικό budget, σήκωσε
+ValueError ακόμη κι αν δεν θα έφτανες ποτέ σε αυτήν. Πρόσεξε τις διπλές τιμές.
+Διάβασε το αρχείο, διόρθωσέ το, εκτέλεσε τις δοκιμές και ανέφερε το αποτέλεσμα.''', '''
+import copy
+for a, q, b, s, expected in [([6],[5,2],10,3,([],[5,2])),
+    ([3],[4,3,1],10,3,([4,3],[1])), ([],[2,2,2],4,3,([2,2],[2])),
+    ([1],[1,1],10,1,([],[1,1])), ([],[],10,2,([],[]))]:
+    old = copy.deepcopy((a,q))
+    assert admit(a,q,b,s) == expected
+    assert (a,q) == old
+try: admit([9],[2,11],10,2)
+except ValueError: pass
+else: raise AssertionError('oversized tail reservation was not rejected')
+'''),
+]
+
+
+def limits():
+    resource.setrlimit(resource.RLIMIT_CPU, (3, 3))
+    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024**2, 512 * 1024**2))
+
+
+def check(source, tests):
+    value = subprocess.run([sys.executable, '-I', '-c', source + '\n' + tests],
+        text=True, capture_output=True, timeout=8, preexec_fn=limits)
+    return {'passed': value.returncode == 0, 'stderr': value.stderr[-2000:]}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--url', required=True)
+    parser.add_argument('--output', required=True)
+    parser.add_argument('--sampling-profile', choices=['qwen', 'qwen3-coder', 'glm47', 'gemma4', 'general', 'devstral2', 'gptoss', 'inkling'], default='qwen')
+    parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
+    args = parser.parse_args()
+    tools = []
+    for name, description, properties, required in [
+        ('read_file', 'Read source or read-only tests.', {'path': {'type': 'string'}}, ['path']),
+        ('write_file', 'Replace the whole editable source file. Retry transient write errors.',
+         {'path': {'type': 'string'}, 'content': {'type': 'string'}}, ['path', 'content']),
+        ('run_tests', 'Run the test suite on the current source.', {}, []),
+    ]:
+        tools.append({'type': 'function', 'function': {'name': name, 'description': description,
+            'parameters': {'type': 'object', 'properties': properties, 'required': required}}})
+    results = []
+    for seed in (42, 43, 44):
+        for name, path, initial, prompt, tests in FIXTURES:
+            source = initial
+            test_path = 'test_' + path
+            assert not check(initial, tests)['passed'], 'Fixture must reproduce a real failure'
+            history = [{'role': 'system', 'content': 'You are fixing a small Python project. Use the available tools. '
+                        f'The editable source file is {path}. The read-only test file is {test_path}; '
+                        'tests run in the source namespace and are also available through run_tests.'},
+                       {'role': 'user', 'content': prompt}]
+            trace, transient_seen, final = [], False, False
+            start = time.monotonic()
+            result = {'fixture': name, 'seed': seed, 'passed': False}
+            try:
+                for _ in range(12):
+                    body = {'model': 'coder', 'messages': history, 'tools': tools, 'tool_choice': 'auto',
+                        'seed': seed, 'temperature': 1.0, 'top_p': .95, 'top_k': 20, 'min_p': 0.0,
+                        'max_tokens': 16384, 'reasoning_budget_tokens': 6144,
+                        'chat_template_kwargs': {'enable_thinking': True, 'reasoning_effort': 'medium',
+                                                 'preserve_thinking': True}}
+                    if args.sampling_profile == 'qwen3-coder':
+                        body.update(temperature=.7, top_p=.8, repeat_penalty=1.05, reasoning_budget_tokens=0)
+                        body['chat_template_kwargs'].update(enable_thinking=False, preserve_thinking=False)
+                    elif args.sampling_profile == 'glm47':
+                        body.update(temperature=.7, top_p=1.0, top_k=0, min_p=.01, repeat_penalty=1.0)
+                    elif args.sampling_profile == 'gemma4':
+                        body.update(top_k=64)
+                        body['chat_template_kwargs']['preserve_thinking'] = False
+                    elif args.sampling_profile == 'devstral2':
+                        body.update(temperature=.15, top_p=1.0, top_k=0, reasoning_budget_tokens=0)
+                        body['chat_template_kwargs'].update(enable_thinking=False, preserve_thinking=False)
+                    elif args.sampling_profile in ('gptoss', 'inkling'):
+                        body.update(top_p=1.0, top_k=0)
+                    if args.backend == 'vllm':
+                        body.pop('reasoning_budget_tokens', None)
+                        if body['top_k'] == 0:
+                            body['top_k'] = -1
+                        if 'repeat_penalty' in body:
+                            body['repetition_penalty'] = body.pop('repeat_penalty')
+                    request = urllib.request.Request(args.url + '/v1/chat/completions',
+                        data=json.dumps(body).encode(), headers={'Content-Type': 'application/json'})
+                    with urllib.request.urlopen(request, timeout=600) as response:
+                        choice = json.load(response)['choices'][0]
+                    message = choice['message']
+                    history.append(message)
+                    calls = message.get('tool_calls') or []
+                    if not calls:
+                        assert choice['finish_reason'] != 'length', 'Output truncated'
+                        final = True
+                        break
+                    for call in calls:
+                        function = call['function']
+                        tool, values = function['name'], json.loads(function['arguments'])
+                        assert tool in ('read_file', 'write_file', 'run_tests'), tool
+                        if tool == 'read_file' and values.get('path') == test_path:
+                            output = {'content': tests}
+                        elif tool != 'run_tests' and values.get('path') != path:
+                            output = {'error': f'File not found or not editable. Source: {path}; read-only tests: {test_path}.'}
+                        elif tool == 'read_file':
+                            output = {'content': source}
+                        elif tool == 'write_file':
+                            if not transient_seen:
+                                transient_seen = True
+                                output = {'error': 'Temporary write lock. No changes applied. Retry the write.'}
+                            else:
+                                source = values['content']
+                                output = {'status': 'written'}
+                        else:
+                            output = check(source, tests)
+                            if not output['passed']:
+                                output['test_source'] = tests
+                        trace.append({'tool': tool, 'result': output})
+                        history.append({'role': 'tool', 'tool_call_id': call['id'], 'content': json.dumps(output)})
+                verification = check(source, tests)
+                assert final, 'Agent did not finish within 12 turns'
+                assert {'read_file', 'write_file', 'run_tests'} <= {t['tool'] for t in trace}, trace
+                assert verification['passed'], verification
+                result['passed'] = True
+            except Exception as error:
+                result['error'] = str(error)
+            result.update(elapsed_seconds=round(time.monotonic() - start, 3), trace=trace, code=source)
+            results.append(result)
+            print(json.dumps({k: v for k, v in result.items() if k not in ('trace', 'code')}), flush=True)
+            with open(args.output, 'w') as output:
+                json.dump({'description': __doc__, 'sampling_profile': args.sampling_profile,
+                    'backend': args.backend, 'reasoning_budget_parameter_sent': args.backend == 'llama',
+                    'tests': results}, output, indent=2)
+    return 0 if all(r['passed'] for r in results) else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

@@ -1,0 +1,287 @@
+{
+  "label": "inkling-q4-tuned",
+  "backend": "llama",
+  "settings": {
+    "reasoning_effort": "medium",
+    "preserve_thinking": true,
+    "thinking_max_tokens": 6144,
+    "reasoning_budget_parameter_sent": true,
+    "max_tokens": 16384,
+    "seed": 42,
+    "sampling_profile": "inkling",
+    "mtp": false,
+    "temperature_override": null,
+    "sampling": {
+      "coding": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "tools": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      },
+      "streaming": {
+        "temperature": 1.0,
+        "top_p": 1.0,
+        "top_k": 0,
+        "min_p": 0.0,
+        "presence_penalty": 0.0,
+        "repeat_penalty": 1.0
+      }
+    }
+  },
+  "tests": [
+    {
+      "name": "streaming_speed_1",
+      "passed": true,
+      "ttft_seconds": 2.312,
+      "elapsed_seconds": 6.36,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "first_generated_token_seconds": 2.312,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.49,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration suite appears to leak memory. It combines runtime checks, profiling, and test-level verification.\n\n1. Confirm the leak is in the server/tests, not the environment\n- Run the suite repeatedly and record memory over time.\n- On Linux/macOS:\n  - `ps -o pid,rss,vsz,etime,cmd -p <pid>`\n  - `top -p <pid>`\n  - `/usr/bin/time -l python3 -m pytest ...` or `/usr/bin/time -v ...`\n  - `pip`/`psutil` to sample `rss` or `virtual_memory().rss` every N seconds.\n- On Linux, check `/proc/<pid>/status` for RSS and `/proc/<pid>/status` / `/proc/<pid>/smaps` for more detail.\n- Compare a short run vs. a longer run with the same workload.\n- Check whether the RSS grows monotonically or spikes and returns (a leak vs. working-set pressure).\n\n2. Check for process lifetime and isolation issues\n- Is the test runner forking/restarting the server each test, or keeping one server process for the whole suite?\n- Are servers/clients created in fixtures but not torn down?\n- Is the server process surviving after the test ends?\n- Are background threads/processes/subprocesses being left alive?\n- Look for long-running `pytest`, `gunicorn`, `uvicorn`, `waitress`, `flask`, `django`, `tornado`, or custom servers that persist.\n\nCommands:\n- `ps aux | grep -E 'python|gunicorn|uvicorn|pytest'`\n- `lsof -p <pid>` for open files\n- `strace -p <pid> -f` or `ltrace` if needed (Linux; may be slow)\n- Check for zombie children: `ps -eo pid,ppid,stat,cmd | grep defunct`\n\n3. Review test fixtures for cleanup\nCheck especially for:\n- Missing `yield`/`finally` blocks.\n- Missing `close()`/`shutdown()"
+    },
+    {
+      "name": "streaming_speed_2",
+      "passed": true,
+      "ttft_seconds": 0.074,
+      "elapsed_seconds": 4.127,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.074,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.33,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration suite appears to leak memory. It combines runtime checks, profiling, and test-level verification.\n\n1. Confirm the leak is in the server/tests, not the environment\n- Run the suite repeatedly and record memory over time.\n- On Linux/macOS:\n  - `ps -o pid,rss,vsz,etime,cmd -p <pid>`\n  - `top -p <pid>`\n  - `/usr/bin/time -l python3 -m pytest ...` or `/usr/bin/time -v ...`\n  - `pip`/`psutil` to sample `rss` or `virtual_memory().rss` every N seconds.\n- On Linux, check `/proc/<pid>/status` for RSS and `/proc/<pid>/status` / `/proc/<pid>/smaps` for more detail.\n- Compare a short run vs. a longer run with the same workload.\n- Check whether the RSS grows monotonically or spikes and returns (a leak vs. working-set pressure).\n\n2. Check for process lifetime and isolation issues\n- Is the test runner forking/restarting the server each test, or keeping one server process for the whole suite?\n- Are servers/clients created in fixtures but not torn down?\n- Is the server process surviving after the test ends?\n- Are background threads/processes/subprocesses being left alive?\n- Look for long-running `pytest`, `gunicorn`, `uvicorn`, `waitress`, `flask`, `django`, `tornado`, or custom servers that persist.\n\nCommands:\n- `ps aux | grep -E 'python|gunicorn|uvicorn|pytest'`\n- `lsof -p <pid>` for open files\n- `strace -p <pid> -f` or `ltrace` if needed (Linux; may be slow)\n- Check for zombie children: `ps -eo pid,ppid,stat,cmd | grep defunct`\n\n3. Review test fixtures for cleanup\nCheck especially for:\n- Missing `yield`/`finally` blocks.\n- Missing `close()`/`shutdown()"
+    },
+    {
+      "name": "streaming_speed_3",
+      "passed": true,
+      "ttft_seconds": 0.067,
+      "elapsed_seconds": 4.116,
+      "usage": {
+        "completion_tokens": 512,
+        "prompt_tokens": 50,
+        "total_tokens": 562,
+        "prompt_tokens_details": {
+          "cached_tokens": 46
+        }
+      },
+      "first_generated_token_seconds": 0.067,
+      "max_tokens": 512,
+      "decode_tokens_per_second": 126.45,
+      "answer": "Below is a practical checklist you can follow when a long-running Python integration suite appears to leak memory. It combines runtime checks, profiling, and test-level verification.\n\n1. Confirm the leak is in the server/tests, not the environment\n- Run the suite repeatedly and record memory over time.\n- On Linux/macOS:\n  - `ps -o pid,rss,vsz,etime,cmd -p <pid>`\n  - `top -p <pid>`\n  - `/usr/bin/time -l python3 -m pytest ...` or `/usr/bin/time -v ...`\n  - `pip`/`psutil` to sample `rss` or `virtual_memory().rss` every N seconds.\n- On Linux, check `/proc/<pid>/status` for RSS and `/proc/<pid>/status` / `/proc/<pid>/smaps` for more detail.\n- Compare a short run vs. a longer run with the same workload.\n- Check whether the RSS grows monotonically or spikes and returns (a leak vs. working-set pressure).\n\n2. Check for process lifetime and isolation issues\n- Is the test runner forking/restarting the server each test, or keeping one server process for the whole suite?\n- Are servers/clients created in fixtures but not torn down?\n- Is the server process surviving after the test ends?\n- Are background threads/processes/subprocesses being left alive?\n- Look for long-running `pytest`, `gunicorn`, `uvicorn`, `waitress`, `flask`, `django`, `tornado`, or custom servers that persist.\n\nCommands:\n- `ps aux | grep -E 'python|gunicorn|uvicorn|pytest'`\n- `lsof -p <pid>` for open files\n- `strace -p <pid> -f` or `ltrace` if needed (Linux; may be slow)\n- Check for zombie children: `ps -eo pid,ppid,stat,cmd | grep defunct`\n\n3. Review test fixtures for cleanup\nCheck especially for:\n- Missing `yield`/`finally` blocks.\n- Missing `close()`/`shutdown()"
+    },
+    {
+      "name": "merge_intervals",
+      "passed": true,
+      "elapsed_seconds": 4.617,
+      "usage": {
+        "completion_tokens": 566,
+        "prompt_tokens": 110,
+        "total_tokens": 676,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def merge_intervals(intervals):\n    if not intervals:\n        return []\n    sorted_intervals = sorted(([s, e] for s, e in intervals), key=lambda x: (x[0], x[1]))\n    merged = []\n    for s, e in sorted_intervals:\n        if merged and s <= merged[-1][1]:\n            if e > merged[-1][1]:\n                merged[-1][1] = e\n        else:\n            merged.append([s, e])\n    return merged",
+      "test_error": ""
+    },
+    {
+      "name": "toposort",
+      "passed": true,
+      "elapsed_seconds": 9.32,
+      "usage": {
+        "completion_tokens": 1153,
+        "prompt_tokens": 140,
+        "total_tokens": 1293,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import heapq\n\ndef toposort(nodes, edges):\n    unique_edges = set(edges)\n    indegree = {node: 0 for node in nodes}\n    adjacency = {node: [] for node in nodes}\n\n    for source, destination in unique_edges:\n        indegree[destination] += 1\n        adjacency[source].append(destination)\n\n    heap = [node for node, degree in indegree.items() if degree == 0]\n    heapq.heapify(heap)\n\n    order = []\n    while heap:\n        node = heapq.heappop(heap)\n        order.append(node)\n        for destination in adjacency[node]:\n            indegree[destination] -= 1\n            if indegree[destination] == 0:\n                heapq.heappush(heap, destination)\n\n    if len(order) != len(nodes):\n        raise ValueError(\"cycle detected\")\n    return order",
+      "test_error": ""
+    },
+    {
+      "name": "greek_stable_batches",
+      "passed": true,
+      "elapsed_seconds": 6.83,
+      "usage": {
+        "completion_tokens": 837,
+        "prompt_tokens": 256,
+        "total_tokens": 1093,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def stable_batches(items, limit):\n    if limit <= 0:\n        raise ValueError(\"limit must be a positive integer\")\n    batches = []\n    current = []\n    total = 0\n    for name, weight in items:\n        if weight <= 0 or weight > limit:\n            raise ValueError(\"invalid weight\")\n        if current and total + weight > limit:\n            batches.append(current)\n            current = []\n            total = 0\n        current.append(name)\n        total += weight\n    if current:\n        batches.append(current)\n    return batches",
+      "test_error": ""
+    },
+    {
+      "name": "parse_env",
+      "passed": true,
+      "elapsed_seconds": 16.003,
+      "usage": {
+        "completion_tokens": 1983,
+        "prompt_tokens": 155,
+        "total_tokens": 2138,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import re\n\ndef parse_env(text):\n    key_re = re.compile(r'[A-Za-z_][A-Za-z0-9_]*')\n    result = {}\n    for raw in text.splitlines():\n        line = raw.strip()\n        if not line or line.startswith('#'):\n            continue\n        if '=' not in line:\n            raise ValueError(f'Invalid line: {raw!r}')\n        key, _, value = line.partition('=')\n        key = key.strip()\n        value = value.strip()\n        if not key_re.fullmatch(key):\n            raise ValueError(f'Invalid key: {key!r}')\n        if len(value) >= 2 and value[0] == value[-1] and value[0] in (\"'\", '\"'):\n            value = value[1:-1]\n        result[key] = value\n    return result",
+      "test_error": ""
+    },
+    {
+      "name": "parse_sse",
+      "passed": true,
+      "elapsed_seconds": 12.713,
+      "usage": {
+        "completion_tokens": 1572,
+        "prompt_tokens": 162,
+        "total_tokens": 1734,
+        "prompt_tokens_details": {
+          "cached_tokens": 27
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def parse_sse(chunks):\n    text = b''.join(chunks).decode('utf-8')\n    events = []\n    data_lines = []\n\n    for line in text.splitlines():\n        if line == '':\n            if data_lines:\n                data = '\\n'.join(data_lines)\n                if data == '[DONE]':\n                    return events\n                events.append(data)\n                data_lines = []\n            continue\n\n        if line.startswith(':'):\n            continue\n\n        if ':' in line:\n            field, _, value = line.partition(':')\n            if value.startswith(' '):\n                value = value[1:]\n        else:\n            field = line\n            value = ''\n\n        if field != 'data':\n            continue\n\n        data_lines.append(value)\n\n    return events",
+      "test_error": ""
+    },
+    {
+      "name": "retry_delay",
+      "passed": true,
+      "elapsed_seconds": 40.565,
+      "usage": {
+        "completion_tokens": 4972,
+        "prompt_tokens": 115,
+        "total_tokens": 5087,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "finish_reason": "stop",
+      "code": "import math\n\ndef retry_delay(attempt, base, cap):\n    if attempt < 0 or base < 0 or cap < 0:\n        raise ValueError(\"attempt, base, and cap must be nonnegative\")\n    if base == 0 or cap == 0:\n        return 0.0\n\n    fbase = float(base)\n    fcap = float(cap)\n\n    if attempt >= 4096:\n        return fcap\n\n    logp = math.log(fbase) + attempt * math.log(2.0)\n    if logp > math.log(fcap):\n        return fcap\n\n    if attempt <= 1023:\n        value = fbase * (2.0 ** attempt)\n        if math.isfinite(value):\n            return min(fcap, value)\n    return math.exp(logp)",
+      "test_error": ""
+    },
+    {
+      "name": "fifo_admit",
+      "passed": true,
+      "elapsed_seconds": 9.818,
+      "usage": {
+        "completion_tokens": 1204,
+        "prompt_tokens": 152,
+        "total_tokens": 1356,
+        "prompt_tokens_details": {
+          "cached_tokens": 30
+        }
+      },
+      "finish_reason": "stop",
+      "code": "def fifo_admit(active, queued, budget, slots):\n    for reservation in queued:\n        if reservation > budget:\n            raise ValueError(\"queued reservation exceeds total budget\")\n\n    remaining_budget = budget - sum(active)\n    remaining_slots = slots - len(active)\n\n    admitted = []\n    i = 0\n    while i < len(queued) and remaining_slots > 0 and remaining_budget > 0:\n        reservation = queued[i]\n        if reservation <= remaining_budget:\n            admitted.append(reservation)\n            remaining_budget -= reservation\n            remaining_slots -= 1\n            i += 1\n        else:\n            break\n\n    remaining = list(queued[i:])\n    return admitted, remaining",
+      "test_error": ""
+    },
+    {
+      "name": "nested_tool_round_trip_1",
+      "passed": true,
+      "elapsed_seconds": 2.414,
+      "arguments": {
+        "changes": [
+          {
+            "path": "src/a.py",
+            "operation": "create",
+            "content": "print(42)\n"
+          },
+          {
+            "path": "obsolete.txt",
+            "operation": "delete"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The tool result was:\n\n- status: `dry-run-ok`\n- changed_files: 2\n\nNo files were actually created or deleted because `dry_run` was set to `true`."
+    },
+    {
+      "name": "nested_tool_round_trip_2",
+      "passed": true,
+      "elapsed_seconds": 2.817,
+      "arguments": {
+        "changes": [
+          {
+            "operation": "create",
+            "path": "src/a.py",
+            "content": "print(42)\n"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "Tool result: `{\"status\":\"dry-run-ok\",\"changed_files\":2}` \u2014 dry-run only, so no files were actually created or deleted (2 operations planned: create `src/a.py`, delete `obsolete.txt`)."
+    },
+    {
+      "name": "nested_tool_round_trip_3",
+      "passed": true,
+      "elapsed_seconds": 2.368,
+      "arguments": {
+        "changes": [
+          {
+            "operation": "create",
+            "path": "src/a.py",
+            "content": "print(42)\n"
+          },
+          {
+            "operation": "delete",
+            "path": "obsolete.txt"
+          }
+        ],
+        "metadata": {
+          "dry_run": true,
+          "labels": [
+            "coding",
+            "test"
+          ]
+        }
+      },
+      "answer": "The apply_changes call completed with status `dry-run-ok` and `changed_files: 2`.\n\nBecause `metadata.dry_run` was set to `true`, no files were actually created or deleted. The planned changes were:\n- Create `src/a.py` with content `print(42)\\n`\n- Delete `obsolete.txt`\n\nLabels applied: `[\"coding\", \"test\"]`."
+    }
+  ]
+}

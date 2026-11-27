@@ -1,5 +1,7 @@
 # Qwen3.8 coding-agent comparison
 
+**Candidate result (2026-11-27):** [Inkling 2 Mini isolated llama.cpp trial](inkling-mini-20261127/README.md): tuned 21/21 coding contracts, validated 512K single / 2×256K context, ~126 tok/s versus Ornith's ~224; Ornith retained.
+
 **Current selection (2026-11-08):** Ornith Q5_K_M on b12182, selected after the
 [expanded comparison](moe-20261107-queue/SUMMARY.md). See [current configuration
 and retained Qwen history](../model-profile.md) and [deployed verification/limitations](../deployments/20261108-ornith-q5/README.md).

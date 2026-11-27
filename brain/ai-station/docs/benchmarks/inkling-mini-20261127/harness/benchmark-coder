@@ -1,0 +1,405 @@
+#!/usr/bin/env python3
+"""Small, reproducible coding-agent comparison; not a substitute for SWE-bench."""
+import argparse
+import json
+import re
+import resource
+import subprocess
+import sys
+import time
+import urllib.error
+import urllib.request
+
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--url", default="http://coder-candidate:8000")
+parser.add_argument("--backend", choices=["vllm", "llama"], required=True)
+parser.add_argument("--label", required=True)
+parser.add_argument("--contexts", default="32000,122000,154000")
+parser.add_argument("--output", required=True)
+parser.add_argument("--preserve-thinking", action="store_true")
+parser.add_argument("--thinking-budget", type=int, default=8192)
+parser.add_argument("--max-tokens", type=int, default=8192)
+parser.add_argument("--seed", type=int, default=42)
+parser.add_argument("--temperature", type=float, help="Explicit sampling-temperature experiment")
+parser.add_argument("--sampling-profile", choices=["qwen", "qwen3-coder", "glm47", "gemma4", "general", "devstral2", "gptoss", "inkling"], default="qwen")
+parser.add_argument("--extended", action="store_true", help="Additional deployment/streaming contract tasks")
+args = parser.parse_args()
+if args.sampling_profile in ('gemma4', 'qwen3-coder', 'devstral2'):
+    args.preserve_thinking = False
+if args.sampling_profile in ('qwen3-coder', 'devstral2'):
+    args.thinking_budget = 0
+results = {"label": args.label, "backend": args.backend,
+            "settings": {"reasoning_effort": "medium" if args.thinking_budget else None, "preserve_thinking": args.preserve_thinking,
+                          "thinking_max_tokens": args.thinking_budget if args.backend == 'llama' else None,
+                          "reasoning_budget_parameter_sent": args.backend == 'llama',
+                          "max_tokens": args.max_tokens, "seed": args.seed,
+                          "sampling_profile": args.sampling_profile, "mtp": False}, "tests": []}
+results['settings']['temperature_override'] = args.temperature
+
+
+def sampling(thinking, tools=False):
+    values = {'temperature': 1.0 if thinking else .7, 'top_p': .95 if thinking else .8,
+              'top_k': 20, 'min_p': 0.0, 'presence_penalty': 0.0 if thinking else 1.5,
+              'repeat_penalty': 1.0}
+    if args.sampling_profile == 'qwen3-coder':
+        values.update(temperature=.7, top_p=.8, presence_penalty=0.0, repeat_penalty=1.05)
+    elif args.sampling_profile == 'glm47':
+        values.update(temperature=.7 if tools or not thinking else 1.0,
+                      top_p=1.0 if tools or not thinking else .95,
+                      top_k=0, min_p=.01, presence_penalty=0.0)
+    elif args.sampling_profile == 'gemma4':
+        values.update(temperature=1.0, top_p=.95, top_k=64, presence_penalty=0.0)
+    elif args.sampling_profile == 'devstral2':
+        values.update(temperature=.15, top_p=1.0, top_k=0, presence_penalty=0.0)
+    elif args.sampling_profile in ('gptoss', 'inkling'):
+        values.update(temperature=1.0, top_p=1.0, top_k=0, presence_penalty=0.0)
+    elif args.sampling_profile == 'general':
+        values.update(temperature=1.0, top_p=.95, top_k=20, presence_penalty=0.0)
+    if args.temperature is not None:
+        values['temperature'] = args.temperature
+    if args.backend != 'llama':
+        values['repetition_penalty'] = values.pop('repeat_penalty')
+        if values['top_k'] == 0:
+            values['top_k'] = -1
+    return values
+
+
+results['settings']['sampling'] = {mode: sampling(thinking, tools) for mode, thinking, tools in
+                                  [('coding', True, False), ('tools', True, True), ('streaming', False, False)]}
+
+
+def post(path, body, timeout=600):
+    request = urllib.request.Request(
+        args.url + path, data=json.dumps(body).encode(),
+        headers={"Content-Type": "application/json"},
+    )
+    try:
+        return urllib.request.urlopen(request, timeout=timeout)
+    except urllib.error.HTTPError as error:
+        raise RuntimeError(f"HTTP {error.code}: {error.read().decode()}") from error
+
+
+def request_chat(messages, *, thinking=True, max_tokens=None, **extra):
+    thinking = thinking and args.sampling_profile not in ('qwen3-coder', 'devstral2')
+    body = {
+        "model": "coder", "messages": messages, "seed": args.seed,
+        "temperature": 1.0 if thinking else 0.7,
+        "top_p": 0.95 if thinking else 0.8,
+        "top_k": 20, "min_p": 0.0,
+        "presence_penalty": 0.0 if thinking else 1.5,
+        "repetition_penalty": 1.0,
+        "max_tokens": args.max_tokens if max_tokens is None else max_tokens,
+        "chat_template_kwargs": {
+            "enable_thinking": thinking, "reasoning_effort": "medium",
+            "preserve_thinking": args.preserve_thinking,
+        },
+        **extra,
+    }
+    if args.backend == 'llama':
+        body['reasoning_budget_tokens'] = args.thinking_budget if thinking else 0
+        body.pop('repetition_penalty', None)
+    body.update(sampling(thinking, bool(extra.get('tools'))))
+    if args.sampling_profile == 'gptoss':
+        body['reasoning_effort'] = 'medium' if thinking else 'low'
+        body['chat_template_kwargs']['reasoning_effort'] = body['reasoning_effort']
+    if args.sampling_profile == 'inkling':
+        body['chat_template_kwargs']['reasoning_effort'] = 'medium' if thinking else 'none'
+    start = time.monotonic()
+    with post("/v1/chat/completions", body) as response:
+        value = json.load(response)
+    return value, round(time.monotonic() - start, 3)
+
+
+def record(name, test):
+    try:
+        result = {"name": name, "passed": True, **test()}
+    except Exception as error:
+        result = {"name": name, "passed": False, "error": str(error)}
+    results["tests"].append(result)
+    print(json.dumps({key: value for key, value in result.items()
+                      if key not in {"answer", "code"}}), flush=True)
+    with open(args.output, "w") as output:
+        json.dump(results, output, indent=2)
+
+
+def streaming_speed():
+    body = {
+        "model": "coder", "stream": True, "stream_options": {"include_usage": True},
+        "seed": args.seed, "temperature": 0.7, "top_p": 0.8, "top_k": 20,
+        "presence_penalty": 1.5, "max_tokens": 1024 if args.sampling_profile == 'gptoss' else 512,
+        "chat_template_kwargs": {"enable_thinking": False},
+        "messages": [{"role": "user", "content": (
+            "Write a detailed checklist for diagnosing a Python HTTP server that leaks "
+            "memory during long-running integration tests. Give concrete checks and "
+            "commands, covering profiling, resource cleanup and verification."
+        )}],
+    }
+    body.update(sampling(False))
+    if args.backend == 'llama':
+        body['reasoning_budget_tokens'] = 0
+    if args.sampling_profile == 'gptoss':
+        body['reasoning_effort'] = 'low'
+        body['chat_template_kwargs']['reasoning_effort'] = 'low'
+    if args.sampling_profile == 'inkling':
+        body['chat_template_kwargs']['reasoning_effort'] = 'none'
+    start = time.monotonic()
+    first = None
+    first_generated = None
+    usage = {}
+    pieces = []
+    with post("/v1/chat/completions", body) as response:
+        for raw in response:
+            if not raw.startswith(b"data: ") or raw.strip() == b"data: [DONE]":
+                continue
+            event = json.loads(raw[6:])
+            usage = event.get("usage") or usage
+            for choice in event.get("choices", []):
+                delta = choice.get('delta', {})
+                text = delta.get("content")
+                if (text or delta.get('reasoning_content') or delta.get('reasoning')) and first_generated is None:
+                    first_generated = time.monotonic()
+                if text:
+                    if first is None:
+                        first = time.monotonic()
+                    pieces.append(text)
+    finish = time.monotonic()
+    assert first is not None, "No streamed text"
+    return {"ttft_seconds": round(first - start, 3),
+             "elapsed_seconds": round(finish - start, 3), "usage": usage,
+             "first_generated_token_seconds": round(first_generated - start, 3),
+             "max_tokens": body['max_tokens'],
+             "decode_tokens_per_second": round(usage["completion_tokens"] / (finish - first_generated), 2),
+            "answer": "".join(pieces)}
+
+
+TASKS = [
+    ("merge_intervals", """Write Python function merge_intervals(intervals).
+Input: list of [start,end] closed intervals with integer endpoints and start <= end.
+Return sorted merged intervals as lists; touching intervals merge. Do not mutate input.
+Handle empty input, duplicates, nesting, negative endpoints and unsorted input.
+Return only Python code without explanations or test code.""", """
+import copy
+cases = [([], []), ([[1,2]], [[1,2]]), ([[2,4],[1,2],[8,9]], [[1,4],[8,9]]),
+([[1,9],[3,4],[1,9]], [[1,9]]), ([[-4,-2],[-2,0],[0,0]], [[-4,0]]),
+([[5,5],[1,1],[3,3]], [[1,1],[3,3],[5,5]])]
+for data, expected in cases:
+    old = copy.deepcopy(data)
+    assert merge_intervals(data) == expected
+    assert data == old, 'input mutated'
+"""),
+    ("toposort", """Write Python function toposort(nodes, edges).
+nodes is a list of distinct string node names. edges is a list of (source, destination)
+tuples; endpoints always occur in nodes. Return the lexicographically smallest valid
+topological ordering, choosing the smallest currently available node at each step.
+Duplicate edges must not change the result. Include isolated nodes. Raise ValueError
+on any cycle, including self loops. Do not mutate either argument.
+Return only Python code without explanations or test code.""", """
+import copy
+cases = [([], [], []), (['z','a','b'], [('a','z')], ['a','b','z']),
+(['a','b','c','d'], [('a','c'),('a','c'),('b','c')], ['a','b','c','d']),
+(['a','b','c'], [('c','a'),('c','b')], ['c','a','b'])]
+for nodes, edges, expected in cases:
+    old = copy.deepcopy((nodes, edges))
+    assert toposort(nodes, edges) == expected
+    assert (nodes, edges) == old, 'input mutated'
+for nodes, edges in [(['a'], [('a','a')]), (['a','b'], [('a','b'),('b','a')])]:
+    try:
+        toposort(nodes, edges)
+    except ValueError:
+        pass
+    else:
+        raise AssertionError('cycle not detected')
+"""),
+]
+
+if args.extended:
+    TASKS += [
+        ('greek_stable_batches', '''Γράψε μόνο κώδικα Python για τη συνάρτηση stable_batches(items, limit).
+Το items είναι λίστα ζευγών (όνομα, βάρος), με θετικά ακέραια βάρη. Το limit είναι θετικός
+ακέραιος. Επέστρεψε λίστα από λίστες ονομάτων: διάβασε τα items με τη σειρά τους και βάλε
+κάθε όνομα στην τρέχουσα παρτίδα όσο το άθροισμα βαρών δεν ξεπερνά το limit, αλλιώς ξεκίνα
+νέα παρτίδα. Μην αλλάζεις τη σειρά και μην τροποποιείς το items. Για κενή είσοδο επέστρεψε [].
+Αν το limit <= 0 ή ΟΠΟΙΟΔΗΠΟΤΕ βάρος <= 0 ή > limit, σήκωσε ValueError.
+Μην επιστρέφεις ποτέ κενές παρτίδες. Μην προσθέσεις εξηγήσεις ή δοκιμές.''', '''
+import copy
+for items, limit, expected in [([], 3, []), ([('a',3)],3,[['a']]),
+    ([('a',2),('b',1),('c',2),('d',2)],3,[['a','b'],['c'],['d']]),
+    ([('a',1),('a',1)],2,[['a','a']])]:
+    original = copy.deepcopy(items)
+    assert stable_batches(items, limit) == expected
+    assert items == original
+for items, limit in [([],0), ([], -1), ([('a',0)],2), ([('a',-1)],2),
+    ([('a',1),('b',4)],3)]:
+    try: stable_batches(items,limit)
+    except ValueError: pass
+    else: raise AssertionError((items,limit))
+'''),
+        ('parse_env', '''Write Python function parse_env(text) returning a dict of environment assignments.
+Strip whitespace around lines, keys and values. Skip blank lines and lines starting with #.
+Split on only the first =. Strip matching single/double quotes enclosing a whole value.
+Preserve literal inline # and additional = characters; do not expand variables or escapes.
+Keys must match [A-Za-z_][A-Za-z0-9_]*. Invalid non-comment lines raise ValueError.
+Empty values are allowed. Last duplicate wins. Return only Python code.''', '''
+assert parse_env(" # comment\\n A = x=y \\nB='# literal'\\nEMPTY=\\nA=last") == {'A':'last','B':'# literal','EMPTY':''}
+assert parse_env('A=" x "\\n_B=plain # kept') == {'A':' x ','_B':'plain # kept'}
+for value in ['BROKEN', '=x', '9KEY=x', 'A-B=x']:
+    try: parse_env(value)
+    except ValueError: pass
+    else: raise AssertionError(value)
+'''),
+        ('parse_sse', '''Write Python function parse_sse(chunks). chunks is a list of bytes chunks forming
+a UTF-8 SSE stream. Chunks may split UTF-8 characters or line endings. Handle LF and CRLF.
+Return a list of event data strings. Only data: lines contribute; remove at most one space
+after the colon, join multiple data lines with newline. A blank line dispatches an event.
+Ignore comments/other fields and events without data. Stop on the dispatched exact data
+[DONE], exclude it and later events. Ignore an unterminated final event. Return only code.''', '''
+assert parse_sse([b'data: a\\ndata:b\\n\\n: ping\\n\\ndata: [DONE]\\n\\ndata: ignored\\n\\n']) == ['a\\nb']
+raw='data: Καλημέρα\\r\\n\\r\\ndata:  x \\n\\n'.encode()
+assert parse_sse([raw[i:i+1] for i in range(len(raw))]) == ['Καλημέρα',' x ']
+assert parse_sse([b'event: test\\n\\ndata: unfinished']) == []
+assert parse_sse([b'data:\\n\\n']) == ['']
+'''),
+        ('retry_delay', '''Write Python function retry_delay(attempt, base, cap). Return float
+min(cap, base * 2**attempt). attempt is a nonnegative integer; base and cap are finite
+nonnegative numbers. Raise ValueError for negative arguments. Handle attempt=10**9
+without constructing a huge integer or overflowing, including base=0 or cap=0.
+Return only Python code.''', '''
+assert retry_delay(0, .5, 10) == .5
+assert retry_delay(3, .5, 10) == 4
+assert retry_delay(10**9, .5, 10) == 10
+assert retry_delay(10**9, 0, 10) == 0
+assert retry_delay(10**9, 1, 0) == 0
+for args in [(-1,1,2),(1,-1,2),(1,1,-2)]:
+    try: retry_delay(*args)
+    except ValueError: pass
+    else: raise AssertionError(args)
+'''),
+        ('fifo_admit', '''Write Python function fifo_admit(active, queued, budget, slots).
+active and queued are lists of positive integer token reservations. active is valid:
+its sum <= budget and length <= slots. Return (admitted, remaining) lists from queued,
+admitting in FIFO order while both slot and token budgets allow. Never skip a blocked
+head request. Reject with ValueError if ANY queued reservation exceeds the whole budget,
+even if that request would not be reached. Do not mutate either input. Return only code.''', '''
+import copy
+for active, queued, budget, slots, expected in [
+ ([6],[5,2],10,3,([],[5,2])), ([3],[4,3,1],10,3,([4,3],[1])),
+ ([],[10,1],10,2,([10],[1])), ([5],[1],10,1,([],[1])), ([],[],10,2,([],[]))]:
+    old=copy.deepcopy((active,queued))
+    assert fifo_admit(active,queued,budget,slots)==expected
+    assert (active,queued)==old
+try: fifo_admit([9],[2,11],10,2)
+except ValueError: pass
+else: raise AssertionError('oversized request not rejected')
+'''),
+    ]
+
+
+def constrain_child():
+    resource.setrlimit(resource.RLIMIT_CPU, (3, 3))
+    resource.setrlimit(resource.RLIMIT_AS, (512 * 1024**2, 512 * 1024**2))
+
+
+def coding(prompt, tests):
+    response, elapsed = request_chat([
+        {"role": "developer", "content": "You are a precise Python engineer. Follow the requested contract."},
+        {"role": "user", "content": prompt},
+    ])
+    choice = response["choices"][0]
+    code = choice["message"].get("content") or ""
+    match = re.search(r"```(?:python)?\s*\n(.*?)```", code, re.S)
+    if match:
+        code = match.group(1)
+    completed = subprocess.run(
+        [sys.executable, "-I", "-c", code + "\n" + tests],
+        capture_output=True, text=True, timeout=8, preexec_fn=constrain_child,
+    )
+    return {"passed": completed.returncode == 0, "elapsed_seconds": elapsed,
+            "usage": response.get("usage"), "finish_reason": choice["finish_reason"],
+            "code": code, "test_error": completed.stderr[-2000:]}
+
+
+def tool_round_trip(seed):
+    messages = [{"role": "user", "content": (
+        'Use apply_changes to create src/a.py with content "print(42)\\n" and '
+        'delete obsolete.txt. Set metadata.dry_run to true and metadata.labels to '
+        '["coding", "test"]. Then report the tool result.'
+    )}]
+    tools = [{"type": "function", "function": {
+        "name": "apply_changes", "description": "Apply the specified file operations.",
+        "parameters": {"type": "object", "properties": {
+            "changes": {"type": "array", "items": {"type": "object", "properties": {
+                "path": {"type": "string"}, "operation": {"type": "string", "enum": ["create", "delete"]},
+                "content": {"type": "string"}}, "required": ["path", "operation"]}},
+            "metadata": {"type": "object", "properties": {
+                "dry_run": {"type": "boolean"},
+                "labels": {"type": "array", "items": {"type": "string"}}},
+                "required": ["dry_run", "labels"]}}, "required": ["changes", "metadata"]},
+    }}]
+    response, elapsed = request_chat(messages, tools=tools, tool_choice="auto", seed=seed)
+    message = response["choices"][0]["message"]
+    call = message["tool_calls"][0]
+    assert call["function"]["name"] == "apply_changes", call
+    arguments = json.loads(call["function"]["arguments"])
+    assert arguments["metadata"] == {"dry_run": True, "labels": ["coding", "test"]}, arguments
+    changes = {item["path"]: item for item in arguments["changes"]}
+    assert changes["src/a.py"]["operation"] == "create", changes
+    assert changes["src/a.py"]["content"] == "print(42)\n", changes
+    assert changes["obsolete.txt"]["operation"] == "delete", changes
+    assistant = {"role": "assistant", "content": message.get("content"), "tool_calls": message["tool_calls"]}
+    reasoning = message.get("reasoning_content") or message.get("reasoning")
+    if reasoning:
+        assistant["reasoning_content"] = reasoning
+    messages += [assistant, {"role": "tool", "tool_call_id": call["id"],
+                             "content": '{"status":"dry-run-ok","changed_files":2}'}]
+    answer, second = request_chat(messages, tools=tools, tool_choice="auto", seed=seed)
+    text = answer["choices"][0]["message"].get("content") or ""
+    assert "2" in text or "two" in text.lower(), text
+    return {"elapsed_seconds": round(elapsed + second, 3), "arguments": arguments, "answer": text}
+
+
+def count_tokens(text):
+    payload = ({"model": "coder", "prompt": text, "add_special_tokens": False}
+               if args.backend == "vllm" else {"content": text, "add_special": False})
+    with post("/tokenize", payload) as response:
+        data = json.load(response)
+    return data["count"] if "count" in data else len(data["tokens"])
+
+
+def long_context(target):
+    line = "// unrelated source context\n"
+    per_line = count_tokens(line * 1000) / 1000
+    n = int((target - 200) / per_line)
+    text = (f"Source archive size {target}. Remember the exact values below.\n"
+            "START_KEY=amber-7429\n" + line * (n // 2)
+            + "MIDDLE_KEY=birch-5831\n" + line * (n - n // 2)
+            + "END_KEY=cedar-9167\n"
+            "Return only JSON with START_KEY, MIDDLE_KEY, END_KEY and their exact values.")
+    messages = [{"role": "user", "content": text}]
+    response, elapsed = request_chat(messages, thinking=False,
+                                    max_tokens=2048 if args.sampling_profile == 'gptoss' else 256)
+    text = response["choices"][0]["message"].get("content") or ""
+    for expected in ["amber-7429", "birch-5831", "cedar-9167"]:
+        assert expected in text, text
+    assert response["usage"]["prompt_tokens"] >= target - 500, response["usage"]
+    messages += [{"role": "assistant", "content": text},
+                 {"role": "user", "content": "Now return only the value of MIDDLE_KEY."}]
+    followup, followup_elapsed = request_chat(messages, thinking=False,
+        max_tokens=1024 if args.sampling_profile == 'gptoss' else 128)
+    followup_text = followup["choices"][0]["message"].get("content") or ""
+    assert "birch-5831" in followup_text, followup_text
+    return {"elapsed_seconds": elapsed, "usage": response["usage"], "answer": text,
+            "followup_seconds": followup_elapsed, "followup_usage": followup["usage"]}
+
+
+for i in range(3):
+    record(f"streaming_speed_{i + 1}", streaming_speed)
+for name, prompt, tests in TASKS:
+    record(name, lambda prompt=prompt, tests=tests: coding(prompt, tests))
+for i in range(3):
+    record(f"nested_tool_round_trip_{i + 1}", lambda i=i: tool_round_trip(args.seed + i))
+for size in map(int, filter(None, args.contexts.split(","))):
+    record(f"context_{size}", lambda size=size: long_context(size))
+passed = sum(t["passed"] for t in results["tests"])
+print(f"{args.label}: {passed}/{len(results['tests'])} functional checks passed", flush=True)
+sys.exit(0 if passed == len(results["tests"]) else 1)
