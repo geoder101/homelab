@@ -22,7 +22,7 @@ parser.add_argument("--thinking-budget", type=int, default=8192)
 parser.add_argument("--max-tokens", type=int, default=8192)
 parser.add_argument("--seed", type=int, default=42)
 parser.add_argument("--temperature", type=float, help="Explicit sampling-temperature experiment")
-parser.add_argument("--sampling-profile", choices=["qwen", "qwen3-coder", "glm47", "gemma4", "general", "devstral2", "gptoss"], default="qwen")
+parser.add_argument("--sampling-profile", choices=["qwen", "qwen3-coder", "glm47", "gemma4", "general", "devstral2", "gptoss", "inkling"], default="qwen")
 parser.add_argument("--extended", action="store_true", help="Additional deployment/streaming contract tasks")
 args = parser.parse_args()
 if args.sampling_profile in ('gemma4', 'qwen3-coder', 'devstral2'):
@@ -52,7 +52,7 @@ def sampling(thinking, tools=False):
         values.update(temperature=1.0, top_p=.95, top_k=64, presence_penalty=0.0)
     elif args.sampling_profile == 'devstral2':
         values.update(temperature=.15, top_p=1.0, top_k=0, presence_penalty=0.0)
-    elif args.sampling_profile == 'gptoss':
+    elif args.sampling_profile in ('gptoss', 'inkling'):
         values.update(temperature=1.0, top_p=1.0, top_k=0, presence_penalty=0.0)
     elif args.sampling_profile == 'general':
         values.update(temperature=1.0, top_p=.95, top_k=20, presence_penalty=0.0)
@@ -103,6 +103,8 @@ def request_chat(messages, *, thinking=True, max_tokens=None, **extra):
     if args.sampling_profile == 'gptoss':
         body['reasoning_effort'] = 'medium' if thinking else 'low'
         body['chat_template_kwargs']['reasoning_effort'] = body['reasoning_effort']
+    if args.sampling_profile == 'inkling':
+        body['chat_template_kwargs']['reasoning_effort'] = 'medium' if thinking else 'none'
     start = time.monotonic()
     with post("/v1/chat/completions", body) as response:
         value = json.load(response)
@@ -139,6 +141,8 @@ def streaming_speed():
     if args.sampling_profile == 'gptoss':
         body['reasoning_effort'] = 'low'
         body['chat_template_kwargs']['reasoning_effort'] = 'low'
+    if args.sampling_profile == 'inkling':
+        body['chat_template_kwargs']['reasoning_effort'] = 'none'
     start = time.monotonic()
     first = None
     first_generated = None

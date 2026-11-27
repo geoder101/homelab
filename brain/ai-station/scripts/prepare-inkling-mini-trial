@@ -1,0 +1,49 @@
+#!/usr/bin/env python3
+"""Download and verify the isolated Inkling Mini trial; run on Brain."""
+import fcntl
+import hashlib
+import json
+import pathlib
+import subprocess
+import tarfile
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+HOME = pathlib.Path.home() / '.local/share/ai-station'
+
+
+def main():
+    config = json.loads((ROOT / 'config/inkling-mini-trial.lock.json').read_text())
+    with (HOME / 'tune-concurrency.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        model = HOME / 'models' / config['directory']
+        runtime = HOME / 'runtimes' / config['runtime']['version']
+        model.mkdir(parents=True, exist_ok=True)
+        runtime.mkdir(parents=True, exist_ok=True)
+
+        def download(url, path, digest):
+            def valid(p):
+                if not p.is_file():
+                    return False
+                with p.open('rb') as stream:
+                    return hashlib.file_digest(stream, 'sha256').hexdigest() == digest
+            if not valid(path):
+                partial = path.with_suffix(path.suffix + '.partial')
+                subprocess.run(['curl', '--fail', '--location', '--retry', '5',
+                                '--continue-at', '-', '--output', str(partial), url], check=True)
+                if not valid(partial):
+                    raise RuntimeError(f'Checksum mismatch: {partial}')
+                partial.replace(path)
+            print(f'Verified {path.name}: {digest}', flush=True)
+
+        archive = runtime / 'runtime.tar.gz'
+        download(config['runtime']['url'], archive, config['runtime']['sha256'])
+        with tarfile.open(archive) as bundle:
+            bundle.extractall(runtime, filter='data')
+        for filename, digest in config['files'].items():
+            download(f'https://huggingface.co/{config["repository"]}/resolve/'
+                     f'{config["revision"]}/{filename}', model / filename, digest)
+        print('Inkling Mini artifacts ready', flush=True)
+
+
+if __name__ == '__main__':
+    main()

@@ -35,6 +35,8 @@ def main():
     parser.add_argument('--url', required=True)
     parser.add_argument('--output', required=True)
     parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
+    parser.add_argument('--reasoning-effort', choices=['low', 'medium', 'high'],
+                        help='Diagnostic thinking mode without a zero-token hard ceiling')
     args = parser.parse_args()
     results = []
     for seed in (42, 43, 44):
@@ -49,6 +51,10 @@ def main():
                             {'type': 'text', 'text': prompt}]}]}
             if args.backend == 'llama':
                 body['reasoning_budget_tokens'] = 0
+            if args.reasoning_effort:
+                body.pop('reasoning_budget_tokens', None)
+                body['chat_template_kwargs'] = {'enable_thinking': True,
+                                               'reasoning_effort': args.reasoning_effort}
             start = time.monotonic()
             result = {'name': name, 'seed': seed, 'passed': False,
                       'image_sha256': hashlib.sha256(buffer.getvalue()).hexdigest(),
@@ -79,7 +85,8 @@ def main():
             with open(args.output, 'w') as output:
                 json.dump({'description': __doc__, 'backend': args.backend,
                     'settings': {'temperature': 0, 'max_tokens': 2048,
-                                 'reasoning_budget_parameter_sent': args.backend == 'llama'},
+                                  'reasoning_effort': args.reasoning_effort,
+                                  'reasoning_budget_parameter_sent': args.backend == 'llama' and not args.reasoning_effort},
                     'tests': results}, output, indent=2)
     raise SystemExit(0 if all(test['passed'] for test in results) else 1)
 

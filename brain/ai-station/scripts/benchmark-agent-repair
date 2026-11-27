@@ -70,7 +70,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--url', required=True)
     parser.add_argument('--output', required=True)
-    parser.add_argument('--sampling-profile', choices=['qwen', 'qwen3-coder', 'glm47', 'gemma4', 'general', 'devstral2', 'gptoss'], default='qwen')
+    parser.add_argument('--sampling-profile', choices=['qwen', 'qwen3-coder', 'glm47', 'gemma4', 'general', 'devstral2', 'gptoss', 'inkling'], default='qwen')
     parser.add_argument('--backend', choices=['llama', 'vllm'], default='llama')
     args = parser.parse_args()
     tools = []
@@ -113,7 +113,7 @@ def main():
                     elif args.sampling_profile == 'devstral2':
                         body.update(temperature=.15, top_p=1.0, top_k=0, reasoning_budget_tokens=0)
                         body['chat_template_kwargs'].update(enable_thinking=False, preserve_thinking=False)
-                    elif args.sampling_profile == 'gptoss':
+                    elif args.sampling_profile in ('gptoss', 'inkling'):
                         body.update(top_p=1.0, top_k=0)
                     if args.backend == 'vllm':
                         body.pop('reasoning_budget_tokens', None)

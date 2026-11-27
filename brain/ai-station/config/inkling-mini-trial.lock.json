@@ -1,0 +1,15 @@
+{
+  "repository": "unsloth/Inkling-2-Mini-GGUF",
+  "revision": "8078d149286eec7193795413b9e0643da6d11fa1",
+  "directory": "inkling-2-mini-q4-xl",
+  "files": {
+    "Inkling-2-Mini-UD-Q4_K_XL.gguf": "e64276656f072e9b2197a61723667cbdb71da66a716ffd966e572c21088f3cd3",
+    "mmproj-F16.gguf": "3bff75ffeb2d6e0371ba7bd42e30d26a7d98aea681fa44b03b5a20891cfa2c5f",
+    "dspark-Inkling-2-Mini-Q8_0.gguf": "3da00cf7c31bbe5662b3c0d373ecf782d74d32ef43990acc158ce60c2add72e0"
+  },
+  "runtime": {
+    "version": "b12649-mix-c7059d6",
+    "url": "https://github.com/unslothai/llama.cpp/releases/download/b12649-mix-c7059d6/app-b12649-mix-c7059d6-linux-x64-cuda13-portable.tar.gz",
+    "sha256": "ceaa18c2dd2a2343afc3414691857564b0388d4c7317c332175eba2a47ce831f"
+  }
+}

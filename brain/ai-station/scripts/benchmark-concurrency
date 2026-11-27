@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--mandatory-reasoning', action='store_true', help='Allow low-effort analysis before visible answers')
     parser.add_argument('--gateway', help='Optional LiteLLM URL; key comes only from container environment')
     parser.add_argument('--model', default='coder')
+    parser.add_argument('--sampling-profile', choices=['qwen', 'inkling'], default='qwen')
     args = parser.parse_args()
     opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -76,10 +77,15 @@ def main():
             'chat_template_kwargs': {'enable_thinking': False, 'preserve_thinking': True},
             **kwargs}
         if args.mandatory_reasoning:
-            body['reasoning_effort'] = 'low'
-            body['chat_template_kwargs']['reasoning_effort'] = 'low'
+            body['chat_template_kwargs'].setdefault('reasoning_effort', 'low')
+            body['reasoning_effort'] = body['chat_template_kwargs']['reasoning_effort']
         if args.backend == 'llama':
             body['cache_prompt'] = True
+            if args.sampling_profile == 'inkling':
+                body.update(temperature=1.0, top_p=1.0, top_k=0, presence_penalty=0.0)
+                if not kwargs.get('tools') and not args.mandatory_reasoning:
+                    body['chat_template_kwargs']['reasoning_effort'] = 'none'
+                    body['reasoning_budget_tokens'] = 0
         else:
             body['repetition_penalty'] = body.pop('repeat_penalty')
             body.pop('reasoning_budget_tokens', None)
@@ -202,6 +208,23 @@ def main():
 
     checks = []
     if args.mode == 'screen':
+        if args.sampling_profile == 'inkling' and args.mandatory_reasoning:
+            def control(effort, budget):
+                messages, wanted = archive(32000, 'control')
+                kwargs = {'chat_template_kwargs': {'reasoning_effort': effort}}
+                if budget is not None:
+                    kwargs['reasoning_budget_tokens'] = budget
+                with chat(messages, max_tokens=1024, **kwargs) as response:
+                    value = json.load(response)
+                message = value['choices'][0]['message']
+                answer = message.get('content') or ''
+                return {'passed': all(v in answer for v in wanted), 'answer': answer,
+                        'usage': value.get('usage'), 'finish_reason': value['choices'][0]['finish_reason'],
+                        'reasoning_effort': effort, 'budget': budget,
+                        'reasoning_content': message.get('reasoning_content')}
+            for effort, budget in (('none', 0), ('none', None), ('low', None)):
+                checks.append(emit(f'control_{effort}_budget_{budget}',
+                                   lambda effort=effort, budget=budget: control(effort, budget)))
         for repeat in range(args.repeats):
             def job(tag):
                 return ([{'role': 'user', 'content': f'Start with RUN_ID={tag}. Then write a detailed 30-item '

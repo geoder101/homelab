@@ -1,0 +1,295 @@
+#!/usr/bin/env python3
+"""Isolated Mini capacity/quality trial with pinned artifacts and GPU recovery.
+
+Run on Brain after prepare-inkling-mini-trial. Results are checkpointed under
+docs/benchmarks/inkling-mini-20261127. No persistent profile is selected.
+"""
+import argparse
+import datetime
+import fcntl
+import hashlib
+import json
+import pathlib
+import signal
+import subprocess
+import time
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+HOME = pathlib.Path.home() / '.local/share/ai-station'
+OUT = ROOT / 'docs/benchmarks/inkling-mini-20261127'
+IMAGE = 'docker.io/vllm/vllm-openai@sha256:6ee133356d49ed24cee03dd0cda3d3980279a11c107ce3e752c89e76540f41c9'
+NAME = 'ai-station-inkling-trial'
+CLIENT = 'ai-station-inkling-client'
+
+
+def run(*argv, **kwargs):
+    return subprocess.run(list(map(str, argv)), text=True, **kwargs)
+
+
+def main():
+    global OUT
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=pathlib.Path, default=OUT)
+    parser.add_argument('--capacity-only', action='store_true', help='Buffer tuning without repeating the quality suite')
+    parser.add_argument('--ubatch', type=int, help='Explicit microbatch size for compute-buffer tuning')
+    parser.add_argument('--batch', type=int, help='Explicit logical batch size for attention-mask buffer tuning')
+    parser.add_argument('--single-context', type=int, help='Capacity-only targeted single-slot Q4 KV trial')
+    parser.add_argument('--thinking-probes', action='store_true', help='Use low effort for context/concurrency diagnostics')
+    parser.add_argument('--quality-after-capacity', action='store_true', help='Recheck coding/repair quality on the tuned context configuration')
+    parser.add_argument('--quality-only', action='store_true', help='Recheck tuned coding/repair quality without repeating context diagnostics')
+    args = parser.parse_args()
+    if args.quality_only:
+        args.capacity_only = True
+    if args.single_context and not args.capacity_only:
+        parser.error('--single-context requires --capacity-only')
+    OUT = args.output.resolve()
+    OUT.mkdir(parents=True, exist_ok=True)
+    if (OUT / 'status.json').exists():
+        raise RuntimeError('Existing trial results: choose a fresh output directory before rerunning')
+    config = json.loads((ROOT / 'config/inkling-mini-trial.lock.json').read_text())
+    state = {'started': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+             'artifacts': config, 'image': IMAGE, 'phase': 'waiting-for-download',
+             'capacity': [], 'checks': {}, 'restored': False}
+
+    def save():
+        temp = OUT / 'status.json.tmp'
+        temp.write_text(json.dumps(state, indent=2) + '\n')
+        temp.replace(OUT / 'status.json')
+
+    def logrun(argv, name, timeout=1800):
+        print('RUN', name, flush=True)
+        with (OUT / name).open('w') as log:
+            try:
+                return run(*argv, stdout=log, stderr=subprocess.STDOUT, timeout=timeout).returncode
+            except subprocess.TimeoutExpired:
+                run('podman', 'stop', '--ignore', CLIENT, stdout=subprocess.DEVNULL)
+                return 124
+
+    def client(script, parameters, name, timeout=1800):
+        return logrun(['podman', 'run', '--rm', '--pull', 'never', '--name', CLIENT,
+            '--network', 'ai-station', '--memory', '2g', '--cpus', '4',
+            '--security-opt', 'no-new-privileges', '--cap-drop', 'all',
+            '--volume', f'{OUT / "harness" / script}:/benchmark.py:ro,z',
+            '--volume', f'{OUT}:/results:z', '--entrypoint', 'python3', IMAGE,
+            '/benchmark.py', *parameters], name, timeout)
+
+    def get(container, path):
+        value = run('podman', 'exec', container, 'curl', '--fail', '--silent',
+                    '--max-time', '5', 'http://127.0.0.1:8000' + path,
+                    capture_output=True, check=True)
+        return json.loads(value.stdout)
+
+    def ready(container, process=None, timeout=300):
+        until = time.monotonic() + timeout
+        while time.monotonic() < until:
+            if process is not None and process.poll() is not None:
+                return False
+            try:
+                get(container, '/health')
+                return True
+            except (subprocess.CalledProcessError, ValueError):
+                time.sleep(2)
+        return False
+
+    process = None
+
+    def stop():
+        nonlocal process
+        run('podman', 'stop', '--ignore', CLIENT, NAME, stdout=subprocess.DEVNULL)
+        if process is not None:
+            process.wait(timeout=60)
+            process = None
+
+    def start(context, slots, kv, draft=False):
+        nonlocal process
+        stop()
+        tag = f'{context}x{slots}-{kv}' + ('-dspark' if draft else '')
+        model = HOME / 'models' / config['directory']
+        runtime = HOME / 'runtimes' / config['runtime']['version']
+        argv = ['podman', 'run', '--rm', '--pull', 'never', '--name', NAME,
+            '--network', 'ai-station', '--network-alias', 'inkling-trial',
+            '--device', 'nvidia.com/gpu=all', '--security-opt', 'label=disable',
+            '--ulimit', 'core=0', '--shm-size', '8g',
+            '--volume', f'{runtime}:/runtime:ro,Z', '--volume', f'{model}:/models:ro,Z',
+            '--workdir', '/runtime', '--entrypoint', '/runtime/llama-server', IMAGE,
+            '--model', '/models/Inkling-2-Mini-UD-Q4_K_XL.gguf',
+            '--mmproj', '/models/mmproj-F16.gguf', '--alias', 'coder',
+            '--host', '0.0.0.0', '--port', '8000', '--n-gpu-layers', '99',
+            '--fit', 'off', '--ctx-size', str(context * slots), '--parallel', str(slots),
+            '--no-kv-unified', '--cache-ram', '16384' if args.capacity_only else '4096', '--flash-attn', 'on',
+            '--cache-type-k', kv, '--cache-type-v', kv, '--jinja',
+            '--reasoning-format', 'deepseek', '--chat-template-kwargs', '{"reasoning_effort":"medium"}',
+            '--temp', '1.0', '--top-p', '1.0', '--top-k', '0', '--min-p', '0.0',
+            '--repeat-penalty', '1.0', '--no-webui', '--log-colors', 'off']
+        if draft:
+            argv += ['--model-draft', '/models/dspark-Inkling-2-Mini-Q8_0.gguf',
+                     '--spec-type', 'draft-dspark', '--spec-draft-n-max', '2', '--n-gpu-layers-draft', '99']
+        if args.ubatch:
+            argv += ['--ubatch-size', str(args.ubatch)]
+        if args.batch:
+            argv += ['--batch-size', str(args.batch)]
+        attempt = {'context': context, 'slots': slots, 'kv': kv, 'draft': draft,
+                   'argv': argv, 'log': f'startup-{len(state["capacity"]) + 1}-{tag}.log'}
+        state['capacity'].append(attempt)
+        save()
+        with (OUT / attempt['log']).open('w') as log:
+            process = subprocess.Popen(argv, stdout=log, stderr=subprocess.STDOUT)
+        attempt['ready'] = ready(NAME, process)
+        if attempt['ready']:
+            attempt['props'] = get(NAME, '/props')
+            actual = attempt['props']['default_generation_settings']['n_ctx']
+            attempt['ready'] = actual == context and attempt['props']['total_slots'] == slots
+            attempt['gpu'] = run('nvidia-smi', '--query-gpu=memory.total,memory.used',
+                                 '--format=csv', capture_output=True).stdout
+        save()
+        return attempt['ready']
+
+    def suite(label, url, sampler, seeds=(42, 43, 44), contexts=''):
+        for seed in seeds:
+            state['checks'][f'{label}-seed{seed}'] = client('benchmark-coder', [
+                '--url', url, '--backend', 'llama', '--label', label,
+                '--max-tokens', '16384', '--thinking-budget', '6144', '--preserve-thinking',
+                '--extended', '--sampling-profile', sampler, '--seed', str(seed),
+                '--contexts', contexts if seed == 42 else '',
+                '--output', f'/results/{label}-seed{seed}.json'], f'{label}-seed{seed}.log')
+            save()
+        state['checks'][label + '-agent'] = client('benchmark-agent-repair', [
+            '--url', url, '--backend', 'llama', '--sampling-profile', sampler,
+            '--output', f'/results/{label}-agent.json'], f'{label}-agent.log')
+        save()
+
+    save()
+    with (HOME / 'tune-concurrency.lock').open('a') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        for filename, digest in config['files'].items():
+            with (HOME / 'models' / config['directory'] / filename).open('rb') as stream:
+                assert hashlib.file_digest(stream, 'sha256').hexdigest() == digest, filename
+        if run('systemctl', '--user', 'is-active', '--quiet', 'llama-coder').returncode != 0:
+            raise RuntimeError('Requires an active llama-coder baseline')
+        if run('systemctl', '--user', 'is-active', '--quiet', 'vllm-coder').returncode == 0:
+            raise RuntimeError('Alternative GPU backend is active')
+        for name in (NAME, CLIENT, 'ai-station-coder-candidate'):
+            if run('podman', 'container', 'exists', name).returncode == 0:
+                raise RuntimeError(f'Existing trial container: {name}')
+        harness = OUT / 'harness'
+        harness.mkdir(exist_ok=True)
+        state['harness_sha256'] = {}
+        for script in ('benchmark-coder', 'benchmark-agent-repair', 'benchmark-concurrency', 'benchmark-vision-contracts'):
+            source = (ROOT / 'scripts' / script).read_bytes()
+            (harness / script).write_bytes(source)
+            state['harness_sha256'][script] = hashlib.sha256(source).hexdigest()
+        state['baseline_props'] = get('ai-station-llama-coder', '/props')
+        fallback_active = run('systemctl', '--user', 'is-active', '--quiet', 'llama-fallback').returncode == 0
+
+        def interrupted(signum, frame):
+            raise KeyboardInterrupt(f'Signal {signum}')
+        signal.signal(signal.SIGTERM, interrupted)
+        signal.signal(signal.SIGINT, interrupted)
+        try:
+            state['phase'] = 'baseline'
+            save()
+            if not args.capacity_only:
+                suite('ornith-control', 'http://llama-coder:8000', 'qwen')
+            run('bash', ROOT / 'scripts/swap-coder-standby', 'on', check=True)
+            run('systemctl', '--user', 'stop', 'llama-coder', check=True)
+            state['phase'] = 'capacity'
+            save()
+            # Explicit sizes and --fit off prevent silent CPU offload/context reduction.
+            plan = [(args.single_context, 1, 'q4_0')] if args.single_context else [
+                (524288, 1, 'q4_0'), (1048576, 1, 'q4_0'),
+                (262144, 2, 'q4_0'), (262144, 1, 'q8_0')]
+            for context, slots, kv in plan:
+                start(context, slots, kv)
+            successes = [a for a in state['capacity'] if a['ready']]
+            if args.capacity_only:
+                chosen = max(successes, key=lambda a: (a['slots'], a['context'])) if successes else None
+                selected = (chosen['context'], chosen['slots'], chosen['kv']) if chosen else None
+            else:
+                selected = next(((a['context'], a['slots'], a['kv']) for a in reversed(successes)), None)
+            if selected is None and not args.single_context:
+                for context in (131072, 65536, 32768):
+                    if start(context, 1, 'q8_0'):
+                        selected = (context, 1, 'q8_0')
+                        break
+            if selected is None:
+                raise RuntimeError('No Mini configuration started; inspect startup logs')
+            if not start(*selected):
+                raise RuntimeError('Selected configuration failed to restart')
+            state['selected'] = selected
+            state['phase'] = 'quality'
+            save()
+            if args.quality_only:
+                suite('inkling-q4-tuned', 'http://inkling-trial:8000', 'inkling')
+                state['phase'] = 'complete'
+                return
+            contexts = ','.join(map(str, sorted({32000, min(122000, selected[0] - 9000), min(253000, selected[0] - 9000)})))
+            if not args.capacity_only:
+                suite('inkling', 'http://inkling-trial:8000', 'inkling', contexts=contexts)
+                state['checks']['vision'] = client('benchmark-vision-contracts', [
+                    '--url', 'http://inkling-trial:8000', '--backend', 'llama',
+                    '--output', '/results/inkling-vision.json'], 'inkling-vision.log')
+            save()
+            state['checks']['concurrency'] = client('benchmark-concurrency', [
+                '--url', 'http://inkling-trial:8000', '--backend', 'llama', '--mode', 'screen',
+                '--sampling-profile', 'inkling', '--slots', str(selected[1]), '--repeats', '1',
+                *(['--mandatory-reasoning'] if args.thinking_probes else [])], 'inkling-concurrency.jsonl')
+            save()
+            if args.capacity_only and args.thinking_probes:
+                state['checks']['vision-low'] = client('benchmark-vision-contracts', [
+                    '--url', 'http://inkling-trial:8000', '--backend', 'llama',
+                    '--reasoning-effort', 'low', '--output', '/results/inkling-vision-low.json'],
+                    'inkling-vision-low.log')
+                save()
+            if args.capacity_only and selected[1] > 1:
+                state['checks']['concurrent-long-context'] = client('benchmark-concurrency', [
+                    '--url', 'http://inkling-trial:8000', '--backend', 'llama', '--mode', 'full',
+                    '--sampling-profile', 'inkling', '--slots', str(selected[1]),
+                    '--context-a', str(selected[0] - 9000), '--context-b', str(selected[0] - 9000),
+                    *(['--mandatory-reasoning'] if args.thinking_probes else [])],
+                    'inkling-concurrent-long-context.jsonl', timeout=2400)
+                save()
+            largest = max((a for a in state['capacity'] if a['ready'] and a['slots'] == 1),
+                          key=lambda a: a['context'])
+            state['phase'] = 'long-context'
+            save()
+            if start(largest['context'], 1, largest['kv']):
+                state['checks']['long-context'] = client('benchmark-concurrency', [
+                    '--url', 'http://inkling-trial:8000', '--backend', 'llama', '--mode', 'full',
+                    '--sampling-profile', 'inkling', '--slots', '1',
+                    '--context-a', str(largest['context'] - 9000), '--context-b', '2000',
+                    *(['--mandatory-reasoning'] if args.thinking_probes else [])],
+                    'inkling-long-context.jsonl', timeout=2400)
+            save()
+            if args.quality_after_capacity:
+                state['phase'] = 'tuned-quality'
+                save()
+                suite('inkling-q4-tuned', 'http://inkling-trial:8000', 'inkling')
+            state['phase'] = 'speculative-decoding'
+            save()
+            if not args.capacity_only and start(*selected, draft=True):
+                state['checks']['dspark'] = client('benchmark-coder', [
+                    '--url', 'http://inkling-trial:8000', '--backend', 'llama', '--label', 'inkling-dspark',
+                    '--max-tokens', '16384', '--thinking-budget', '6144', '--preserve-thinking',
+                    '--extended', '--sampling-profile', 'inkling', '--seed', '42', '--contexts', '',
+                    '--output', '/results/inkling-dspark.json'], 'inkling-dspark.log')
+            state['phase'] = 'complete'
+        except BaseException as error:
+            state.update(phase='error', error=str(error))
+            raise
+        finally:
+            save()
+            stop()
+            run('systemctl', '--user', 'start', 'llama-coder', check=True)
+            if not ready('ai-station-llama-coder'):
+                raise RuntimeError('Production backend failed recovery; CPU fallback retained')
+            state['restore_smoke_returncode'] = logrun([
+                'bash', ROOT / 'scripts/smoke-test', 'http://127.0.0.1:4000'], 'restored-smoke.log', 180)
+            state['restored'] = state['restore_smoke_returncode'] == 0
+            if state['restored'] and not fallback_active:
+                run('bash', ROOT / 'scripts/swap-coder-standby', 'off', check=True)
+            state['finished'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            save()
+
+
+if __name__ == '__main__':
+    main()
